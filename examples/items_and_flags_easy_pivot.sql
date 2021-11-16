@@ -16,9 +16,6 @@ INSERT INTO #items (items_col, flag_type, flag_value) VALUES ('item3', 'flag1', 
 INSERT INTO #items (items_col, flag_type, flag_value) VALUES ('item3', 'flag2', 'N');
 INSERT INTO #items (items_col, flag_type, flag_value) VALUES ('item3', 'flag3', 'N');
 
--- SELECT * FROM #items
--- RETURN
-
 /* Easy Pivot configuration section */
 
 -- Change to 1 to print generated pivot code
