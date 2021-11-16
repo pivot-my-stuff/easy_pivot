@@ -1,0 +1,92 @@
+EASY PIVOT INSTALLATION
+-----------------------
+1. Make sure your query code stores its results into a SQL Server
+   temporary table (Preferably, it should be a local temporary
+   table instead of a global one. Local temporary tables start with
+   a single hash mark instead of two for global ones). For example,
+   "#my_source_table".
+
+2. Append the easy_pivot code from template file "easy_pivot.sql"
+   to your existing query code.
+
+3. In the following line of Easy Pivot code, change the name of the
+   "#car_prices" local temporary table to the name of your table:
+
+    Before:
+        DECLARE @source_table AS NVARCHAR(MAX)= '#car_prices'
+
+    After:
+        DECLARE @source_table AS NVARCHAR(MAX)= '#my_source_table'
+
+4. Specify your group fields and pivot fields in the Easy Pivot
+   configuration section:
+
+   Example:
+
+       DECLARE @config AS NVARCHAR(MAX) = '
+           [
+               {
+                   "Group": [
+                       "COUNTRY"
+                   ],
+                   "Pivot": [
+                       {
+                           "Pivot_Field": "COMPANY",
+                           "Pivot_Data": "PRICE",
+                           "Pivot_True": null,
+                           "Pivot_False": null,
+                           "Pivot_Type": "SUM",
+                           "Follows_Field": "COUNTRY",
+                           "Sort_Order": "ASC"
+                       },
+                       {
+                           "Pivot_Field": "COLOR",
+                           "Pivot_Data": null,
+                           "Pivot_True": "Yes",
+                           "Pivot_False": "No",
+                           "Pivot_Type": "MAX",
+                           "Follows_Field": null,
+                           "Sort_Order": "ASC"
+                       }
+                   ]
+               }
+           ]
+   '
+
+   The Easy Pivot configuration uses JavaScript Object Notation (JSON)
+   format to record your selections. Quoted text before the colon (":")
+   indicates what you need to configure, while quoted text after the
+   colon represents your actual choices (i.e., you need to change these
+   text items).
+
+   Group configuration:
+       "Group": ["MY_GROUP_FIELD_1", "MY_GROUP_FIELD_2"]
+
+   (These are fields your pivot is grouped on.)
+
+   Pivot configuration:
+       "Pivot": [
+           {
+               "Pivot_Field": "MY_PIVOT_COLUMN_FIELD",    (Turn this field's data into column names)
+               "Pivot_Data": "MY_PIVOT_DATA_FIELD",       (Turn this field's data into column data)
+               "Pivot_True": null,                        (Used to generate "Yes" or "True" column data)
+               "Pivot_False": null,                       (Used to generate "No" or "False" column data)
+               "Pivot_Type": "SUM",                       (Data aggregate function: "SUM", "COUNT", "MAX", etc.)
+               "Follows_Field": "MY_GROUP_FIELD_1",       (Place this pivot's column names after this group field)
+               "Sort_Order": "ASC"                        (Sort this pivot's column names by ASC or DESC order)
+           }
+
+   Note: Use "null" for choices you do not use. Do not place quotes around it:
+
+   Example: "Pivot_True": null,
+
+   (Also, make sure there are commas between the curly-brace pairs
+   when configuring multiple pivots.)
+
+5. Run your combined query work plus Easy Pivot! There is no checking
+   by Easy Pivot to validate your group and pivot choices (This would
+   increase the size of the Easy Pivot code). The worst that can
+   happen is there will be errors or no results. In those cases,
+   double-check your Easy Pivot configuration settings. The most
+   common cause of problems is placing the same field name in both
+   the group and pivot configuration settings.
