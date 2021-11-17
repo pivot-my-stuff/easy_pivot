@@ -90,3 +90,14 @@ EASY PIVOT INSTALLATION
    double-check your Easy Pivot configuration settings. The most
    common cause of problems is placing the same field name in both
    the group and pivot configuration settings.
+   
+   The field names in your temporary table should be unique. Use
+   the AS syntax in the SELECT section of your query code to make all
+   field names unique if necessary. Easy Pivot will not work if any of
+   the field names are the same.
+
+   In SQL Server Management Studio, Easy Pivot will not work if the
+   database is the default "master" database. So if you want to run
+   one of the provided examples, change to a database that you
+   normally work with before running.
+   
