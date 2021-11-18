@@ -10,16 +10,26 @@ create table #animal_data (
 	quantity_left_in_wild INT
 );
 
-insert into #animal_data (animal_id, animal_gender, skin_or_fur_color, survives_well, number_of_offspring, lives_in_time_zone, quantity_left_in_wild) values ('Owl, madagascar hawk', 'Female', 'Red', 'true', 2, 'America/Sao_Paulo', 50100);
-insert into #animal_data (animal_id, animal_gender, skin_or_fur_color, survives_well, number_of_offspring, lives_in_time_zone, quantity_left_in_wild) values ('Red-billed toucan', 'Female', 'Puce', 'false', 2, 'Asia/Chongqing', 22500);
-insert into #animal_data (animal_id, animal_gender, skin_or_fur_color, survives_well, number_of_offspring, lives_in_time_zone, quantity_left_in_wild) values ('Wolf, common', 'Male', 'Blue', 'false', 3, 'America/Lima', 15000);
-insert into #animal_data (animal_id, animal_gender, skin_or_fur_color, survives_well, number_of_offspring, lives_in_time_zone, quantity_left_in_wild) values ('Lion, asian', 'Female', 'Puce', 'false', 2, 'Europe/Dublin', 65500);
-insert into #animal_data (animal_id, animal_gender, skin_or_fur_color, survives_well, number_of_offspring, lives_in_time_zone, quantity_left_in_wild) values ('Bee-eater, white-fronted', 'Male', 'Crimson', 'true', 3, 'Europe/Athens', 25200);
-insert into #animal_data (animal_id, animal_gender, skin_or_fur_color, survives_well, number_of_offspring, lives_in_time_zone, quantity_left_in_wild) values ('Eagle, white-bellied sea', 'Female', 'Fuscia', 'false', 4, 'Asia/Shanghai', 5700);
-insert into #animal_data (animal_id, animal_gender, skin_or_fur_color, survives_well, number_of_offspring, lives_in_time_zone, quantity_left_in_wild) values ('Mongoose, small indian', 'Male', 'Yellow', 'false', 3, 'Asia/Chongqing', 12000);
-insert into #animal_data (animal_id, animal_gender, skin_or_fur_color, survives_well, number_of_offspring, lives_in_time_zone, quantity_left_in_wild) values ('Japanese macaque', 'Male', 'Aquamarine', 'true', 3, 'America/Chicago', 2500);
-insert into #animal_data (animal_id, animal_gender, skin_or_fur_color, survives_well, number_of_offspring, lives_in_time_zone, quantity_left_in_wild) values ('Burchell''s gonolek', 'Female', 'Mauv', 'true', 2, 'Asia/Chongqing', 5000);
-insert into #animal_data (animal_id, animal_gender, skin_or_fur_color, survives_well, number_of_offspring, lives_in_time_zone, quantity_left_in_wild) values ('Common turkey', 'Male', 'Pink', 'false', 4, 'Europe/Warsaw', 10000000);
+insert into #animal_data (animal_id, animal_gender, skin_or_fur_color, survives_well, number_of_offspring, lives_in_time_zone, quantity_left_in_wild)
+	values ('Owl, madagascar hawk', 'Female', 'Red', 'true', 2, 'America/Sao_Paulo', 50100);
+insert into #animal_data (animal_id, animal_gender, skin_or_fur_color, survives_well, number_of_offspring, lives_in_time_zone, quantity_left_in_wild)
+	values ('Red-billed toucan', 'Female', 'Puce', 'false', 2, 'Asia/Chongqing', 22500);
+insert into #animal_data (animal_id, animal_gender, skin_or_fur_color, survives_well, number_of_offspring, lives_in_time_zone, quantity_left_in_wild)
+	values ('Wolf, common', 'Male', 'Blue', 'false', 3, 'America/Lima', 15000);
+insert into #animal_data (animal_id, animal_gender, skin_or_fur_color, survives_well, number_of_offspring, lives_in_time_zone, quantity_left_in_wild)
+	values ('Lion, asian', 'Female', 'Puce', 'false', 2, 'Europe/Dublin', 65500);
+insert into #animal_data (animal_id, animal_gender, skin_or_fur_color, survives_well, number_of_offspring, lives_in_time_zone, quantity_left_in_wild)
+	values ('Bee-eater, white-fronted', 'Male', 'Crimson', 'true', 3, 'Europe/Athens', 25200);
+insert into #animal_data (animal_id, animal_gender, skin_or_fur_color, survives_well, number_of_offspring, lives_in_time_zone, quantity_left_in_wild)
+	values ('Eagle, white-bellied sea', 'Female', 'Fuscia', 'false', 4, 'Asia/Shanghai', 5700);
+insert into #animal_data (animal_id, animal_gender, skin_or_fur_color, survives_well, number_of_offspring, lives_in_time_zone, quantity_left_in_wild)
+	values ('Mongoose, small indian', 'Male', 'Yellow', 'false', 3, 'Asia/Chongqing', 12000);
+insert into #animal_data (animal_id, animal_gender, skin_or_fur_color, survives_well, number_of_offspring, lives_in_time_zone, quantity_left_in_wild)
+	values ('Japanese macaque', 'Male', 'Aquamarine', 'true', 3, 'America/Chicago', 2500);
+insert into #animal_data (animal_id, animal_gender, skin_or_fur_color, survives_well, number_of_offspring, lives_in_time_zone, quantity_left_in_wild)
+	values ('Burchell''s gonolek', 'Female', 'Mauv', 'true', 2, 'Asia/Chongqing', 5000);
+insert into #animal_data (animal_id, animal_gender, skin_or_fur_color, survives_well, number_of_offspring, lives_in_time_zone, quantity_left_in_wild)
+	values ('Common turkey', 'Male', 'Pink', 'false', 4, 'Europe/Warsaw', 10000000);
 
 drop table if exists #animal_data_temp_table
 
