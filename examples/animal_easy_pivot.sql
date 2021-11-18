@@ -57,7 +57,7 @@ DECLARE @config AS NVARCHAR(MAX) = '
         "Pivot": [
              {"Pivot_Field": "animal_gender", "Pivot_Data": null, "Pivot_True": "Yes", "Pivot_False": "No", "Pivot_Type": "MAX", "Follows_Field": null, "Sort_Order": "DESC"}
             ,{"Pivot_Field": "skin_or_fur_color", "Pivot_Data": null, "Pivot_True": "Yes", "Pivot_False": "No", "Pivot_Type": "MAX", "Follows_Field": null, "Sort_Order": "ASC"}
-            ,{"Pivot_Field": "Darwin Award Status", "Pivot_Data": null, "Pivot_True": "True", "Pivot_False": "False", "Pivot_Type": "MAX", "Follows_Field": null, "Sort_Order": "DESC"}
+            ,{"Pivot_Field": "Darwin Award Status", "Pivot_Data": null, "Pivot_True": "True", "Pivot_False": "False", "Pivot_Type": "MAX", "Follows_Field": "animal_id", "Sort_Order": "DESC"}
             ,{"Pivot_Field": "lives_in_time_zone", "Pivot_Data": null, "Pivot_True": "Yes", "Pivot_False": "No", "Pivot_Type": "MAX", "Follows_Field": null, "Sort_Order": "ASC"}
         ]
     }
