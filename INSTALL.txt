@@ -96,7 +96,7 @@ EASY PIVOT INSTALLATION
    field names unique if necessary. Easy Pivot will not work if any of
    the field names are the same.
 
-   In SQL Server Management Studio, Easy Pivot will not work if the
+   In SQL Server Management Studio, Easy Pivot may not work if the
    database is the default "master" database. So if you want to run
    one of the provided examples, change to a database that you
    normally work with before running.
