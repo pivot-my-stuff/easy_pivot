@@ -1,4 +1,4 @@
-
+![Easy Pivot](img/easy_pivot.png)
 # Introduction
 
 This is the home of "Easy Pivot", which is SQL code you can easily
