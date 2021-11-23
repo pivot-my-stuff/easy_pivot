@@ -4,7 +4,9 @@
 This is the home of "Easy Pivot", which is SQL code you can easily
 add on to the end of your query project to dynamically pivot data.
 
-Currently, it only works with Microsoft SQL Server databases.
+Currently, it only works with Microsoft SQL Server databases. However,
+my intention is to make it work with all the other widely-used
+databases. So stay tuned.
 
 # Features
 
