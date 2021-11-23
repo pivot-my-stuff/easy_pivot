@@ -26,4 +26,3 @@ to group and pivot on. The data source is a local temporary table
 in which you have collected your pre-pivoted data. You may also
 tell Easy Pivot to output the pivot code it builds for your
 personal study or use in other SQL work.
-
