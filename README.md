@@ -12,7 +12,7 @@ With Easy Pivot, you can:
 
 * Dynamically pivot fields, resulting in any number of pivoted columns
 * Perform one- or two-field pivots
-* Use various pivot aggregate functions (COUNT, SUM, AVG, MIN, MAX, STDEV)
+* Use various pivot aggregate functions (<span style="color:red">COUNT</span>, <span style="color:red">SUM</span>, <span style="color:red">AVG</span>, <span style="color:red">MIN</span>, <span style="color:red">MAX</span>, <span style="color:red">STDEV</span>)
 * Automatically remove NULLs that normally result from pivoting
 * Customize values for pivoted data, such as Yes/No, True/False, etc.
 * Choose any number of fields to pivot on
