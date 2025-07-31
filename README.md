@@ -27,5 +27,5 @@ in which you have collected your pre-pivoted data. You may also
 tell Easy Pivot to output the pivot code it builds for your
 personal study or use in other SQL work.
 
-Added a "Discussions" area for comments and feedback.
+2025-07-30: Added a "Discussions" area for comments and feedback.
 
