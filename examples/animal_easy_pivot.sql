@@ -1,3 +1,5 @@
+SET NOCOUNT ON
+
 drop table if exists #animal_data
 
 create table #animal_data (
@@ -267,6 +269,9 @@ END
 DECLARE @dynamic_sql AS NVARCHAR(MAX) = @dynamic_select + @dynamic_from + @order_by + CHAR(13) + CHAR(10)
 
 IF @generate_source_code_only <> 0
+  BEGIN
     PRINT @dynamic_sql
+    SELECT @dynamic_sql AS FULL_CODE
+  END
 ELSE
     EXEC (@dynamic_sql)
