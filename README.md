@@ -1,10 +1,10 @@
 ![Easy Pivot](img/easy_pivot.png)
 # Introduction
 
-This is the home of "Easy Pivot", which is SQL code you can easily
+This is the home of "Easy Pivot", which is T-SQL code you can easily
 add on to the end of your query project to dynamically pivot data.
 
-Currently, it only works with Microsoft SQL Server databases.
+Since it is T-SQL, it only works with Microsoft SQL Server databases.
 
 # Features
 
