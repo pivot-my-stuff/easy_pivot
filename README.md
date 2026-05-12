@@ -35,6 +35,14 @@ Studio should give you a clue where the error is so that it can
 be corrected. It will probably have something to do with spacing
 inside bracketed alias names for fields.
 
+You cannot directly schedule an Easy Pivot job. Easy Pivot uses
+dynamic query execution which is not compatible with job scheduling.
+You can, however, tell Easy Pivot to generate the pivot query
+source code and replace the Easy Pivot code with it for a scheduled
+job.
+
 2025-07-30: Added a "Discussions" area for comments and feedback.
 
 2026-05-09: Added complete pivot query to the Results tab when generating source code only.
+
+2026-05-12: Added paragraph about Easy Pivot and job scheduling to README.md file.
