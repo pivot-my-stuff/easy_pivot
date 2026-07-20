@@ -1,0 +1,542 @@
+EASY PIVOT INSTALLATION
+-----------------------
+
+Oracle Edition
+
+
+1. Install Oracle Database Express Edition (XE) and Oracle SQL
+   Developer.
+
+   Easy Pivot for Oracle was developed and tested using Oracle
+   Database Express Edition (XE) and Oracle SQL Developer.
+
+   Oracle SQL Developer is Oracle's free graphical SQL development
+   environment and is the recommended interface for running Easy
+   Pivot.
+
+   Other Oracle tools may work, but the examples and instructions
+   in this document assume Oracle SQL Developer is being used.
+
+
+2. Open the file:
+
+       oracle/oracle_easy_pivot.sql
+
+   inside Oracle SQL Developer.
+
+
+3. Locate the following variables near the beginning of the file:
+
+       v_user_sql
+       v_json_configuration
+
+   These two variables contain everything Easy Pivot needs in order
+   to generate a pivot query.
+
+   Think of them as:
+
+       v_user_sql
+           "Where does my source data come from?"
+
+       v_json_configuration
+           "What report do I want to build?"
+
+
+4. Replace the example query stored in v_user_sql with your own
+   Oracle query.
+
+   Example:
+
+       v_user_sql := q'[
+           SELECT
+               COUNTRY,
+               COMPANY,
+               DEPARTMENT,
+               PRICE,
+               STATUS
+           FROM
+               CAR_PRICES
+       ]';
+
+   The two lines with the bracket characters should not be altered.
+
+   Easy Pivot simply treats the supplied query as an input data
+   source and builds the generated pivot query around it.
+
+   If Oracle can execute the query, Easy Pivot can usually pivot it.
+
+
+5. Specify your group fields and pivot fields in the
+   v_json_configuration section.
+
+   Easy Pivot uses JavaScript Object Notation (JSON) to describe
+   your pivot and display choices.
+
+   Easy Pivot supports both explicit and minimal JSON styles.
+
+
+    Explicit aggregate example:
+
+        {"Pivot_Field": "COMPANY", "Pivot_Type": "SUM", "Pivot_Data": "PRICE", "Pivot_True": null, "Pivot_False": null, "Follows_Group": null, "Sort_Order": "ASC"}
+
+
+     Minimal aggregate example:
+
+        {"Pivot_Field": "COMPANY", "Pivot_Type": "SUM", "Pivot_Data": "PRICE"}
+
+
+    Explicit Boolean example:
+
+        {"Pivot_Field": "COLOR", "Pivot_Type": "MAX", "Pivot_Data": null, "Pivot_True": "Yes", "Pivot_False": "No", "Follows_Group": "COUNTRY", "Sort_Order": "ASC"}
+
+
+     Minimal Boolean example:
+
+        {"Pivot_Field": "COLOR", "Pivot_Type": "MAX", "Pivot_True": "Yes"}
+
+
+   Options that do not apply to a particular pivot type may be
+   omitted entirely.
+
+   For example, aggregate pivots do not require Pivot_True or
+   Pivot_False choices, while Boolean pivots typically do not
+   require Pivot_Data.
+
+   If Pivot_Data is omitted, null or blank, Easy Pivot assumes a
+   Boolean pivot operation.
+
+
+   What does null mean?
+   --------------------
+
+   Think of null as meaning:
+
+       "This option does not apply here."
+
+   It does NOT mean:
+
+       "Something is missing."
+
+   It means that option has not been chosen.
+
+
+   Before looking at the JSON itself, it may be helpful to think
+   about the configuration as a spreadsheet describing your choices:
+
+
+   +---------+-------------+------------+------------+-------------+-------------+---------------+------------+
+   | Group   | Pivot Field | Pivot Type | Pivot Data | Pivot True  | Pivot False | Follows Group | Sort Order |
+   +---------+-------------+------------+------------+-------------+-------------+---------------+------------+
+   | COUNTRY | COMPANY     | SUM        | PRICE      | null        | null        | null          | ASC        |
+   | COUNTRY | COLOR       | MAX        | null       | Yes         | No          | COUNTRY       | ASC        |
+   +---------+-------------+------------+------------+-------------+-------------+---------------+------------+
+
+
+   Easy Pivot expresses those choices in JSON as:
+
+
+       [
+           {
+               "Group": ["COUNTRY"],
+
+               "Order": ["ASC"],
+
+               "Pivot":
+               [
+                   {"Pivot_Field": "COMPANY", "Pivot_Type": "SUM", "Pivot_Data": "PRICE"}
+                  ,{"Pivot_Field": "COLOR", "Pivot_Type": "MAX", "Pivot_True": "Yes", "Pivot_False": "No", "Follows_Group": "COUNTRY"}
+               ]
+           }
+       ]
+
+
+   Easy Pivot intentionally uses compact JSON formatting because
+   many users eventually keep their configuration embedded inside
+   SQL source code.
+
+   The preferred Easy Pivot style places each section on its own
+   line while keeping related values together horizontally.
+
+   This formatting style tends to be easier to read and maintain
+   than vertically expanded JSON structures.
+
+   Group configuration example
+   ---------------------------
+
+       "Group": ["COUNTRY", "COMPANY"]
+
+   These are the fields your pivot results will be grouped on.
+
+   Order configuration example
+   ---------------------------
+
+       "Order": ["ASC", "ASC"]
+
+   These choices determine how the corresponding Group fields are
+   sorted in the final report.
+
+   The first Order entry applies to the first Group field.
+
+   The second Order entry applies to the second Group field.
+
+   And so on.
+
+   Valid choices are:
+
+       ASC
+       DESC
+
+   Empty strings and null values are treated as ascending order.
+
+   Example:
+
+       "Group": ["COUNTRY", "COMPANY"]
+       "Order": ["ASC", "DESC"]
+
+   would produce:
+
+       COUNTRY ascending
+       COMPANY descending
+
+
+   COMPATIBILITY NOTE:
+
+   Easy Pivot accepts both "Follows_Group" and the older
+   "Follows_Field" JSON names.
+
+   If both are specified in the same pivot definition, Easy Pivot
+   prefers "Follows_Group" if it contains non-whitespace
+   characters.
+
+
+   Pivot configuration example 1
+   -----------------------------
+
+       {"Pivot_Field": "COMPANY", "Pivot_Type": "SUM", "Pivot_Data": "PRICE", "Follows_Group": null, "Sort_Order": "ASC"}
+
+   Reading from left to right:
+
+       For each COMPANY, SUM the PRICE.
+
+   Meaning:
+
+       Pivot_Field:
+
+           COMPANY values become column names.
+
+       Pivot_Type:
+
+           SUM() is used if multiple rows contribute to the same
+           GROUP and COMPANY combination.
+
+       Pivot_Data:
+
+           PRICE values become the data placed into those columns.
+
+       Follows_Group:
+
+           null, "", or whitespace-only values cause Easy Pivot
+           to place these generated columns after all columns
+           generated so far.
+
+           If omitted, Easy Pivot also places the generated
+           columns after all previously generated columns.
+
+       Sort_Order:
+
+           Generated COMPANY column names are sorted
+           alphabetically from left-to-right.
+
+           ASC, "", and null result in ascending order.
+
+           DESC results in descending order.
+
+
+   Pivot configuration example 2
+   -----------------------------
+
+       {"Pivot_Field": "COLOR", "Pivot_Type": "MAX", "Pivot_True": "Yes", "Pivot_False": "No", "Follows_Group": "COUNTRY"}
+
+   Reading from left to right:
+
+       For each COLOR, display Yes or No.
+
+   Meaning:
+
+       Pivot_Field:
+
+           COLOR values become column names.
+
+       Pivot_Data:
+
+           There is no associated data field.
+
+           This is a Boolean scenario in which only two outcomes
+           exist:
+
+               Yes / No
+               True / False
+               Good / Bad
+               Present / Absent
+
+       Pivot_True:
+
+           If a color exists for a country, display "Yes".
+
+       Pivot_False:
+
+           If a color does not exist for a country, display "No".
+
+       Pivot_Type:
+
+           MAX() is commonly used for Boolean pivots involving
+           string data.
+
+       Follows_Group:
+
+           The generated COLOR columns will appear immediately
+           after the COUNTRY group column.
+
+           If omitted, Easy Pivot places the generated columns
+           after all previously generated columns.
+
+   JSON punctuation note
+   ---------------------
+
+   If you configure multiple pivots, make sure commas appear
+   between the JSON object definitions.
+
+   That means not putting a comma in front of the first Pivot
+   definition, but adding one in front of succeeding Pivot
+   definitions:
+
+       "Pivot":
+       [
+           {"Pivot_Field": "COMPANY", "Pivot_Type": "SUM", "Pivot_Data": "PRICE"}
+          ,{"Pivot_Field": "COLOR", "Pivot_Type": "MAX", "Pivot_True": "Yes", "Pivot_False": "No", "Follows_Group": "COUNTRY"}
+       ]
+
+   This style mirrors how many SQL developers write SELECT
+   statements:
+
+       SELECT
+            COUNTRY
+           ,COMPANY
+           ,PRICE
+       FROM
+           CAR_PRICES
+
+   Many users find this format easier to read because adding,
+   deleting or moving lines requires fewer comma changes.
+
+
+6. Easy Pivot itself is a PL/SQL script, and should be executed
+   in a new Oracle SQL Developer session using:
+
+       F5 key (Run Script)
+
+   In the output window with the generated code, Ctrl + A
+   to select all of it and Ctrl + C to copy it. Create another
+   SQL Developer session, then Ctrl + V to paste the pivot code
+   into it. Then:
+
+      Ctrl + Enter key to run and populate a data grid with the
+      results.
+
+7. Why are there two execution steps?
+
+   SQL Server Easy Pivot can generate and execute dynamic SQL
+   in a single operation.
+
+   Oracle Easy Pivot generates Oracle SQL source code instead.
+
+   Oracle users therefore perform one additional step:
+
+       Generate query
+             ↓
+        Copy query
+             ↓
+        Paste query into new session
+             ↓
+         Run query
+             ↓
+      Receive tasty grid
+
+    Although this initially feels unusual to SQL Server users,
+    most Oracle users quickly become comfortable with the
+    workflow.
+
+8. Easy Pivot will display debugging information if requested:
+
+       - Diagnostic information
+       - Group information
+       - Pivot definitions
+       - Pivot value discovery
+       - Dynamic SELECT generation
+       - Dynamic FROM generation
+       - Dynamic ORDER BY generation
+       - Final generated SQL
+
+   The "v_debug" option in the user section can be used to
+   enable these features:
+
+   -- Change to 1 to enable debugging output
+   v_debug                      NUMBER(1) := 0;
+
+   Setting v_debug to 1 will switch debugging on.
+
+9. Common mistakes
+   ---------------
+
+   Easy Pivot intentionally performs very little validation of
+   configuration choices.
+
+   This keeps the code compact, flexible and easy to integrate
+   into existing Oracle environments.
+
+   The most common symptoms are:
+
+       - SQL errors
+       - Empty output
+       - Missing columns
+       - Unexpected grouping results
+
+   In those cases, double-check your configuration choices.
+
+
+    ADVICE:
+
+    A common mistake is placing one of your source fields in both
+    the Group section and a Pivot_Field definition.
+
+    YOU CANNOT GROUP ON A SOURCE FIELD AND PIVOT ON THAT SAME
+    FIELD AT THE SAME TIME.
+
+
+    Example of an invalid configuration:
+
+        "Group": ["COUNTRY"]
+
+        "Pivot":
+        [
+            {"Pivot_Field": "COUNTRY", "Pivot_Type": "SUM", "Pivot_Data": "PRICE"}
+        ]
+
+
+    Field names in your source query should also be unique.
+
+    If necessary, use SQL aliases with the AS keyword to make all
+    source field names unique before passing the query into Easy
+    Pivot.
+
+    Easy Pivot may not work correctly if duplicate source field
+    names exist in the supplied query.
+
+10. Oracle-specific notes
+    ---------------------
+
+    Oracle treats empty strings ('') as NULL values.
+
+    This behavior differs from SQL Server and surprises many
+    developers encountering Oracle for the first time.
+
+    For example:
+
+        ''
+        NULL
+
+    are considered equivalent by Oracle.
+
+    Easy Pivot automatically compensates for this behavior when
+    generating Boolean pivots involving string data.
+
+
+11. Aggregate pivots and Boolean pivots
+    -----------------------------------
+
+    Aggregate pivots contain:
+
+        Pivot_Field
+        Pivot_Type
+        Pivot_Data
+
+    Example:
+
+        {"Pivot_Field": "PRODUCT", "Pivot_Type": "SUM", "Pivot_Data": "SALES"}
+
+    Reading from left-to-right:
+
+        "For each PRODUCT, SUM the SALES."
+
+
+    Boolean pivots contain:
+
+        Pivot_Field
+        Pivot_True
+        Pivot_False
+
+    Example:
+
+        {"Pivot_Field": "COLOR", "Pivot_True": "Yes", "Pivot_False": "No"}
+
+    Reading from left-to-right:
+
+        For each COLOR, display Yes or No.
+
+
+12. Follows_Group
+    -------------
+
+    Follows_Group controls where generated pivot columns appear
+    relative to the Group fields.
+
+    Example:
+
+        "Group": ["COUNTRY", "COMPANY"]
+
+        "Pivot":
+        [
+            {"Pivot_Field": "DEPARTMENT", "Pivot_Type": "AVG", "Pivot_Data": "PRICE", "Follows_Group": "COUNTRY"}
+           ,{"Pivot_Field": "STATUS", "Pivot_True": "Yes", "Pivot_False": "No", "Follows_Group": "COMPANY"}
+           ,{"Pivot_Field": "DEPARTMENT", "Pivot_Type": "SUM", "Pivot_Data": "PRICE"}
+        ]
+
+    produces output similar to:
+
+        COUNTRY
+            AVG columns
+
+        COMPANY
+            Boolean columns
+
+            SUM columns
+
+    If Follows_Group is omitted, null, blank or contains only
+    whitespace, Easy Pivot places the generated columns after all
+    previously generated columns.
+
+
+13. Easy Pivot philosophy
+    ---------------------
+
+    Easy Pivot intentionally favors:
+
+        - Minimal configuration
+        - Maximum flexibility
+        - Very little validation
+        - Human-readable generated SQL
+
+    Easy Pivot attempts to generate useful Oracle SQL rather than
+    hiding SQL generation from the user.
+
+    The generated query belongs to you.
+
+    Modify it.
+    Tune it.
+    Save it.
+    Version control it.
+
+    Easy Pivot simply helps you get there faster.
+
+
+14. Enjoy your tasty grid.

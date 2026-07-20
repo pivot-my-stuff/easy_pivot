@@ -1,0 +1,76 @@
+2026-07-18: * Moved v_debug & v_generate_source_code_only to user section.
+            * oracle/docs/INSTALLATION.txt: Simplified wording.
+
+2026-07-17: * Removed obsolete Oracle procedures and simplified example scripts
+            * Added "SET FEEDBACK OFF" to oracle_easy_pivot.sql and five
+              example files. This stops Oracle from adding "PL/SQL procedure
+              successfully completed" to Easy Pivot's dynamic pivot code
+              generation.
+
+2026-07-16: * Rearranged project files and folders to support multiple databases.
+            * Added Oracle Database support.
+
+              Features include:
+
+              - Dynamic Oracle PIVOT generation
+              - Multiple aggregate support
+              - String and numeric pivots
+              - Follows_Field support
+              - Independent group ordering
+              - Five self-contained Oracle examples
+              - Oracle-specific installation and FAQ documentation
+
+              Oracle support was validated against Oracle Database using all
+              supplied examples and generated queries.
+
+2026-07-15: * Standardize JSON configuration formats across Easy Pivot files.
+            * Removed redundant information for Boolean pivots from README.md file.
+            * Changed "similar" to "equivalent" in FAQ_SQL_Server.txt file that
+              explains which aggregate functions are supported.
+            * FAQ_SQL_Server.txt: JSON -> VAR(PRICE) explanation.
+            * Added ALGORITHM.txt explaining how Easy Pivot works.
+            * Changed README.md to reflect 2026 project status.
+            * Introduction to Mr. Pivot, Easy Pivot's mascot.
+
+2026-07-14: * Clarify aggregate pass-through behavior.
+            * Generalize README aggregate support wording.
+            * Added FAQ entry describing aggregate handling.
+            * Document tested SQL Server aggregate functions.
+            * Document SQL Server MEDIAN limitation.
+            * JSON configuration cleanup in examples folder.
+            * Various file renaming and relocation tasks.
+            * Removed NULLs from output when MAX/MIN-ing on string data
+
+2026-07-12: * Added optional Group ordering support using the new `Order` JSON array.
+            * Group fields may now be independently sorted using ASC or DESC ordering
+              while preserving backward compatibility with existing Easy Pivot
+              configurations.
+            * Updated easy_pivot.sql and all five example files.
+            * Fixed situations where multiple pivots involving aggregation choices
+              would not remove NULLs from returned row sets.
+            * Incorporated aggregation type into the pivoted column names (Really
+              useful!).
+            * `Follows_Field` in pivot JSON entries now allows blank ("") entries
+              instead of just null.
+            * Added optional `Follows_Group` JSON entry as a clearer name for the
+              feature's intended purpose.
+            * `Follows_Group` and `Follows_Field` may be used interchangeably.
+            * If both values are specified, `Follows_Group` takes precedence when it
+              contains a non-blank value.
+
+2026-07-10: * Added PHILOSOPHY.txt file. Update README.md to reflect planning stage
+              of Easy Pivot Oracle version.
+
+2026-07-08: * Added warning to INSTALL.txt about not bringing in auto-incrementing
+              IDENTITY fields when retrieving data prior to pivoting. Also modified
+              the INSTALL.txt file to reflect the SQL Server temporary table names
+              that should be avoided by users of Easy Pivot. Added source code
+              regeneration advisory.
+
+2026-05-12: * Added paragraph about Easy Pivot and job scheduling to README.md file.
+
+2026-05-09: * Added complete pivot query to the Results tab when generating source
+              code only. The Results tab SQL code can then be copied and pasted
+              into an online SQL formatting website to make it more human readable.
+
+2025-07-30: * Added a "Discussions" area for comments and feedback.

@@ -1,0 +1,316 @@
+============================================================
+Easy Pivot Internal Algorithm
+============================================================
+
+Easy Pivot transforms source data into pivoted output using
+a small number of sequential stages.
+
+The JSON configuration acts as the public API and drives all
+report generation.
+
+------------------------------------------------------------
+Stage 1 - User Supplies Source SQL
+------------------------------------------------------------
+
+User SQL:
+
+    SELECT
+        COUNTRY,
+        COMPANY,
+        PRICE
+    FROM
+        CAR_PRICES
+
+Easy Pivot treats this SQL as a black box.
+
+The source SQL is never modified.
+
+Easy Pivot wraps the SQL in subqueries as needed.
+
+
+------------------------------------------------------------
+Stage 2 - JSON Configuration Parsing
+------------------------------------------------------------
+
+Example JSON:
+
+[
+    {
+        "Group": ["COUNTRY"],
+        "Order": ["ASC"],
+        "Pivot": [
+            {"Pivot_Field": "COMPANY", "Pivot_Data": "PRICE", "Pivot_Type": "SUM", "Sort_Order": "DESC"}
+        ]
+    }
+]
+
+Configuration values are normalized and stored internally.
+
+Examples:
+
+    Group Fields
+    Pivot Definitions
+    Group Sort Order
+    Pivot Sort Order
+    Follows_Group Rules
+
+
+------------------------------------------------------------
+Stage 3 - Pivot Chip Discovery
+------------------------------------------------------------
+
+Easy Pivot discovers all possible pivot column names from
+each pivot entry's "Pivot_Field" JSON choice. If the pivot
+field choice is "COMPANY", then:
+
+Example:
+
+    SELECT DISTINCT COMPANY
+    FROM source_query
+    ORDER BY COMPANY DESC
+
+Resulting pivot column names:
+
+    Toyota
+    Mercedes
+    Honda
+    GM
+    Ford
+    BMW
+
+These individual pivot entries can be thought of as
+"pivot chips."
+
+Pivot chips determine:
+
+    Output column order
+    PIVOT IN() ordering
+    SELECT column ordering
+
+
+------------------------------------------------------------
+Stage 4 - Dynamic SELECT Construction
+------------------------------------------------------------
+
+Initial SELECT:
+
+    SELECT
+
+Group fields are added first:
+
+    SELECT
+        ep.COUNTRY
+
+Pivot columns are then appended:
+
+    SELECT
+        ep.COUNTRY,
+        NVL(p1.Toyota,0) AS SUM_Toyota,
+        NVL(p1.Mercedes,0) AS SUM_Mercedes,
+        ...
+
+
+------------------------------------------------------------
+Stage 5 - Dynamic FROM Construction
+------------------------------------------------------------
+
+Easy Pivot builds a template query containing all group
+combinations:
+
+    SELECT DISTINCT
+        COUNTRY
+    FROM source_query
+
+This becomes:
+
+    ep
+
+Each pivot query is then attached using LEFT JOIN.
+
+Example:
+
+    LEFT JOIN p1
+    LEFT JOIN p2
+    LEFT JOIN p3
+
+
+------------------------------------------------------------
+Stage 6 - Pivot Query Construction
+------------------------------------------------------------
+
+Each pivot definition generates its own pivot query.
+
+Example:
+
+    PIVOT
+    (
+        SUM(PRICE)
+        FOR COMPANY IN
+        (
+            'Toyota' AS Toyota,
+            'Mercedes' AS Mercedes,
+            ...
+        )
+    )
+
+
+------------------------------------------------------------
+Stage 7 - Group Linking
+------------------------------------------------------------
+
+Pivot queries are linked back to the template query.
+
+Example:
+
+    ON p1.COUNTRY = ep.COUNTRY
+
+Multiple groups become:
+
+    ON p1.COUNTRY = ep.COUNTRY
+    AND p1.REGION = ep.REGION
+    AND p1.CITY = ep.CITY
+
+
+------------------------------------------------------------
+Stage 8 - Final ORDER BY
+------------------------------------------------------------
+
+Group ordering controls final row order.
+
+Example:
+
+    ORDER BY
+        ep.COUNTRY ASC,
+        ep.CITY DESC
+
+Pivot ordering does NOT affect row order.
+
+Pivot ordering affects only generated column order.
+
+
+------------------------------------------------------------
+Stage 9 - Execution
+------------------------------------------------------------
+
+Final SQL is assembled:
+
+    SELECT
+    FROM
+    ORDER BY
+
+The completed SQL is either:
+
+    Executed immediately
+
+or
+
+    Returned for debugging and inspection.
+
+
+============================================================
+Follows_Group Processing
+============================================================
+
+When Follows_Group is enabled, Easy Pivot performs two passes
+through the pivot definitions.
+
+Pass 1:
+
+    Process pivots attached to groups.
+
+Pass 2:
+
+    Process pivots without Follows_Group values.
+
+This allows reports such as:
+
+    COUNTRY
+        Revenue Columns
+        Profit Columns
+
+    REGION
+        Expense Columns
+
+    Remaining Columns
+
+without requiring explicit column positioning rules.
+
+
+Pseudo-code:
+
+    FOR each pass
+        FOR each group
+
+            IF Pass 1
+                emit group field
+
+            FOR each pivot
+
+                IF pivot follows current group
+                    emit pivot
+
+                IF pivot follows nobody
+                   AND Pass 2
+                    emit pivot
+
+
+Equivalent implementation logic:
+
+    Pass 1:
+        Process pivots where:
+
+            Follows_Group = Current Group
+
+    Pass 2:
+        Process pivots where:
+
+            Follows_Group IS NULL
+            OR
+            Follows_Group = ''
+
+
+============================================================
+Design Philosophy
+============================================================
+
+Easy Pivot favors:
+
+    Minimal validation
+    Maximum flexibility
+    Backward compatibility
+    Database portability
+
+Easy Pivot attempts to inform users rather than restrict
+users.
+
+Warnings are preferred over exceptions whenever possible.
+
+
+============================================================
+Pivot Buffet Philosophy
+============================================================
+
+Traditional SQL:
+
+    Build one report.
+
+Easy Pivot:
+
+    Bring your source data to the buffet.
+    Grab the pivot chips you want.
+    Build the plate you want to eat.
+
+
+============================================================
+Historical Note
+============================================================
+
+The two-pass Follows_Group algorithm exists because SQL
+generation naturally wants to process pivots sequentially.
+
+Easy Pivot instead performs multiple passes over the pivot
+definitions so that pivot columns can appear beside the
+group fields they logically belong to.
+
+Sometimes the cleanest solution to a sequencing problem is
+simply to make another pass.

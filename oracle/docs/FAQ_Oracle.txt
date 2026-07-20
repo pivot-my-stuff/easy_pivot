@@ -1,0 +1,429 @@
+Q: What aggregate functions does Easy Pivot support?
+
+A: Easy Pivot does not implement aggregate functions itself.
+
+   The value specified in Pivot_Type is passed directly to the
+   Oracle database engine's PIVOT implementation.
+
+   Examples:
+
+       "Pivot_Type": "SUM"
+       "Pivot_Type": "AVG"
+       "Pivot_Type": "COUNT"
+
+   Whether an aggregate is supported depends entirely upon the
+   capabilities of the underlying Oracle database version.
+
+   Oracle aggregate examples currently include:
+
+       SUM
+       AVG
+       COUNT
+       MIN
+       MAX
+       STDDEV
+       VARIANCE
+       MEDIAN
+
+   Example:
+
+       {"Pivot_Field": "COMPANY", "Pivot_Type": "VARIANCE", "Pivot_Data": "PRICE"}
+
+   generates this in Easy Pivot's dynamic SQL code:
+
+       VARIANCE(PRICE)
+
+   Additional Oracle aggregate functions may work as well,
+   depending upon the capabilities of the Oracle version being
+   used.
+
+   Easy Pivot intentionally avoids maintaining its own list
+   of supported aggregate functions and instead relies upon
+   the capabilities provided by the database engine and your
+   knowledge of their existence.
+
+   If Oracle can aggregate it, Easy Pivot can usually pivot it.
+
+
+Q: Can Easy Pivot perform SUM(), AVG(), COUNT(), MIN(),
+   MAX(), STDDEV(), VARIANCE(), or MEDIAN() operations
+   without pivoting?
+
+A: No.
+
+   If your report does not require pivoting on a descriptive
+   field, perform the aggregation directly in your source query
+   before passing the results into Easy Pivot.
+
+   Example:
+
+       SELECT
+           COMPANY_NAME,
+           SUM(DOLLARS) AS TOTAL_COST
+       FROM
+           COST_DATA
+       GROUP BY
+           COMPANY_NAME
+
+   This type of simple aggregation should be performed by the
+   source query rather than Easy Pivot.
+
+   Easy Pivot is designed to pivot and then aggregate.
+
+   Easy Pivot can perform the SUM() operation if there is a
+   descriptive field associated with the value being summed and
+   a Group field to attach the pivot results to.
+
+   Example source query:
+
+       SELECT
+           COMPANY_NAME,
+           DIVISION,
+           DOLLARS
+       FROM
+           COST_DATA
+
+   Example Easy Pivot configuration:
+
+       Group:
+           COMPANY_NAME
+
+       Pivot_Field:
+           DIVISION
+
+       Pivot_Data:
+           DOLLARS
+
+       Pivot_Type:
+           SUM
+
+   Result:
+
+       COMPANY_NAME      SUM_Research  SUM_Development
+       ----------------  ------------  ---------------
+       Acme Industries      5735000       7592000
+       Globex Corporation   4280000       5420000
+       Initech              3540000       8374000
+       ...
+
+   In this example, DIVISION provides the descriptive pivot
+   dimension required by Oracle's PIVOT operation to support
+   the SUM aggregation.
+
+
+Q: I like the pivot aggregate type added in front of the pivoted
+   column names, but can Easy Pivot make them more readable?
+   For example, can it generate:
+
+       Sum_Research
+       Sum_Development
+
+   instead of:
+
+       SUM_Research
+       SUM_Development
+
+A: Yes.
+
+   Easy Pivot intentionally preserves the aggregate function names
+   exactly as they are specified in the configuration JSON.
+
+   Example:
+
+       "Pivot_Type": "SUM"
+
+   generates:
+
+       SUM_Research
+       SUM_Development
+
+   while:
+
+       "Pivot_Type": "Sum"
+
+   generates:
+
+       Sum_Research
+       Sum_Development
+
+   The generated SQL pivot code does not depend on the
+   capitalization of aggregate function names.
+
+   Easy Pivot simply preserves whatever capitalization style
+   you prefer.
+
+Q: Can I have multiple aggregates on the same data?
+   For example, can I calculate both SUM() and AVG()
+   using the same source field?
+
+A: Yes.
+
+   Simply create multiple Easy Pivot entries using the same
+   Pivot_Field and Pivot_Data values while specifying different
+   Pivot_Type values.
+
+   Example:
+
+       "Group": ["COMPANY_NAME"]
+
+       {"Pivot_Field": "DIVISION", "Pivot_Type": "SUM", "Pivot_Data": "DOLLARS"}
+      ,{"Pivot_Field": "DIVISION", "Pivot_Type": "AVG", "Pivot_Data": "DOLLARS"}
+
+   Result:
+
+       COMPANY_NAME         Sum_Development  Sum_Research  Avg_Development  Avg_Research
+       ------------------   ---------------  ------------  ---------------  ------------
+       Acme Industries         7592000.00      5735000.00     1898000.00      1433750.00
+       Globex Corporation      5420000.00      4280000.00     1355000.00      1070000.00
+       Initech                 9374000.00      3540000.00     2343500.00       885000.00
+
+   Easy Pivot treats each Pivot entry independently, allowing
+   multiple aggregate calculations to be performed on the same
+   source data.
+
+
+Q. I am confused a little by this "JSON" format. I have seen
+   other examples of JSON, and sometimes there are a lot of space
+   characters in it and sometimes there are not. How do I know
+   what the correct format is?
+
+A. JSON is very flexible. Easy Pivot can understand JSON that
+   has extra space characters in it as long as the spacing is
+   between the options. For example,
+
+   {"Pivot_Field"  :  "DIVISION",     "Pivot_Type"  :  "SUM",      "Pivot_Data"  :  "DOLLARS"}
+
+   is processed by Easy Pivot the same as
+
+   {"Pivot_Field": "DIVISION", "Pivot_Type": "SUM", "Pivot_Data": "DOLLARS"}
+
+   or
+
+   {"Pivot_Field":"DIVISION","Pivot_Type":"SUM","Pivot_Data":"DOLLARS"}
+
+   As long as the JSON has the correct "option":"choice"
+   structure, extra spaces outside the double quotes and colon
+   character do not matter.
+
+   Easy Pivot examples intentionally use a compact JSON style
+   because many users find it easier to read.
+
+   Example:
+
+       [
+           {
+               "Group": ["COUNTRY", "COMPANY"],
+
+               "Order": ["ASC", "ASC"],
+
+               "Pivot":
+               [
+                   {"Pivot_Field": "DEPARTMENT", "Pivot_Type": "AVG", "Pivot_Data": "PRICE", "Follows_Group": "COUNTRY"}
+                  ,{"Pivot_Field": "STATUS", "Pivot_True": "Yes", "Pivot_False": "No", "Follows_Group": "COMPANY"}
+                  ,{"Pivot_Field": "DEPARTMENT", "Pivot_Type": "SUM", "Pivot_Data": "PRICE"}
+               ]
+           }
+       ]
+
+   Many users find this format easier to understand because it
+   resembles both spreadsheet layouts and SQL SELECT statements.
+
+   Reading the pivot entries from left-to-right often helps:
+
+       For each DEPARTMENT, AVG the PRICE.
+       For each STATUS, display Yes or No.
+       For each DEPARTMENT, SUM the PRICE.
+
+
+Q: Can I use the same source field as both a Group field and a Pivot_Field?
+
+A: NO! Absolutely not.
+
+   A source field cannot simultaneously act as both a grouping
+   field and a pivoting field.
+
+   For example:
+
+             Group: COUNTRY, COMPANY
+       Pivot_Field: COMPANY
+
+   is not a valid configuration.
+
+   Easy Pivot uses Group fields to define output rows and
+   Pivot_Field values to define output columns.
+
+   Attempting to use the same field for both purposes will almost
+   certainly trigger an Oracle Indigestion General Protection
+   Fault. (More about those later.)
+
+   See INSTALL_Oracle.txt for additional guidance.
+
+Q: I don't want all caps for my Group field names. Can Easy Pivot
+   change them?
+
+A: No, but you can.
+
+   Simply add aliases in your source query before passing the
+   results into Easy Pivot.
+
+   Example:
+
+       SELECT
+           COMPANY_NAME AS Company_Name,
+           DIVISION,
+           DOLLARS
+       FROM
+           COST_DATA
+
+   Easy Pivot will use the aliased column names exactly as they
+   appear in the source query.
+
+   This technique works equally well for:
+
+       - Group fields
+       - Pivot fields
+       - Pivot data fields
+
+   Many users use aliases to improve readability in the final
+   generated report.
+
+
+Q: I use multiple queries and temporary tables in my project.
+   Can Easy Pivot use any of them?
+
+A: Usually yes.
+
+   Oracle Easy Pivot does not work directly with temporary tables.
+
+   Instead, Easy Pivot generates pivot code against the query
+   stored in:
+
+       v_user_sql
+
+   You decide what query Easy Pivot will use.
+
+   If your project uses multiple tables, views, CTEs or queries,
+   simply place the desired query into v_user_sql before running
+   Easy Pivot.
+
+   Easy Pivot does not care where the data comes from.
+
+   If Oracle can execute the query, Easy Pivot can usually pivot
+   it.
+
+
+Q: I tried to pivot on a field twice to get SUM() and AVG()
+   aggregate values. It worked, but the pivot columns show all
+   the SUM() columns first, followed by all the AVG() columns.
+   I would like them side by side with each other.
+
+   Example:
+
+       COMPANY_NAME         Sum_Development  Sum_Research  Avg_Development  Avg_Research
+       ------------------   ---------------  ------------  ---------------  ------------
+       Acme Industries         7592000.00      5735000.00     1898000.00      1433750.00
+       Globex Corporation      5420000.00      4280000.00     1355000.00      1070000.00
+       Initech                 9374000.00      3540000.00     2343500.00       885000.00
+
+   But I want this:
+
+       COMPANY_NAME         Sum_Development  Avg_Development  Sum_Research  Avg_Research
+       ------------------   ---------------  ---------------  ------------  ------------
+       Acme Industries         7592000.00      1898000.00      5735000.00    1433750.00
+       Globex Corporation      5420000.00      1355000.00      4280000.00    1070000.00
+       Initech                 9374000.00      2343500.00      3540000.00     885000.00
+
+   Can Easy Pivot do this for me?
+
+A: No.
+
+   Easy Pivot hands off each pivot request to Oracle for
+   processing, and Oracle returns complete sets of pivot columns.
+
+   Easy Pivot CAN return those columns after a Group field you
+   specify using the configuration option:
+
+       "Follows_Group": "COMPANY_NAME"
+
+   Easy Pivot also provides some control over Group field ordering
+   and pivot column ordering through ASC and DESC choices.
+
+   However, Easy Pivot cannot perform complicated pivot column
+   layouts or interleave columns returned by separate pivot
+   operations.
+
+   Its primary task is to return the pivot data produced by the
+   database.
+
+   Easy Pivot intentionally favors predictable layouts over
+   artistic ones.
+
+Q: I added new values to my source data, but they are not
+   appearing in the generated report. Why?
+
+A: Easy Pivot discovers pivot values at generation time.
+
+   If your source data changes after Easy Pivot generates the
+   SQL query, the generated query will not automatically know
+   about those new values.
+
+   Example:
+
+       Original data:
+
+           Research
+           Development
+
+       Generated columns:
+
+           SUM_Research
+           SUM_Development
+
+   Later, new source data appears:
+
+           Research
+           Development
+           Marketing
+
+   The previously generated SQL cannot magically invent a
+   SUM_Marketing column because that column did not exist when
+   the SQL was generated.
+
+   Simply run Easy Pivot again using the updated source data.
+
+   The regenerated query will include the new pivot values.
+
+Q: Does Easy Pivot accept monetary donations for this project?
+
+A: Our merchandise sales help support our work. Please open up
+   file "MERCHANDISE.png" to see one of our fine products.
+
+Q: Is there a limit to how many pivots Easy Pivot can process?
+
+A: Not directly.
+
+   Easy Pivot does not impose an artificial limit on the number of
+   pivot definitions in your JSON configuration.
+
+   You can think of each JSON Pivot entry as a sort of pivot chip.
+
+   Easy Pivot consumes one pivot chip at a time, generates the
+   corresponding Oracle PIVOT() operation, joins the results back
+   to the grouped result set, and then moves on to the next pivot chip
+   until the whole bag of pivot chips is empty.
+
+   In practice, the limits are determined by Oracle itself,
+   including factors such as:
+
+       * Maximum number of columns returned
+       * Maximum number of JOIN operations
+       * Query plan complexity
+       * Available memory and system resources
+       * Indigestion General Protection Fault
+
+   For typical reporting workloads, these limits are unlikely
+   to be encountered and your pivot chips will remain fresh.
+
+   Easy Pivot's philosophy is simple:
+
+       "If you're Frito-Lay, then Easy Pivot is Eveready."

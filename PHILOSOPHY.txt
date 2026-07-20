@@ -1,0 +1,48 @@
+PHILOSOPHY.txt
+==============
+
+Easy Pivot Philosophy
+---------------------
+Easy Pivot exists because writing pivot queries repeatedly is tedious.
+The user should think about the INPUT and OUTPUT.
+Easy Pivot should think about the PROCESSING.
+
+The Easy Pivot Contract
+-----------------------
+     INPUT: Data. Pivot and display choices.
+PROCESSING: JSON parsing. Dynamic SQL generation. Pivot construction. Column placement. Ordering. Presentation logic.
+              (The user should not need to think about these things. Easy Pivot should.)
+    OUTPUT: Pivoted data. Generated source code if requested. Results suitable for reporting, scheduling, and automation.
+
+Design Goals
+------------
+- Easy to install.
+- Easy to configure the pivoting.
+- No permanent database objects.
+- No DBA intervention.
+- Preserve native database behavior whenever possible.
+- Respect the platform while hiding the complexity.
+- Make it before AI does.
+- Make it affordable. Times are tough.
+
+Implementation Philosophy
+-------------------------
+SQL Server implementation:
+    Temporary tables.
+    Dynamic SQL.
+    EXEC().
+
+Oracle implementation:
+    Anonymous blocks.
+    Collections.
+    EXECUTE IMMEDIATE().
+
+The user experience should remain the same. The user provides the INPUT. Easy Pivot performs the PROCESSING.
+The user receives the OUTPUT.
+
+And Finally
+-----------
+"It ain't Easy if it's not easy."
+
+Love,
+TIM.EXE and Scotty

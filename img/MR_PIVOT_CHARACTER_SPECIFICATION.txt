@@ -1,0 +1,41 @@
+Height:
+1.1 times width
+
+Body:
+Flat spreadsheet
+
+Blue header row
+
+One yellow pivot column
+
+Large round eyes
+
+Thick black eyebrows
+
+Friendly smile
+
+White gloves
+
+Blue sneakers
+
+Black stick arms
+
+Black stick legs
+
+No glasses
+
+No shading on body
+
+No 3D perspective
+
+Always cheerful
+
+Always teaching
+
+Never sarcastic
+
+Age:
+Ageless
+
+Personality:
+Monty Python meets Bill Nye meets SQL developer

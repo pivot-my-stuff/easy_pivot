@@ -1,0 +1,279 @@
+EASY PIVOT INSTALLATION
+-----------------------
+
+1. Make sure your query code stores its results into a SQL Server
+   temporary table (Preferably, it should be a local temporary
+   table instead of a global one. Local temporary tables start with
+   a single hash mark instead of two for global ones). For example:
+
+       #my_source_table
+
+   WARNING: Only bring in the fields you need to work with. Do NOT
+            bring in an auto-incrementing "IDENTITY" field, which
+            tends to be the first field for a database table. This
+            confuses Microsoft's PIVOT command and will likely result
+            in one of your GROUP fields showing this incremental
+            record number instead of the data you intended to group
+            on!
+
+    ADVICE: Please don't call your SQL Server temporary table:
+
+                #easypivot_group_table
+                #easypivot_order_table
+                #easypivot_pivot_table
+                #easypivot_numeric_fields
+                #easypivot_numeric_field_table
+
+            Easy Pivot creates those SQL Server temporary tables for
+            its work. It WILL clobber and destroy any data you have
+            in temporary tables using those names!
+
+2. Append the Easy Pivot code from template file "sql_server_easy_pivot.sql"
+   (for SQL Server pivot generation) to the end of your existing query code.
+   Possible future versions for other databases will have their name in
+   place of "sql_server_". For example, an Easy Pivot version for Oracle
+   would be named "oracle_easy_pivot.sql".
+
+3. In the following line of Easy Pivot code, change the name of
+   the "#car_prices" local temporary table to the name of your
+   temporary table.
+
+   Before:
+
+       DECLARE @source_table AS NVARCHAR(MAX)= '#car_prices'
+
+   After:
+
+       DECLARE @source_table AS NVARCHAR(MAX)= '#my_source_table'
+
+4. Specify your group fields and pivot fields in the Easy Pivot
+   configuration section.
+
+   Easy Pivot uses JavaScript Object Notation (JSON) to describe
+   your pivot and display choices.
+
+   Easy Pivot supports both explicit and minimal JSON styles.
+
+    Explicit aggregate example:  {"Pivot_Field": "COMPANY", "Pivot_Type": "SUM", "Pivot_Data": "PRICE", "Pivot_True": null, "Pivot_False": null, "Follows_Group": null, "Sort_Order": "ASC"}
+
+     Minimal aggregate example:  {"Pivot_Field": "COMPANY", "Pivot_Type": "SUM", "Pivot_Data": "PRICE"}
+
+      Explicit Boolean example:  {"Pivot_Field": "COLOR", "Pivot_Type": "MAX", "Pivot_Data": null, "Pivot_True": "Yes", "Pivot_False": "No", "Follows_Group": "COUNTRY", "Sort_Order": "ASC"}
+
+       Minimal Boolean example:  {"Pivot_Field": "COLOR", "Pivot_Type": "MAX", "Pivot_True": "Yes"}
+
+   Options that do not apply to a particular pivot type may be
+   omitted entirely.
+
+   For example, aggregate pivots do not require Pivot_True or
+   Pivot_False choices, while Boolean pivots typically do not
+   require Pivot_Data.
+
+   If Pivot_Data is omitted, null or blank, Easy Pivot assumes a
+   Boolean pivot operation.
+
+   Boolean pivots commonly use MAX() or MIN() as their aggregate
+   function because there is no associated Pivot_Data field to
+   aggregate.
+
+
+   What does null mean?
+   --------------------
+
+   Think of null as meaning:
+
+       "This option does not apply here."
+
+   It does NOT mean:
+
+       "Something is missing."
+    
+   It means that option has not been chosen (i.e., it's merely
+   "visual confirmation" or for "documentation" purposes).
+
+   Before looking at the JSON itself, it may be helpful to think
+   about the configuration as a spreadsheet describing your choices:
+
+   +---------+-------------+------------+------------+-------------+-------------+---------------+------------+
+   | Group   | Pivot Field | Pivot Type | Pivot Data | Pivot True  | Pivot False | Follows Group | Sort Order |
+   +---------+-------------+------------+------------+-------------+-------------+---------------+------------+
+   | COUNTRY | COMPANY     | SUM        | PRICE      | null        | null        | null          | ASC        |
+   | COUNTRY | COLOR       | MAX        | null       | Yes         | No          | COUNTRY       | ASC        |
+   +---------+-------------+------------+------------+-------------+-------------+---------------+------------+
+
+   Easy Pivot expresses those choices in the JSON configuration as:
+
+    DECLARE @config AS NVARCHAR(MAX) = '
+    [
+        {
+            "Group": ["COUNTRY"],
+            "Pivot": [
+                {"Pivot_Field": "COMPANY", "Pivot_Type": "SUM", "Pivot_Data": "PRICE"}
+               ,{"Pivot_Field": "COLOR", "Pivot_Type": "MAX", "Pivot_True": "Yes", "Pivot_False": "No", "Follows_Group": "COUNTRY"}
+            ]
+        }
+    ]
+    '
+
+   WARNING: Do NOT place quotes around a null. A null with quotes
+            around it loses its "This option does not apply here"
+            meaning.
+
+   Easy Pivot examples intentionally use compact JSON formatting
+   because most users eventually keep their configuration in a
+   single-line form inside SQL source code.
+
+   Group configuration example:
+
+       "Group": ["COUNTRY"]
+
+   These are the fields your pivot results will be grouped on.
+
+   COMPATIBILITY NOTE:
+
+   Easy Pivot accepts both "Follows_Group" and the older
+   "Follows_Field" JSON names.
+
+   If both are specified in the same pivot definition, Easy
+   Pivot prefers "Follows_Group" if it contains non-whitespace
+   characters.
+
+   Pivot configuration example 1
+   -----------------------------
+
+   {"Pivot_Field": "COMPANY", "Pivot_Type": "SUM", "Pivot_Data": "PRICE", "Follows_Group": null, "Sort_Order" : "ASC"}
+
+   Meaning:
+
+       Pivot_Field:
+           COMPANY values become column names.
+
+       Pivot_Data:
+           PRICE values become the data placed into those columns.
+
+       Pivot_Type:
+           "SUM" is used if multiple rows contribute to the same
+           COUNTRY and COMPANY combination. In the supplied example
+           data, there are no such multiple row combinations, so
+           "MAX" would also work. You can experiment with this by
+           trying the "car_easy_pivot.sql" example in the Easy
+           Pivot "examples" folder.
+
+       Follows_Group:
+           null, "", or whitespace-only values cause Easy Pivot
+           to place these columns at the end of all columns
+           generated so far.
+
+           If omitted, Easy Pivot will also place the generated
+           columns after all previously generated columns.
+
+           Older JSON configurations may still use the name
+           "Follows_Field" for backward compatibility.
+
+       Sort_Order:
+           Generated COMPANY column names are sorted alphabetically,
+           left-to-right in ascending order ("ASC"), or
+           left-to-right in descending order ("DESC").
+
+           Choices "ASC", "" or null result in ascending order.
+           Choice "DESC" results in descending order.
+
+
+   Pivot configuration example 2
+   -----------------------------
+
+   {"Pivot_Field": "COLOR", "Pivot_Type": "MAX", "Pivot_True": "Yes", "Pivot_False": "No", "Follows_Group": "COUNTRY", "Sort_Order": "ASC"}
+
+   Meaning:
+
+       Pivot_Field:
+           COLOR values become column names.
+
+       Pivot_Data:
+           null means there is no associated data field.
+           This is a Boolean scenario in which two
+           possibilities exist, such as Yes/No, True/False,
+           Good/Bad, Present/Absent, etc. These values are
+           specified using the configuration options
+           "Pivot_True" and "Pivot_False".
+
+       Pivot_True:
+           If a color exists for a country, display "Yes".
+
+       Pivot_False:
+           If a color does not exist for a country, display "No".
+
+       Pivot_Type:
+           MAX() is commonly used for Boolean type pivots,
+           especially those involving string data instead of
+           numeric data.
+
+       Follows_Group:
+           The generated COMPANY columns will appear after the
+           COUNTRY group column.
+
+           If omitted, Easy Pivot places the generated columns
+           after all previously generated columns.
+
+           Older JSON configurations may still use the name
+           "Follows_Field" for backward compatibility.
+
+       Sort_Order:
+           Generated COLOR column names are sorted alphabetically,
+           left-to-right in ascending order ("ASC"), or
+           left-to-right in descending order ("DESC").
+
+           Choices "ASC", "" or null result in ascending order.
+           Choice "DESC" results in descending order.
+
+
+   JSON punctuation note
+   ---------------------
+
+   If you configure multiple pivots, make sure commas appear
+   between the JSON object definitions. That means not putting
+   a comma in front of the first Pivot_Field entry, but adding
+   one in front of the succeeding lines:
+
+        "Pivot": [
+            {"Pivot_Field": "COMPANY", "Pivot_Type": "SUM", "Pivot_Data": "PRICE", "Pivot_True": null, "Pivot_False": null, "Follows_Group": null, "Sort_Order": "ASC"}
+           ,{"Pivot_Field": "COLOR", "Pivot_Type": "MAX", "Pivot_Data": null, "Pivot_True": "Yes", "Pivot_False": "No", "Follows_Group": "COUNTRY", "Sort_Order": "ASC"}
+        ]
+
+5. Run your combined query and Easy Pivot code.
+
+   Easy Pivot intentionally performs very little validation of your
+   configuration choices. This keeps the code compact and easy to
+   integrate into existing projects.
+
+   The worst that usually happens is:
+
+       - SQL errors
+       - Empty output
+       - Missing columns
+       - Unexpected grouping results
+
+   In those cases, double-check your configuration settings.
+
+   ADVICE: A common mistake is placing one of your field names
+           in both the "Group" and "Pivot_Field" locations. YOU
+           CANNOT GROUP ON A SOURCE FIELD AND PIVOT ON THAT
+           SAME FIELD AT THE SAME TIME.
+
+   Field names in your temporary table should be unique.
+
+   If necessary, use SQL aliases with the AS keyword in your
+   SELECT statement to make all field names unique before passing
+   the data into Easy Pivot. Easy Pivot will not work correctly
+   if duplicate field names exist in the source data!
+
+   In SQL Server Management Studio, Easy Pivot may not work if the
+   selected database is the default "master" database. It depends
+   on your SQL Server environment.
+
+   If you are running one of the supplied examples, switch to a
+   database that you normally work with before executing the code
+   if the "master" database is causing problems. Easy Pivot is
+   non-destructive; it will NEVER attempt to update database
+   table information. It cannot generate the code needed to do
+   that.
