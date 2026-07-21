@@ -437,8 +437,9 @@ Oracle Edition
 
     Oracle treats empty strings ('') as NULL values.
 
-    This behavior differs from SQL Server and surprises many
-    developers encountering Oracle for the first time.
+    This behavior differs from SQL Server and PostgreSQL and
+    surprises many developers encountering Oracle for the first
+    time.
 
     For example:
 
@@ -447,9 +448,26 @@ Oracle Edition
 
     are considered equivalent by Oracle.
 
-    Easy Pivot automatically compensates for this behavior when
-    generating Boolean pivots involving string data.
+    This affects Boolean pivots that specify an empty string for
+    Pivot_False.
 
+    Example:
+
+        {"Pivot_Field": "COLOR", "Pivot_True": "Yes", "Pivot_False": ""}
+
+    SQL Server and PostgreSQL are able to return an empty string
+    for missing Boolean values.
+
+    Oracle cannot.
+
+    Oracle stores empty strings as NULL values, so generated
+    Boolean pivot columns will display NULL when no matching
+    Pivot_Field value exists for a particular grouped row.
+
+    This is normal Oracle behavior rather than an Easy Pivot
+    limitation.
+
+    Aggregate pivots are not affected by this behavior.
 
 11. Aggregate pivots and Boolean pivots
     -----------------------------------
