@@ -164,21 +164,23 @@ BEGIN
         -- Group Fields
         ------------------------------------------------------------------------
 
-        FOR v_value IN
-        (
-            SELECT jsonb_array_elements_text(v_json_group->'Group')
-        )
-        LOOP
-
-            v_group_fields :=
-                array_append(
-                    v_group_fields,
-                    trim(v_value)
-                );
-
-            v_group_count := v_group_count + 1;
-
-        END LOOP;
+		FOR v_json_item IN
+		(
+		    SELECT value
+		    FROM jsonb_array_elements(v_json_group->'Group')
+		)
+		LOOP
+		
+		    v_group_fields :=
+		        array_append
+		        (
+		            v_group_fields,
+		            trim(trim(both '"' from v_json_item::text))
+		        );
+		
+		    v_group_count := v_group_count + 1;
+		
+		END LOOP;
 
 
         ------------------------------------------------------------------------
@@ -423,7 +425,7 @@ BEGIN
 	FOR r IN
 	(
 	    SELECT
-	        trim(group_field) AS group_field
+			trim(trim(both '"' from group_item::text)) AS group_field
 	    FROM jsonb_to_recordset(v_json_configuration)
 	    AS cfg
 	    (
@@ -431,9 +433,9 @@ BEGIN
 	        "Order" jsonb,
 	        "Pivot" jsonb
 	    )
-	    CROSS JOIN LATERAL
-	        jsonb_array_elements_text(cfg."Group")
-	        AS group_field(group_field)
+		CROSS JOIN LATERAL
+		    jsonb_array_elements(cfg."Group")
+		    AS g(group_item)
 	)
 	LOOP
 
@@ -864,49 +866,69 @@ BEGIN
 						v_pivot_fields[pivot_number]
 						THEN
 
-							IF v_numeric_flags[pivot_number] > 0 THEN
-							
-							    v_dynamic_select :=
-							        v_dynamic_select
-							        || ','
-							        || E'\n'
-							        || '    COALESCE('
-							        || 'p'
-							        || v_pivot_alias
-							        || '.'
-							        || quote_ident(v_pivot_values[chip_number])
-							        || ',0) AS '
-							        || quote_ident(
-							            CASE
-							                WHEN v_pivot_types[pivot_number] IS NULL
-							                THEN ''
-							                ELSE v_pivot_types[pivot_number] || '_'
-							            END
-							            || v_pivot_values[chip_number]
-							        );
-							
-							ELSE
-							
-							    v_dynamic_select :=
-							        v_dynamic_select
-							        || ','
-							        || E'\n'
-							        || '    COALESCE('
-							        || 'p'
-							        || v_pivot_alias
-							        || '.'
-							        || quote_ident(v_pivot_values[chip_number])
-							        || ','''') AS '
-							        || quote_ident(
-							            CASE
-							                WHEN v_pivot_types[pivot_number] IS NULL
-							                THEN ''
-							                ELSE v_pivot_types[pivot_number] || '_'
-							            END
-							            || v_pivot_values[chip_number]
-							        );
-							
-							END IF;
+                            IF v_numeric_flags[pivot_number] > 0 THEN
+
+                                v_dynamic_select :=
+                                       v_dynamic_select
+                                    || ','
+                                    || E'\n'
+                                    || '    COALESCE('
+                                    || 'p'
+                                    || v_pivot_alias
+                                    || '.'
+                                    || quote_ident(v_pivot_values[chip_number])
+                                    || ',0) AS '
+                                    || quote_ident(
+                                        CASE
+                                            WHEN v_pivot_types[pivot_number] IS NULL
+                                            THEN ''
+                                            ELSE v_pivot_types[pivot_number] || '_'
+                                        END
+                                        || v_pivot_values[chip_number]
+                                    );
+
+                            ELSIF v_pivot_datas[pivot_number] IS NULL THEN
+
+                                v_dynamic_select :=
+                                       v_dynamic_select
+                                    || ','
+                                    || E'\n'
+                                    || '    COALESCE('
+                                    || 'p'
+                                    || v_pivot_alias
+                                    || '.'
+                                    || quote_ident(v_pivot_values[chip_number])
+                                    || ','''') AS '
+                                    || quote_ident(
+                                        CASE
+                                            WHEN v_pivot_types[pivot_number] IS NULL
+                                            THEN ''
+                                            ELSE v_pivot_types[pivot_number] || '_'
+                                        END
+                                        || v_pivot_values[chip_number]
+                                    );
+
+                            ELSE
+
+                                v_dynamic_select :=
+                                       v_dynamic_select
+                                    || ','
+                                    || E'\n'
+                                    || '    p'
+                                    || v_pivot_alias
+                                    || '.'
+                                    || quote_ident(v_pivot_values[chip_number])
+                                    || ' AS '
+                                    || quote_ident(
+                                        CASE
+                                            WHEN v_pivot_types[pivot_number] IS NULL
+                                            THEN ''
+                                            ELSE v_pivot_types[pivot_number] || '_'
+                                        END
+                                        || v_pivot_values[chip_number]
+                                    );
+
+                            END IF;
 
 						END IF;
 
@@ -1138,12 +1160,12 @@ BEGIN
         (
             SELECT
                 ordinality AS rn,
-                trim(group_field) AS group_field
+				trim(trim(both '"' from group_item::text)) AS group_field
             FROM
                 jsonb_array_elements(v_json_configuration) cfg(config)
-                CROSS JOIN LATERAL
-                jsonb_array_elements_text(config->'Group')
-                WITH ORDINALITY AS g(group_field, ordinality)
+			CROSS JOIN LATERAL
+			    jsonb_array_elements(config->'Group')
+			    WITH ORDINALITY AS g(group_item, ordinality)
         ) g
         LEFT JOIN
         (

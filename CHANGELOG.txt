@@ -38,6 +38,15 @@
               - Fixed aggregate DATE pivots (MAX/MIN/etc.).
               - Verified base Oracle version and all five example scripts.
 
+            * PostgreSQL:
+
+              - Restored full compatibility with the original Easy Pivot JSON Group array syntax.
+              - Added datatype-aware Pivot_Data handling.
+              - Numeric Pivot_Data defaults to 0; character and DATE Pivot_Data preserve NULL values.
+              - Fixed aggregate DATE pivots (MAX/MIN/etc.).
+              - Boolean pivots (Pivot_True/Pivot_False) now return blank values instead of NULL.
+              - Verified base PostgreSQL version and all five example scripts.
+
 2026-07-18: * Moved v_debug & v_generate_source_code_only to user section.
             * oracle/docs/INSTALLATION.txt: Simplified wording.
 
