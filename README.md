@@ -5,8 +5,6 @@ your database query projects to dynamically pivot data.
 
 Easy Pivot currently supports:
 
-Easy Pivot currently supports:
-
     * Microsoft SQL Server
     * Oracle Database
     * PostgreSQL
