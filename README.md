@@ -5,13 +5,17 @@ your database query projects to dynamically pivot data.
 
 Easy Pivot currently supports:
 
+Easy Pivot currently supports:
+
     * Microsoft SQL Server
     * Oracle Database
+    * PostgreSQL
 
 Choose the folder corresponding to your target database platform:
 
     sql_server/
     oracle/
+    postgresql/
 
 Each implementation contains:
 
@@ -31,14 +35,16 @@ If it has been a while since you last evaluated Easy Pivot,
 it may be worth taking another look.
 
 # Future Directions
-A PostgreSQL release is imminent.
+Easy Pivot currently supports Microsoft SQL Server,
+Oracle Database, and PostgreSQL.
 
-Additional database backends including MySQL and SQLite are
-under investigation.
+Additional database backends including MySQL and SQLite
+are under investigation.
 
-The goal is to preserve the same JSON configuration philosophy,
-user experience, and "no installation required" design principles
-regardless of database platform.
+The goal is to preserve the same JSON configuration
+philosophy, user experience, and "no installation
+required" design principles regardless of database
+platform.
 
 # Features
 With Easy Pivot, you can:
@@ -57,18 +63,34 @@ With Easy Pivot, you can:
 
 All the work is done for you, except for a small amount of
 configuration required to specify a data source and what field(s)
-to group and pivot on. The data source for SQL Server is a local
-temporary table in which you have collected your pre-pivoted data.
-You may also tell Easy Pivot to output the pivot code it builds for your
-personal study or use in other SQL work. If the complete code does
-not appear in the Messages tab of the output window, you can use
-the Results tab instead. The code there will be in a single line, but
-you can use an SQL formatter program or website to format it into
-multiple lines. However, it is possible that the SQL formatter
-may not format it correctly. In that case, SQL Server Management
-Studio should give you a clue where the error is so that it can
-be corrected. It will probably have something to do with spacing
-inside bracketed alias names for fields.
+to group and pivot on.
+
+The data source requirements depend on the target
+database platform.
+
+SQL Server uses a local temporary table populated by
+your query.
+
+Oracle and PostgreSQL execute directly against the
+user query supplied in the USER AREA.
+
+Regardless of platform, the JSON configuration remains
+essentially the same.
+
+You may also tell Easy Pivot to output the pivot code it builds for
+your personal study or use in other SQL work. If the complete code
+does not appear in the Messages tab of SQL Server's output window,
+you can use the Results tab instead. The code there will be in a
+single line, but you can use an SQL formatter program or website to
+format it into multiple lines. However, it is possible that the SQL
+formatter may not format it correctly. In that case, SQL Server
+Management Studio should give you a clue where the error is so that
+it can be corrected. It will probably have something to do with
+spacing inside bracketed alias names for fields.
+
+Note: PostgreSQL users should execute the Easy Pivot generator as a
+script (F5 in pgAdmin). The generated pivot query itself may then
+be executed as ordinary SQL.
 
 You cannot directly schedule an Easy Pivot job. Easy Pivot uses
 dynamic query execution which is not compatible with job scheduling.

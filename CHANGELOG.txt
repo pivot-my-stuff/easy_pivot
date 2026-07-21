@@ -1,3 +1,33 @@
+2026-07-21: * Added PostgreSQL Database support.
+
+            Features include:
+
+            - Dynamic PostgreSQL pivot generation
+            - Multiple aggregate support
+            - String, numeric, and Boolean pivots
+            - Follows_Group support
+            - Independent group ordering
+            - Five self-contained PostgreSQL examples
+            - PostgreSQL-specific installation and FAQ
+              documentation
+
+            PostgreSQL support was validated against
+            PostgreSQL using all supplied examples and
+            generated queries.
+
+            * PostgreSQL generator must be executed as
+              a script. Generated SQL may then be
+              executed normally.
+
+            * Fixed PostgreSQL handling of numeric
+              aggregates using numeric COALESCE defaults.
+
+            * Fixed PostgreSQL handling of Boolean
+              pivots when Pivot_Data is omitted.
+
+            * Added
+              MR_PIVOT_ANNOUNCES_POSTGRESQL_SUPPORT.jpg.
+
 2026-07-18: * Moved v_debug & v_generate_source_code_only to user section.
             * oracle/docs/INSTALLATION.txt: Simplified wording.
 
