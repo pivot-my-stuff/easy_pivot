@@ -27,18 +27,35 @@ Design Goals
 
 Implementation Philosophy
 -------------------------
+Easy Pivot is implemented differently on each database platform while
+preserving the same user experience and JSON configuration philosophy.
+
 SQL Server implementation:
     Temporary tables.
     Dynamic SQL.
     EXEC().
 
 Oracle implementation:
-    Anonymous blocks.
+    Anonymous PL/SQL blocks.
     Collections.
     EXECUTE IMMEDIATE().
 
-The user experience should remain the same. The user provides the INPUT. Easy Pivot performs the PROCESSING.
-The user receives the OUTPUT.
+PostgreSQL implementation:
+    Anonymous DO blocks.
+    JSONB.
+    Dynamic SQL.
+    EXECUTE.
+
+Each database platform uses the features that are natural to that
+database rather than forcing a one-size-fits-all implementation.
+
+The implementation details are intentionally different.
+
+The user experience is intentionally the same.
+
+Easy Pivot adapts to the database.
+
+The user should not have to.
 
 And Finally
 -----------
