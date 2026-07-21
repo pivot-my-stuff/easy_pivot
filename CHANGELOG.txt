@@ -31,6 +31,13 @@
             * Added
               MR_PIVOT_ADDRESSES_THE_EASY_PIVOT_TROOPS.jpg.
 
+            * Oracle:
+              - Restored full compatibility with the original Easy Pivot JSON Group array syntax.
+              - Added datatype-aware Pivot_Data handling using Oracle metadata discovery.
+              - Numeric Pivot_Data defaults to 0; character and DATE Pivot_Data preserve NULL values.
+              - Fixed aggregate DATE pivots (MAX/MIN/etc.).
+              - Verified base Oracle version and all five example scripts.
+
 2026-07-18: * Moved v_debug & v_generate_source_code_only to user section.
             * oracle/docs/INSTALLATION.txt: Simplified wording.
 

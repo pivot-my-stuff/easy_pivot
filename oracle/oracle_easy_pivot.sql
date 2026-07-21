@@ -760,30 +760,53 @@ DECLARE
                            v_pivot_fields(pivot_number)
                         THEN
     
-                            v_dynamic_select :=
-                                   v_dynamic_select
-                                || ','
-                                || CHR(10)
-                                || '    NVL('
-                                || 'p'
-                                || v_pivot_alias
-                                || '."'
-                                || v_pivot_values(chip_number)
-                                || '"'
-                                || ','
-                                || CASE
-                                       WHEN v_numeric_flags(pivot_number) > 0
-                                       THEN '0'
-                                       ELSE ''' '''
-                                   END
-                                || ') AS "'
-                                || CASE
-                                       WHEN v_pivot_types(pivot_number) IS NULL
-                                       THEN ''
-                                       ELSE v_pivot_types(pivot_number) || '_'
-                                   END
-                                || v_pivot_values(chip_number)
-                                || '"';
+                            IF v_numeric_flags(pivot_number) > 0 THEN
+                            
+                                v_dynamic_select :=
+                                       v_dynamic_select
+                                    || ','
+                                    || CHR(10)
+                                    || '    NVL(p'
+                                    || v_pivot_alias
+                                    || '."'
+                                    || v_pivot_values(chip_number)
+                                    || '",0) AS "'
+                                    || v_pivot_types(pivot_number)
+                                    || '_'
+                                    || v_pivot_values(chip_number)
+                                    || '"';
+                            
+                            ELSIF v_pivot_datas(pivot_number) IS NOT NULL THEN
+                            
+                                v_dynamic_select :=
+                                       v_dynamic_select
+                                    || ','
+                                    || CHR(10)
+                                    || '    p'
+                                    || v_pivot_alias
+                                    || '."'
+                                    || v_pivot_values(chip_number)
+                                    || '" AS "'
+                                    || v_pivot_types(pivot_number)
+                                    || '_'
+                                    || v_pivot_values(chip_number)
+                                    || '"';
+                            
+                            ELSE
+                            
+                                v_dynamic_select :=
+                                       v_dynamic_select
+                                    || ','
+                                    || CHR(10)
+                                    || '    NVL(p'
+                                    || v_pivot_alias
+                                    || '."'
+                                    || v_pivot_values(chip_number)
+                                    || '",NULL) AS "'
+                                    || v_pivot_values(chip_number)
+                                    || '"';
+                            
+                            END IF;
     
                         END IF;
     
@@ -1022,30 +1045,53 @@ DECLARE
                        v_pivot_fields(pivot_number)
                     THEN
     
-                        v_dynamic_select :=
-                               v_dynamic_select
-                            || ','
-                            || CHR(10)
-                            || '    NVL('
-                            || 'p'
-                            || v_pivot_alias
-                            || '."'
-                            || v_pivot_values(chip_number)
-                            || '"'
-                            || ','
-                            || CASE
-                                   WHEN v_numeric_flags(pivot_number) > 0
-                                   THEN '0'
-                                   ELSE ''' '''
-                               END
-                            || ') AS "'
-                            || CASE
-                                   WHEN v_pivot_types(pivot_number) IS NULL
-                                   THEN ''
-                                   ELSE v_pivot_types(pivot_number) || '_'
-                               END
-                            || v_pivot_values(chip_number)
-                            || '"';
+                        IF v_numeric_flags(pivot_number) > 0 THEN
+                        
+                            v_dynamic_select :=
+                                   v_dynamic_select
+                                || ','
+                                || CHR(10)
+                                || '    NVL(p'
+                                || v_pivot_alias
+                                || '."'
+                                || v_pivot_values(chip_number)
+                                || '",0) AS "'
+                                || v_pivot_types(pivot_number)
+                                || '_'
+                                || v_pivot_values(chip_number)
+                                || '"';
+                        
+                        ELSIF v_pivot_datas(pivot_number) IS NOT NULL THEN
+                        
+                            v_dynamic_select :=
+                                   v_dynamic_select
+                                || ','
+                                || CHR(10)
+                                || '    p'
+                                || v_pivot_alias
+                                || '."'
+                                || v_pivot_values(chip_number)
+                                || '" AS "'
+                                || v_pivot_types(pivot_number)
+                                || '_'
+                                || v_pivot_values(chip_number)
+                                || '"';
+                        
+                        ELSE
+                        
+                            v_dynamic_select :=
+                                   v_dynamic_select
+                                || ','
+                                || CHR(10)
+                                || '    NVL(p'
+                                || v_pivot_alias
+                                || '."'
+                                || v_pivot_values(chip_number)
+                                || '",NULL) AS "'
+                                || v_pivot_values(chip_number)
+                                || '"';
+                        
+                        END IF;
     
                     END IF;
     
