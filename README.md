@@ -97,11 +97,11 @@ source code and replace the Easy Pivot code with it for a scheduled
 job.
 
 When Easy Pivot is used in source-code generation mode
-("DECLARE @generate_source_code_only AS BIT = 1"), the generated
-SQL contains a fixed list of pivot values discovered at generation
-time. If new pivot values appear later in the source data, those
-values will not automatically appear in scheduled job reports using
-previously generated static SQL.
+("DECLARE @generate_source_code_only AS BIT = 1") in the SQL Server
+version, the generated SQL contains a fixed list of pivot values
+discovered at generation time. If new pivot values appear later in
+the source data, those values will not automatically appear in
+scheduled job reports using previously generated static SQL.
 
 To incorporate new pivot values:
 
