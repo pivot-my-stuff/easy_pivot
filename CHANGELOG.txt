@@ -28,6 +28,9 @@
             * Added
               MR_PIVOT_ANNOUNCES_POSTGRESQL_SUPPORT.jpg.
 
+            * Added
+              MR_PIVOT_ADDRESSES_THE_EASY_PIVOT_TROOPS.jpg.
+
 2026-07-18: * Moved v_debug & v_generate_source_code_only to user section.
             * oracle/docs/INSTALLATION.txt: Simplified wording.
 
