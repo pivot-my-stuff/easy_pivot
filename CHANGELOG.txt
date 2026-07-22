@@ -49,6 +49,9 @@
 
             * Documented Oracle empty string behavior in INSTALL_Oracle.txt
 
+            * Added
+              MR_PIVOT_GOES_FOR_A_RIDE.jpg.
+
 2026-07-18: * Moved v_debug & v_generate_source_code_only to user section.
             * oracle/docs/INSTALLATION.txt: Simplified wording.
 
