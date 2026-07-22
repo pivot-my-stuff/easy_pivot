@@ -335,6 +335,13 @@ A: When Easy Pivot generates source code, the generated SQL
        3. Replace the old scheduled query with the newly
           generated version.
 
+Q. Why does Mr. Pivot sometimes have one arm, two arms, or three
+   arms? It's creeping me out.
+
+A. Mr. Pivot occasionally suffers General Protection Faults while
+   gesturing. Rebooting himself several times usually resolves the
+   problem.
+
 Q: Does Easy Pivot accept monetary donations for this project?
 
 A: Our merchandise sales help support our work. Please open up

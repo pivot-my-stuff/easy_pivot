@@ -393,6 +393,13 @@ A: Easy Pivot discovers pivot values at generation time.
 
    The regenerated query will include the new pivot values.
 
+Q. Why does Mr. Pivot sometimes have one arm, two arms, or three
+   arms? It's creeping me out.
+
+A. Mr. Pivot occasionally suffers General Protection Faults while
+   gesturing. Rebooting himself several times usually resolves the
+   problem.
+
 Q: Does Easy Pivot accept monetary donations for this project?
 
 A: Our merchandise sales help support our work. Please open up
