@@ -43,7 +43,10 @@ SELECT
     tablename,
     tableowner,
     tablespace,
-    hasindexes,
+    CASE
+        WHEN hasindexes THEN 'Y'
+        ELSE 'N'
+    END AS hasindexes,
     hasrules
 FROM
     pg_tables
@@ -389,6 +392,8 @@ BEGIN
     -- Build SELECT/FROM (Follows_Group)
     ----------------------------------------------------------------------------
 
+/*
+
     FOR i IN 1 .. v_pivot_value_count
     LOOP
 
@@ -441,6 +446,7 @@ BEGIN
 
     END LOOP;
 
+*/
     ----------------------------------------------------------------------------
     -- Load Pivot Metadata
     ----------------------------------------------------------------------------
@@ -629,33 +635,25 @@ BEGIN
                     EXECUTE v_numeric_detection_sql
                     INTO v_detected_type;
 
-----------------------------------------------------------------
--- COUNT() always returns bigint regardless of Pivot_Data type.
-----------------------------------------------------------------
-
-				IF upper(v_pivot_type) = 'COUNT' THEN
-				
-				    v_numeric_flags[pivot_number] := 1;
-				
-				ELSIF lower(v_detected_type) IN
-				(
-				    'smallint',
-				    'integer',
-				    'bigint',
-				    'numeric',
-				    'real',
-				    'double precision',
-				    'decimal'
-				)
-				THEN
-				
-				    v_numeric_flags[pivot_number] := 1;
-				
-				ELSE
-				
-				    v_numeric_flags[pivot_number] := 0;
-				
-				END IF;
+					IF lower(v_detected_type) IN
+					(
+					    'smallint',
+					    'integer',
+					    'bigint',
+					    'numeric',
+					    'real',
+					    'double precision',
+					    'decimal'
+					)
+					THEN
+					
+					    v_numeric_flags[pivot_number] := 1;
+					
+					ELSE
+					
+					    v_numeric_flags[pivot_number] := 0;
+					
+					END IF;
 
                 EXCEPTION
                     WHEN OTHERS THEN
@@ -889,14 +887,15 @@ BEGIN
 
 					FOR chip_number IN 1 .. v_pivot_value_count
 					LOOP
-	
+
 						IF v_pivot_value_fields[chip_number]
 						=
 						v_pivot_fields[pivot_number]
 						THEN
 
-                            IF v_numeric_flags[pivot_number] > 0 THEN
-
+							IF upper(coalesce(v_pivot_types[pivot_number], '')) = 'COUNT'
+							OR v_numeric_flags[pivot_number] > 0
+							THEN
                                 v_dynamic_select :=
                                        v_dynamic_select
                                     || ','
@@ -1034,18 +1033,18 @@ BEGIN
 
 							IF v_pivot_datas[pivot_number] IS NULL THEN
 
-								IF lower(v_pivot_values[i]) = 'true' THEN
-
-									v_dynamic_from :=
-										v_dynamic_from
-										|| quote_literal(v_pivot_trues[pivot_number]);
-
+								IF v_pivot_datas[pivot_number] IS NULL THEN
+								
+								    v_dynamic_from :=
+								        v_dynamic_from
+								        || quote_ident(v_pivot_fields[pivot_number]);
+								
 								ELSE
-
-									v_dynamic_from :=
-										v_dynamic_from
-										|| quote_literal(v_pivot_falses[pivot_number]);
-
+								
+								    v_dynamic_from :=
+								        v_dynamic_from
+								        || quote_ident(v_pivot_datas[pivot_number]);
+								
 								END IF;
 
 							ELSE
