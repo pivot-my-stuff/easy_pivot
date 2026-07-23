@@ -1,5 +1,18 @@
-2026-07-22: * Addressed Mr. Pivot's inconsistent limb
-              COUNT(s).
+2026-07-23: * Refactored PostgreSQL Easy Pivot engines to process pivots
+              sequentially, matching the SQL Server implementation.
+            * Removed global pivot metadata dependency during dynamic SQL
+              generation, eliminating duplicate pivot processing and
+              simplifying the overall algorithm.
+            * Added PostgreSQL support for automatic STDEV → STDDEV
+              translation while preserving user-specified aggregate
+              capitalization in output column names.
+            * Verified correct operation of Count, Sum, Avg, Stdev,
+              date pivots, boolean pivots, mixed aggregate reports,
+              Follows_Group ordering, and ASC/DESC group ordering across
+              all three database implementations.
+            * Updated PostgreSQL example scripts.
+
+2026-07-22: * Addressed Mr. Pivot's inconsistent limb COUNT(s).
 
             * Added MR_PIVOT_GOES_CAMPING.jpg          
 

@@ -117,6 +117,7 @@ v_duplicate_found         BOOLEAN;
 v_first_group             BOOLEAN;
 v_first_pivot_value       INTEGER;
 v_pivot_alias             INTEGER;
+v_sql_pivot_type          TEXT;
 
 v_output                  TEXT;
 
@@ -230,7 +231,7 @@ BEGIN
             v_pivot_types :=
                 array_append(
                     v_pivot_types,
-                    upper(trim(v_json_pivot->>'Pivot_Type'))
+                    trim(v_json_pivot->>'Pivot_Type')
                 );
 
             v_pivot_datas :=
@@ -838,6 +839,79 @@ BEGIN
 			FOR pivot_number IN 1 .. v_pivot_count
 			LOOP
 
+                ---------------------------------------------------------
+                -- Load current pivot metadata
+                ---------------------------------------------------------
+
+                v_pivot_field :=
+                    v_pivot_fields[pivot_number];
+
+                v_pivot_type :=
+                    v_pivot_types[pivot_number];
+
+                v_pivot_data :=
+                    v_pivot_datas[pivot_number];
+
+			    ---------------------------------------------------------
+			    -- Translate aggregate name for this database
+			    ---------------------------------------------------------
+			
+			    v_sql_pivot_type := upper(v_pivot_type);
+			
+			    IF v_sql_pivot_type = 'STDEV' THEN
+			        v_sql_pivot_type := 'STDDEV';
+			    END IF;
+
+                ---------------------------------------------------------
+                -- Discover THIS pivot's values
+                ---------------------------------------------------------
+
+                v_pivot_values :=
+                    ARRAY[]::TEXT[];
+
+                v_pivot_value_count := 0;
+
+                v_pivot_discovery_sql :=
+                    'SELECT DISTINCT '
+                    || quote_ident(v_pivot_field)
+                    || E'\nFROM\n'
+                    || E'(\n'
+                    || replace(
+                           regexp_replace(
+                               trim(v_user_sql),
+                               E'\n[ \t]*\n+',
+                               E'\n',
+                               'g'
+                           ),
+                           E'\n',
+                           E'\n    '
+                       )
+                    || E'\n) AS ep_source\n'
+                    || 'ORDER BY '
+                    || quote_ident(v_pivot_field)
+                    || ' '
+                    || CASE
+                           WHEN upper(coalesce(v_pivot_sort_orders[pivot_number],'ASC'))
+                                IN ('ASC','DESC')
+                           THEN upper(v_pivot_sort_orders[pivot_number])
+                           ELSE 'ASC'
+                       END;
+
+                FOR v_pivot_value IN EXECUTE v_pivot_discovery_sql
+                LOOP
+
+                    v_pivot_value_count :=
+                        v_pivot_value_count + 1;
+
+                    v_pivot_values :=
+                        array_append
+                        (
+                            v_pivot_values,
+                            v_pivot_value
+                        );
+
+                END LOOP;
+
 				IF
 				(
 					   upper(trim(coalesce(v_pivot_follows[pivot_number], '')))
@@ -859,75 +933,68 @@ BEGIN
 					FOR chip_number IN 1 .. v_pivot_value_count
 					LOOP
 
-						IF v_pivot_value_fields[chip_number]
-						=
-						v_pivot_fields[pivot_number]
+						IF upper(coalesce(v_pivot_types[pivot_number], '')) = 'COUNT'
+						OR v_numeric_flags[pivot_number] > 0
 						THEN
+							v_dynamic_select :=
+								   v_dynamic_select
+								|| ','
+								|| E'\n'
+								|| '    COALESCE('
+								|| 'p'
+								|| v_pivot_alias
+								|| '.'
+								|| quote_ident(v_pivot_values[chip_number])
+								|| ',0) AS '
+								|| quote_ident(
+									CASE
+										WHEN v_pivot_types[pivot_number] IS NULL
+										THEN ''
+										ELSE v_pivot_types[pivot_number] || '_'
+									END
+									|| v_pivot_values[chip_number]
+								);
 
-							IF upper(coalesce(v_pivot_types[pivot_number], '')) = 'COUNT'
-							OR v_numeric_flags[pivot_number] > 0
-							THEN
-                                v_dynamic_select :=
-                                       v_dynamic_select
-                                    || ','
-                                    || E'\n'
-                                    || '    COALESCE('
-                                    || 'p'
-                                    || v_pivot_alias
-                                    || '.'
-                                    || quote_ident(v_pivot_values[chip_number])
-                                    || ',0) AS '
-                                    || quote_ident(
-                                        CASE
-                                            WHEN v_pivot_types[pivot_number] IS NULL
-                                            THEN ''
-                                            ELSE v_pivot_types[pivot_number] || '_'
-                                        END
-                                        || v_pivot_values[chip_number]
-                                    );
+						ELSIF v_pivot_datas[pivot_number] IS NULL THEN
 
-                            ELSIF v_pivot_datas[pivot_number] IS NULL THEN
+							v_dynamic_select :=
+								   v_dynamic_select
+								|| ','
+								|| E'\n'
+								|| '    COALESCE('
+								|| 'p'
+								|| v_pivot_alias
+								|| '.'
+								|| quote_ident(v_pivot_values[chip_number])
+								|| ','''') AS '
+								|| quote_ident(
+									CASE
+										WHEN v_pivot_types[pivot_number] IS NULL
+										THEN ''
+										ELSE v_pivot_types[pivot_number] || '_'
+									END
+									|| v_pivot_values[chip_number]
+								);
 
-                                v_dynamic_select :=
-                                       v_dynamic_select
-                                    || ','
-                                    || E'\n'
-                                    || '    COALESCE('
-                                    || 'p'
-                                    || v_pivot_alias
-                                    || '.'
-                                    || quote_ident(v_pivot_values[chip_number])
-                                    || ','''') AS '
-                                    || quote_ident(
-                                        CASE
-                                            WHEN v_pivot_types[pivot_number] IS NULL
-                                            THEN ''
-                                            ELSE v_pivot_types[pivot_number] || '_'
-                                        END
-                                        || v_pivot_values[chip_number]
-                                    );
+						ELSE
 
-                            ELSE
-
-                                v_dynamic_select :=
-                                       v_dynamic_select
-                                    || ','
-                                    || E'\n'
-                                    || '    p'
-                                    || v_pivot_alias
-                                    || '.'
-                                    || quote_ident(v_pivot_values[chip_number])
-                                    || ' AS '
-                                    || quote_ident(
-                                        CASE
-                                            WHEN v_pivot_types[pivot_number] IS NULL
-                                            THEN ''
-                                            ELSE v_pivot_types[pivot_number] || '_'
-                                        END
-                                        || v_pivot_values[chip_number]
-                                    );
-
-                            END IF;
+							v_dynamic_select :=
+								   v_dynamic_select
+								|| ','
+								|| E'\n'
+								|| '    p'
+								|| v_pivot_alias
+								|| '.'
+								|| quote_ident(v_pivot_values[chip_number])
+								|| ' AS '
+								|| quote_ident(
+									CASE
+										WHEN v_pivot_types[pivot_number] IS NULL
+										THEN ''
+										ELSE v_pivot_types[pivot_number] || '_'
+									END
+									|| v_pivot_values[chip_number]
+								);
 
 						END IF;
 
@@ -976,62 +1043,55 @@ BEGIN
 					FOR i IN 1 .. v_pivot_value_count
 					LOOP
 
-						IF v_pivot_value_fields[i]
-						=
-						v_pivot_fields[pivot_number]
-						THEN
-
-							IF v_first_pivot_value = 0 THEN
-
-								v_dynamic_from :=
-									v_dynamic_from
-									|| ',';
-
-							END IF;
-
-							v_first_pivot_value := 0;
+						IF v_first_pivot_value = 0 THEN
 
 							v_dynamic_from :=
 								v_dynamic_from
-								|| E'\n'
-								|| '        '
-								|| upper(v_pivot_types[pivot_number])
-								|| '(CASE WHEN '
-								|| quote_ident(v_pivot_fields[pivot_number])
-								|| '='''
-								|| replace(v_pivot_values[i],'''','''''')
-								|| ''' THEN ';
+								|| ',';
+
+						END IF;
+
+						v_first_pivot_value := 0;
+
+						v_dynamic_from :=
+							v_dynamic_from
+							|| E'\n'
+							|| '        '
+							|| v_sql_pivot_type
+							|| '(CASE WHEN '
+							|| quote_ident(v_pivot_fields[pivot_number])
+							|| '='''
+							|| replace(v_pivot_values[i],'''','''''')
+							|| ''' THEN ';
+
+						IF v_pivot_datas[pivot_number] IS NULL THEN
 
 							IF v_pivot_datas[pivot_number] IS NULL THEN
-
-								IF v_pivot_datas[pivot_number] IS NULL THEN
-								
-								    v_dynamic_from :=
-								        v_dynamic_from
-								        || quote_ident(v_pivot_fields[pivot_number]);
-								
-								ELSE
-								
-								    v_dynamic_from :=
-								        v_dynamic_from
-								        || quote_ident(v_pivot_datas[pivot_number]);
-								
-								END IF;
-
+							
+								v_dynamic_from :=
+									v_dynamic_from
+									|| quote_ident(v_pivot_fields[pivot_number]);
+							
 							ELSE
-
+							
 								v_dynamic_from :=
 									v_dynamic_from
 									|| quote_ident(v_pivot_datas[pivot_number]);
-
+							
 							END IF;
+
+						ELSE
 
 							v_dynamic_from :=
 								v_dynamic_from
-								|| ' END) AS '
-								|| quote_ident(v_pivot_values[i]);
+								|| quote_ident(v_pivot_datas[pivot_number]);
 
 						END IF;
+
+						v_dynamic_from :=
+							v_dynamic_from
+							|| ' END) AS '
+							|| quote_ident(v_pivot_values[i]);
 
 					END LOOP;
 	
