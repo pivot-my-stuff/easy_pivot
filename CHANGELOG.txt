@@ -5,12 +5,40 @@
 
             * Refactored PostgreSQL:
 
-            - Changed to support multiple pivot sections and Follows_Group processing using the SQL Server two-pass algorithm.
-            - Added support for COUNT() pivots on non-numeric data types, including DATE columns.
+            - Changed to support multiple pivot sections and
+              Follows_Group processing using the SQL Server
+              two-pass algorithm.
+            - Added support for COUNT() pivots on non-numeric
+              data types, including DATE columns.
             - Corrected boolean pivot generation for MAX() pivots.
-            - Improved aggregate type handling for PostgreSQL and Oracle compatibility.
-            - Updated PostgreSQL example scripts to normalize boolean catalog fields into text values for consistent cross-database behavior.
+            - Improved aggregate type handling for PostgreSQL
+              and Oracle compatibility.
+            - Updated PostgreSQL example scripts to normalize
+              boolean catalog fields into text values for
+              consistent cross-database behavior.
             - General cleanup and regression testing.
+
+            PostgreSQL
+            ------------
+            * PostgreSQL implementation now reaches feature
+              parity with the SQL Server implementation.
+            * Added proper COUNT handling for Pivot_Field
+              aggregates that omit Pivot_Data.
+            * Fixed boolean pivot generation using CASE
+              expressions for PostgreSQL boolean types.
+            * Completed regression testing across all
+              PostgreSQL examples.
+
+            Oracle
+            -------
+            * Added proper COUNT handling for Pivot_Field
+              aggregates that omit Pivot_Data.
+            * Updated all Oracle example engines to the
+              refactored implementation.
+            * Completed regression testing across all
+              Oracle examples.
+            * Oracle implementation now reaches feature
+              parity with the SQL Server implementation.
 
 2026-07-21: * Added PostgreSQL Database support.
 

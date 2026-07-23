@@ -662,44 +662,45 @@ DECLARE
     IS
         v_pivot_alias       NUMBER := 1;
         v_first_pivot_value NUMBER := 1;
+        v_pass_counter      NUMBER;
     BEGIN
 
         ---------------------------------------------------------
         -- SELECT HEADER
         ---------------------------------------------------------
-    
+
         v_dynamic_select := 'SELECT';
-    
+
         ---------------------------------------------------------
         -- FROM HEADER
         ---------------------------------------------------------
-    
+
         v_dynamic_from :=
-               'FROM'
+            'FROM'
             || CHR(10)
             || '('
             || CHR(10)
             || '    SELECT DISTINCT';
-    
+
         FOR group_number IN 1 .. v_group_count
         LOOP
-    
+
             IF group_number > 1 THEN
-    
+
                 v_dynamic_from :=
                     v_dynamic_from
                     || ',';
-    
+
             END IF;
-    
+
             v_dynamic_from :=
-                   v_dynamic_from
+                v_dynamic_from
                 || CHR(10)
                 || '        '
                 || v_group_fields(group_number);
-    
+
         END LOOP;
-    
+
         v_dynamic_from :=
                v_dynamic_from
             || CHR(10)
@@ -711,595 +712,370 @@ DECLARE
             || CHR(10)
             || ') ep'
             || CHR(10);
-    
+
         ---------------------------------------------------------
-        -- PASS 1
-        -- Process pivots attached to groups
+        -- Easy Pivot two-pass algorithm
         ---------------------------------------------------------
-    
-        FOR group_number IN 1 .. v_group_count
+
+        FOR v_pass_counter IN 1 .. 2
         LOOP
-        
-            -------------------------------------------------
-            -- Emit current group field
-            -------------------------------------------------
-        
-            IF v_dynamic_select <> 'SELECT' THEN
-        
-                v_dynamic_select :=
-                       v_dynamic_select
-                    || ',';
-        
-            END IF;
-        
-            v_dynamic_select :=
-                   v_dynamic_select
-                || CHR(10)
-                || '    ep.'
-                || v_group_fields(group_number);
-        
-            -------------------------------------------------
-            -- Emit pivots following this group
-            -------------------------------------------------
-        
-            FOR pivot_number IN 1 .. v_pivot_count
+
+            FOR group_number IN 1 .. v_group_count
             LOOP
-    
-                IF UPPER(TRIM(NVL(v_pivot_follows(pivot_number), '')))
-                   =
-                   UPPER(TRIM(v_group_fields(group_number)))
-                THEN
-    
-                IF v_debug = 1 THEN
 
-                    DBMS_OUTPUT.PUT_LINE(
-                           'Assigning physical alias p'
-                        || v_pivot_alias
-                        || ' to logical pivot #'
-                        || pivot_number
-                    );
+                -------------------------------------------------
+                -- Emit current group field (pass 1 only)
+                -------------------------------------------------
 
-                    DBMS_OUTPUT.PUT_LINE(
-                           'Building SELECT for pivot '
-                        || pivot_number
-                        || ' using alias p'
-                        || v_pivot_alias
-                        || ' type='
-                        || NVL(v_pivot_types(pivot_number),'BOOLEAN')
-                    );
+                IF v_pass_counter = 1 THEN
+
+                    IF v_dynamic_select <> 'SELECT' THEN
+
+                        v_dynamic_select :=
+                            v_dynamic_select
+                            || ',';
+
+                    END IF;
+
+                    v_dynamic_select :=
+                        v_dynamic_select
+                        || CHR(10)
+                        || '    ep.'
+                        || v_group_fields(group_number);
 
                 END IF;
-                    
-                    -------------------------------------------------
-                    -- SELECT generation
-                    -------------------------------------------------
-    
-                    FOR chip_number IN 1 .. v_pivot_value_count
-                    LOOP
-    
-                        IF v_pivot_value_fields(chip_number)
-                           =
-                           v_pivot_fields(pivot_number)
-                        THEN
-    
-                            IF v_numeric_flags(pivot_number) > 0 THEN
-                            
-                                v_dynamic_select :=
-                                       v_dynamic_select
-                                    || ','
-                                    || CHR(10)
-                                    || '    NVL(p'
-                                    || v_pivot_alias
-                                    || '."'
-                                    || v_pivot_values(chip_number)
-                                    || '",0) AS "'
-                                    || v_pivot_types(pivot_number)
-                                    || '_'
-                                    || v_pivot_values(chip_number)
-                                    || '"';
-                            
-                            ELSIF v_pivot_datas(pivot_number) IS NOT NULL THEN
-                            
-                                v_dynamic_select :=
-                                       v_dynamic_select
-                                    || ','
-                                    || CHR(10)
-                                    || '    p'
-                                    || v_pivot_alias
-                                    || '."'
-                                    || v_pivot_values(chip_number)
-                                    || '" AS "'
-                                    || v_pivot_types(pivot_number)
-                                    || '_'
-                                    || v_pivot_values(chip_number)
-                                    || '"';
-                            
-                            ELSE
-                            
-                                v_dynamic_select :=
-                                       v_dynamic_select
-                                    || ','
-                                    || CHR(10)
-                                    || '    NVL(p'
-                                    || v_pivot_alias
-                                    || '."'
-                                    || v_pivot_values(chip_number)
-                                    || '",NULL) AS "'
-                                    || v_pivot_values(chip_number)
-                                    || '"';
-                            
-                            END IF;
-    
+
+                -------------------------------------------------
+                -- Process pivots
+                -------------------------------------------------
+
+                FOR pivot_number IN 1 .. v_pivot_count
+                LOOP
+
+                    IF
+                    (
+                        v_pass_counter = 1
+
+                        AND
+
+                        UPPER(TRIM(NVL(v_pivot_follows(pivot_number), '')))
+                        =
+                        UPPER(TRIM(v_group_fields(group_number)))
+                    )
+
+                    OR
+
+                    (
+                        v_pass_counter = 2
+
+                        AND
+
+                        (
+                            v_pivot_follows(pivot_number) IS NULL
+
+                            OR
+
+                            TRIM(v_pivot_follows(pivot_number)) = ''
+                        )
+                    )
+
+                    THEN
+
+                        IF v_debug = 1 THEN
+
+                            DBMS_OUTPUT.PUT_LINE(
+                                'Assigning physical alias p'
+                                || v_pivot_alias
+                                || ' to logical pivot #'
+                                || pivot_number
+                            );
+
+                            DBMS_OUTPUT.PUT_LINE(
+                                'Building SELECT for pivot '
+                                || pivot_number
+                                || ' using alias p'
+                                || v_pivot_alias
+                                || ' type='
+                                || NVL(v_pivot_types(pivot_number), 'BOOLEAN')
+                            );
+
                         END IF;
-    
-                    END LOOP;
 
-                    IF v_debug = 1 THEN
+                        -------------------------------------------------
+                        -- SELECT generation
+                        -------------------------------------------------
 
-                        DBMS_OUTPUT.PUT_LINE(
-                               'Building FROM for pivot '
-                            || pivot_number
-                            || ' using alias p'
-                            || v_pivot_alias
-                            || ' type='
-                            || NVL(v_pivot_types(pivot_number),'BOOLEAN')
-                        );
+                        FOR chip_number IN 1 .. v_pivot_value_count
+                        LOOP
 
-                    END IF;
-
-                    -------------------------------------------------
-                    -- FROM generation
-                    -------------------------------------------------
-    
-                    v_dynamic_from :=
-                           v_dynamic_from
-                        || 'LEFT JOIN'
-                        || CHR(10)
-                        || '('
-                        || CHR(10)
-                        || '    SELECT *'
-                        || CHR(10)
-                        || '    FROM'
-                        || CHR(10)
-                        || '    ('
-                        || CHR(10)
-                        || '        SELECT';
-    
-                    FOR join_group_number IN 1 .. v_group_count
-                    LOOP
-    
-                        IF join_group_number > 1 THEN
-    
-                            v_dynamic_from :=
-                                v_dynamic_from
-                                || ',';
-    
-                        END IF;
-    
-                        v_dynamic_from :=
-                               v_dynamic_from
-                            || CHR(10)
-                            || '            '
-                            || v_group_fields(join_group_number);
-    
-                    END LOOP;
-    
-                    IF v_pivot_datas(pivot_number) IS NOT NULL THEN
-    
-                        v_dynamic_from :=
-                               v_dynamic_from
-                            || ','
-                            || CHR(10)
-                            || '            '
-                            || v_pivot_fields(pivot_number)
-                            || ','
-                            || CHR(10)
-                            || '            '
-                            || v_pivot_datas(pivot_number);
-    
-                    ELSE
-    
-                        v_dynamic_from :=
-                               v_dynamic_from
-                            || ','
-                            || CHR(10)
-                            || '            '
-                            || v_pivot_fields(pivot_number);
-    
-                    END IF;
-    
-                    v_dynamic_from :=
-                           v_dynamic_from
-                        || CHR(10)
-                        || '        FROM'
-                        || CHR(10)
-                        || '        ('
-                        || v_user_sql
-                        || '    )'
-                        || CHR(10)
-                        || '    )'
-                        || CHR(10)
-                        || '    PIVOT'
-                        || CHR(10)
-                        || '    ('
-                        || CHR(10)
-                        || '        ';
-    
-                    v_dynamic_from :=
-                           v_dynamic_from
-    
-                        || CASE
-                            WHEN v_pivot_datas(pivot_number) IS NULL
+                            IF v_pivot_value_fields(chip_number)
+                            =
+                            v_pivot_fields(pivot_number)
                             THEN
-                                'MAX('
-                                || v_pivot_fields(pivot_number)
-                                || ')'
-                            ELSE
-                                translate_aggregate(v_pivot_types(pivot_number))
-                                || '('
-                                || v_pivot_datas(pivot_number)
-                                || ')'
-                        END
-    
-                        || CHR(10)
-                        || '        FOR '
-                        || v_pivot_fields(pivot_number)
-                        || ' IN'
-                        || CHR(10)
-                        || '        (';
-    
-                    v_first_pivot_value := 1;
-    
-                    FOR i IN 1 .. v_pivot_value_count
-                    LOOP
-    
-                        IF v_pivot_value_fields(i)
-                           =
-                           v_pivot_fields(pivot_number)
-                        THEN
-    
-                            IF v_first_pivot_value = 0 THEN
-    
+
+                                IF v_numeric_flags(pivot_number) > 0 THEN
+
+                                    v_dynamic_select :=
+                                        v_dynamic_select
+                                        || ','
+                                        || CHR(10)
+                                        || '    NVL(p'
+                                        || v_pivot_alias
+                                        || '."'
+                                        || v_pivot_values(chip_number)
+                                        || '",0) AS "'
+                                        || v_pivot_types(pivot_number)
+                                        || '_'
+                                        || v_pivot_values(chip_number)
+                                        || '"';
+
+                                ELSIF v_pivot_datas(pivot_number) IS NOT NULL THEN
+
+                                    v_dynamic_select :=
+                                        v_dynamic_select
+                                        || ','
+                                        || CHR(10)
+                                        || '    p'
+                                        || v_pivot_alias
+                                        || '."'
+                                        || v_pivot_values(chip_number)
+                                        || '" AS "'
+                                        || v_pivot_types(pivot_number)
+                                        || '_'
+                                        || v_pivot_values(chip_number)
+                                        || '"';
+
+                                ELSE
+
+                                    v_dynamic_select :=
+                                        v_dynamic_select
+                                        || ','
+                                        || CHR(10)
+                                        || '    NVL(p'
+                                        || v_pivot_alias
+                                        || '."'
+                                        || v_pivot_values(chip_number)
+                                        || '",NULL) AS "'
+                                        || v_pivot_values(chip_number)
+                                        || '"';
+
+                                END IF;
+
+                            END IF;
+
+                        END LOOP;
+
+                        IF v_debug = 1 THEN
+
+                            DBMS_OUTPUT.PUT_LINE(
+                                'Building FROM for pivot '
+                                || pivot_number
+                                || ' using alias p'
+                                || v_pivot_alias
+                                || ' type='
+                                || NVL(v_pivot_types(pivot_number), 'BOOLEAN')
+                            );
+
+                        END IF;
+
+                        -------------------------------------------------
+                        -- FROM generation
+                        -------------------------------------------------
+
+                        v_dynamic_from :=
+                            v_dynamic_from
+                            || 'LEFT JOIN'
+                            || CHR(10)
+                            || '('
+                            || CHR(10)
+                            || '    SELECT *'
+                            || CHR(10)
+                            || '    FROM'
+                            || CHR(10)
+                            || '    ('
+                            || CHR(10)
+                            || '        SELECT';
+
+                        FOR join_group_number IN 1 .. v_group_count
+                        LOOP
+
+                            IF join_group_number > 1 THEN
+
                                 v_dynamic_from :=
                                     v_dynamic_from
                                     || ',';
-    
+
                             END IF;
-    
-                            v_first_pivot_value := 0;
-    
-                            v_dynamic_from :=
-                                   v_dynamic_from
-                                || CHR(10)
-                                || '            '''
-                                || v_pivot_values(i)
-                                || ''' AS "'
-                                || v_pivot_values(i)
-                                || '"';
-    
-                        END IF;
-    
-                    END LOOP;
-    
-                    v_dynamic_from :=
-                           v_dynamic_from
-                        || CHR(10)
-                        || '        )'
-                        || CHR(10)
-                        || '    )'
-                        || CHR(10)
-                        || ') p'
-                        || v_pivot_alias
-                        || CHR(10);
-    
-                    FOR join_group_number IN 1 .. v_group_count
-                    LOOP
-    
-                        IF join_group_number = 1 THEN
-    
-                            v_dynamic_from :=
-                                   v_dynamic_from
-                                || 'ON p'
-                                || v_pivot_alias
-                                || '.'
-                                || v_group_fields(join_group_number)
-                                || ' = ep.'
-                                || v_group_fields(join_group_number)
-                                || CHR(10);
-    
-                        ELSE
-    
-                            v_dynamic_from :=
-                                   v_dynamic_from
-                                || 'AND p'
-                                || v_pivot_alias
-                                || '.'
-                                || v_group_fields(join_group_number)
-                                || ' = ep.'
-                                || v_group_fields(join_group_number)
-                                || CHR(10);
-    
-                        END IF;
-    
-                    END LOOP;
-    
-                    v_pivot_alias :=
-                        v_pivot_alias + 1;
-    
-                END IF;
-    
-            END LOOP;
-    
-        END LOOP;
-    
-        ---------------------------------------------------------
-        -- PASS 2
-        -- Process pivots without Follows_Group values
-        ---------------------------------------------------------
-    
-        FOR pivot_number IN 1 .. v_pivot_count
-        LOOP
-    
-            IF v_pivot_follows(pivot_number) IS NULL
-               OR
-               TRIM(v_pivot_follows(pivot_number)) = ''
-            THEN
 
-                IF v_debug = 1 THEN
-
-                DBMS_OUTPUT.PUT_LINE(
-                       'Assigning physical alias p'
-                    || v_pivot_alias
-                    || ' to logical pivot #'
-                    || pivot_number
-                );
-    
-                END IF;
-                -------------------------------------------------
-                -- SELECT generation
-                -------------------------------------------------
-    
-                FOR chip_number IN 1 .. v_pivot_value_count
-                LOOP
-    
-                    IF v_pivot_value_fields(chip_number)
-                       =
-                       v_pivot_fields(pivot_number)
-                    THEN
-    
-                        IF v_numeric_flags(pivot_number) > 0 THEN
-                        
-                            v_dynamic_select :=
-                                   v_dynamic_select
-                                || ','
-                                || CHR(10)
-                                || '    NVL(p'
-                                || v_pivot_alias
-                                || '."'
-                                || v_pivot_values(chip_number)
-                                || '",0) AS "'
-                                || v_pivot_types(pivot_number)
-                                || '_'
-                                || v_pivot_values(chip_number)
-                                || '"';
-                        
-                        ELSIF v_pivot_datas(pivot_number) IS NOT NULL THEN
-                        
-                            v_dynamic_select :=
-                                   v_dynamic_select
-                                || ','
-                                || CHR(10)
-                                || '    p'
-                                || v_pivot_alias
-                                || '."'
-                                || v_pivot_values(chip_number)
-                                || '" AS "'
-                                || v_pivot_types(pivot_number)
-                                || '_'
-                                || v_pivot_values(chip_number)
-                                || '"';
-                        
-                        ELSE
-                        
-                            v_dynamic_select :=
-                                   v_dynamic_select
-                                || ','
-                                || CHR(10)
-                                || '    NVL(p'
-                                || v_pivot_alias
-                                || '."'
-                                || v_pivot_values(chip_number)
-                                || '",NULL) AS "'
-                                || v_pivot_values(chip_number)
-                                || '"';
-                        
-                        END IF;
-    
-                    END IF;
-    
-                END LOOP;
-    
-                -------------------------------------------------
-                -- FROM generation
-                -------------------------------------------------
-    
-                v_dynamic_from :=
-                       v_dynamic_from
-                    || 'LEFT JOIN'
-                    || CHR(10)
-                    || '('
-                    || CHR(10)
-                    || '    SELECT *'
-                    || CHR(10)
-                    || '    FROM'
-                    || CHR(10)
-                    || '    ('
-                    || CHR(10)
-                    || '        SELECT';
-    
-                FOR join_group_number IN 1 .. v_group_count
-                LOOP
-    
-                    IF join_group_number > 1 THEN
-    
-                        v_dynamic_from :=
-                            v_dynamic_from
-                            || ',';
-    
-                    END IF;
-    
-                    v_dynamic_from :=
-                           v_dynamic_from
-                        || CHR(10)
-                        || '            '
-                        || v_group_fields(join_group_number);
-    
-                END LOOP;
-    
-                IF v_pivot_datas(pivot_number) IS NOT NULL THEN
-    
-                    v_dynamic_from :=
-                           v_dynamic_from
-                        || ','
-                        || CHR(10)
-                        || '            '
-                        || v_pivot_fields(pivot_number)
-                        || ','
-                        || CHR(10)
-                        || '            '
-                        || v_pivot_datas(pivot_number);
-    
-                ELSE
-    
-                    v_dynamic_from :=
-                           v_dynamic_from
-                        || ','
-                        || CHR(10)
-                        || '            '
-                        || v_pivot_fields(pivot_number);
-    
-                END IF;
-    
-                v_dynamic_from :=
-                       v_dynamic_from
-                    || CHR(10)
-                    || '        FROM'
-                    || CHR(10)
-                    || '        ('
-                    || v_user_sql
-                    || '    )'
-                    || CHR(10)
-                    || '    )'
-                    || CHR(10)
-                    || '    PIVOT'
-                    || CHR(10)
-                    || '    ('
-                    || CHR(10)
-                    || '        ';
-    
-                v_dynamic_from :=
-                       v_dynamic_from
-    
-                    || CASE
-                        WHEN v_pivot_datas(pivot_number) IS NULL
-                        THEN
-                            'MAX('
-                            || v_pivot_fields(pivot_number)
-                            || ')'
-                        ELSE
-                            translate_aggregate(v_pivot_types(pivot_number))
-                            || '('
-                            || v_pivot_datas(pivot_number)
-                            || ')'
-                    END
-    
-                    || CHR(10)
-                    || '        FOR '
-                    || v_pivot_fields(pivot_number)
-                    || ' IN'
-                    || CHR(10)
-                    || '        (';
-    
-                v_first_pivot_value := 1;
-    
-                FOR i IN 1 .. v_pivot_value_count
-                LOOP
-    
-                    IF v_pivot_value_fields(i)
-                       =
-                       v_pivot_fields(pivot_number)
-                    THEN
-    
-                        IF v_first_pivot_value = 0 THEN
-    
                             v_dynamic_from :=
                                 v_dynamic_from
-                                || ',';
-    
+                                || CHR(10)
+                                || '            '
+                                || v_group_fields(join_group_number);
+
+                        END LOOP;
+
+                        IF v_pivot_datas(pivot_number) IS NOT NULL THEN
+
+                            v_dynamic_from :=
+                                v_dynamic_from
+                                || ','
+                                || CHR(10)
+                                || '            '
+                                || v_pivot_fields(pivot_number)
+                                || ','
+                                || CHR(10)
+                                || '            '
+                                || v_pivot_datas(pivot_number);
+
+                        ELSE
+
+                            v_dynamic_from :=
+                                v_dynamic_from
+                                || ','
+                                || CHR(10)
+                                || '            '
+                                || v_pivot_fields(pivot_number);
+
                         END IF;
-    
-                        v_first_pivot_value := 0;
-    
+
                         v_dynamic_from :=
-                               v_dynamic_from
+                            v_dynamic_from
                             || CHR(10)
-                            || '            '''
-                            || v_pivot_values(i)
-                            || ''' AS "'
-                            || v_pivot_values(i)
-                            || '"';
-    
-                    END IF;
-    
-                END LOOP;
-    
-                v_dynamic_from :=
-                       v_dynamic_from
-                    || CHR(10)
-                    || '        )'
-                    || CHR(10)
-                    || '    )'
-                    || CHR(10)
-                    || ') p'
-                    || v_pivot_alias
-                    || CHR(10);
-    
-                FOR join_group_number IN 1 .. v_group_count
-                LOOP
-    
-                    IF join_group_number = 1 THEN
-    
+                            || '        FROM'
+                            || CHR(10)
+                            || '        ('
+                            || v_user_sql
+                            || '    )'
+                            || CHR(10)
+                            || '    )'
+                            || CHR(10)
+                            || '    PIVOT'
+                            || CHR(10)
+                            || '    ('
+                            || CHR(10)
+                            || '        ';
+
                         v_dynamic_from :=
-                               v_dynamic_from
-                            || 'ON p'
-                            || v_pivot_alias
-                            || '.'
-                            || v_group_fields(join_group_number)
-                            || ' = ep.'
-                            || v_group_fields(join_group_number)
-                            || CHR(10);
-    
-                    ELSE
-    
+                            v_dynamic_from
+                        
+                            || CASE
+                        
+                                WHEN v_pivot_datas(pivot_number) IS NULL
+                                     AND UPPER(v_pivot_types(pivot_number)) = 'COUNT'
+                                THEN
+                                    'COUNT('
+                                    || v_pivot_fields(pivot_number)
+                                    || ')'
+                        
+                                WHEN v_pivot_datas(pivot_number) IS NULL
+                                THEN
+                                    'MAX('
+                                    || v_pivot_fields(pivot_number)
+                                    || ')'
+                        
+                                ELSE
+                                    translate_aggregate(v_pivot_types(pivot_number))
+                                    || '('
+                                    || v_pivot_datas(pivot_number)
+                                    || ')'
+                        
+                            END
+                            || CHR(10)
+                            || '        FOR '
+                            || v_pivot_fields(pivot_number)
+                            || ' IN'
+                            || CHR(10)
+                            || '        (';
+
+                        v_first_pivot_value := 1;
+
+                        FOR i IN 1 .. v_pivot_value_count
+                        LOOP
+
+                            IF v_pivot_value_fields(i)
+                            =
+                            v_pivot_fields(pivot_number)
+                            THEN
+
+                                IF v_first_pivot_value = 0 THEN
+
+                                    v_dynamic_from :=
+                                        v_dynamic_from
+                                        || ',';
+
+                                END IF;
+
+                                v_first_pivot_value := 0;
+
+                                v_dynamic_from :=
+                                    v_dynamic_from
+                                    || CHR(10)
+                                    || '            '''
+                                    || v_pivot_values(i)
+                                    || ''' AS "'
+                                    || v_pivot_values(i)
+                                    || '"';
+
+                            END IF;
+
+                        END LOOP;
+
                         v_dynamic_from :=
-                               v_dynamic_from
-                            || 'AND p'
+                            v_dynamic_from
+                            || CHR(10)
+                            || '        )'
+                            || CHR(10)
+                            || '    )'
+                            || CHR(10)
+                            || ') p'
                             || v_pivot_alias
-                            || '.'
-                            || v_group_fields(join_group_number)
-                            || ' = ep.'
-                            || v_group_fields(join_group_number)
                             || CHR(10);
-    
+
+                        FOR join_group_number IN 1 .. v_group_count
+                        LOOP
+
+                            IF join_group_number = 1 THEN
+
+                                v_dynamic_from :=
+                                    v_dynamic_from
+                                    || 'ON p'
+                                    || v_pivot_alias
+                                    || '.'
+                                    || v_group_fields(join_group_number)
+                                    || ' = ep.'
+                                    || v_group_fields(join_group_number)
+                                    || CHR(10);
+
+                            ELSE
+
+                                v_dynamic_from :=
+                                    v_dynamic_from
+                                    || 'AND p'
+                                    || v_pivot_alias
+                                    || '.'
+                                    || v_group_fields(join_group_number)
+                                    || ' = ep.'
+                                    || v_group_fields(join_group_number)
+                                    || CHR(10);
+
+                            END IF;
+
+                        END LOOP;
+
+                        v_pivot_alias :=
+                            v_pivot_alias + 1;
+
                     END IF;
-    
+
                 END LOOP;
-    
-                v_pivot_alias :=
-                    v_pivot_alias + 1;
-    
-            END IF;
-    
+
+                IF v_pass_counter = 2 THEN
+                    EXIT;
+                END IF;
+
+            END LOOP;
+
         END LOOP;
 
     END;
