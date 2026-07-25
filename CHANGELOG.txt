@@ -1,3 +1,20 @@
+2026-07-25: * Oracle Easy Pivot implementation completed and promoted to
+              production status.
+            * Completed comprehensive regression testing using complex
+              multi-group, multi-pivot ("kitchen sink") configurations and
+              verified generated output against PostgreSQL and SQL Server
+              implementations. Confirmed feature parity across all three
+              supported database engines.
+            * Fixed a long-standing Oracle string pivot SQL generation
+              issue affecting character-based NVL() expressions. Updated
+              all Oracle example files with the final engine implementation
+              and verified successful execution.
+            * Created Quick Start Guide comic documentation for SQL Server,
+              Oracle, and PostgreSQL featuring the new Pivoty office assistant
+              character to help users become productive with Easy Pivot more
+              quickly.
+            * Tagged release as v1.4-triple-engine.
+
 2026-07-23: * Refactored PostgreSQL Easy Pivot engines to process pivots
               sequentially, matching the SQL Server implementation.
             * Removed global pivot metadata dependency during dynamic SQL
