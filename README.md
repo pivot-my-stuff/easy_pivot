@@ -44,6 +44,8 @@ philosophy, user experience, and "no installation
 required" design principles regardless of database
 platform.
 
+I've been sent back. Until my task is done.
+
 # Features
 With Easy Pivot, you can:
 
