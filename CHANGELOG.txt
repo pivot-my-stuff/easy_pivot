@@ -1,3 +1,5 @@
+2026-07-27: * Add MR_PIVOTS_PIVOT_CHIP_CHiP_ENCOUNTER.jpg
+
 2026-07-25: * Oracle Easy Pivot implementation completed and promoted to
               production status.
             * Completed comprehensive regression testing using complex
