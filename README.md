@@ -38,7 +38,7 @@ Oracle Database, and PostgreSQL.
 
 (If you are using Oracle as a database, I recommend that you
 choose something else. The culture at Oracle is terrible.
-The don't respond favorably to user suggestions. Hello Jeff.)
+They don't respond favorably to user suggestions. Hello Jeff.)
 
 MySQL support is imminent.
 
