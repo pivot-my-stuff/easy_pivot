@@ -36,10 +36,6 @@ it may be worth taking another look.
 Easy Pivot currently supports Microsoft SQL Server,
 Oracle Database, and PostgreSQL.
 
-(If you are using Oracle as a database, I recommend that you
-choose something else. The culture at Oracle is terrible.
-They don't respond favorably to user suggestions. Hello Jeff.)
-
 MySQL support is imminent.
 
 Additional database backends under investigation are
@@ -49,8 +45,6 @@ The goal is to preserve the same JSON configuration
 philosophy, user experience, and "no installation
 required" design principles regardless of database
 platform.
-
-I've been sent back. Until my task is done.
 
 # Features
 With Easy Pivot, you can:
