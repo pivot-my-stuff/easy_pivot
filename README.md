@@ -85,8 +85,8 @@ Rather than editing JSON by hand, users would visually select
 their grouping fields, pivot fields, aggregate options, and
 sorting preferences through a graphical interface while Easy
 Pivot automatically generates and executes the required SQL,
-returning the results in a data grid. Users may then export the
-data in the format of their choice.
+returning the results in a data grid. Users may then export
+the data in the format of their choice.
 
 At present, there appears to be little commercial interest in
 providing a database-independent SQL pivot compiler with this
