@@ -90,9 +90,14 @@ the data in the format of their choice.
 
 At present, there appears to be little commercial interest in
 providing a database-independent SQL pivot compiler with this
-level of flexibility. Easy Pivot is intended to help fill that
-gap by providing an open, database-focused solution for
-developers, analysts, and database professionals.
+level of flexibility. One possible reason is that SQL pivoting
+is often viewed as a collection of database-specific techniques
+rather than as a database-independent algorithm capable of
+being implemented across multiple platforms.
+
+Easy Pivot is intended to demonstrate that broader approach by
+providing an open, database-focused solution for developers,
+analysts, and database professionals.
 
 Additional database backends currently under investigation
 include SQLite and MariaDB.
