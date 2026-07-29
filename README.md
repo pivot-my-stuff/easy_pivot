@@ -86,7 +86,9 @@ their grouping fields, pivot fields, aggregate options, and
 sorting preferences through a graphical interface while Easy
 Pivot automatically generates and executes the required SQL,
 returning the results in a data grid. Users may then export
-the data in the format of their choice.
+the data in the format of their choice. A reference
+implementation could be developed using VB.NET or another
+freely available application framework.
 
 At present, there appears to be little commercial interest in
 providing a database-independent SQL pivot compiler with this
