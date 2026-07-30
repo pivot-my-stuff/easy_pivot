@@ -44,8 +44,10 @@ adding numerous usability improvements, compatibility fixes,
 new pivot capabilities, and support for additional database
 platforms.
 
-The MySQL port has now been completed and is scheduled for
-public release tomorrow.
+The MySQL port has been delayed due to refinements in its
+user interface. It is scheduled for release in the next day
+or two. It is a major evolutionary step for the Easy Pivot
+project. We want to get it right.
 
 The successful MySQL port has also demonstrated that
 Easy Pivot can be deployed as a shared stored procedure while
