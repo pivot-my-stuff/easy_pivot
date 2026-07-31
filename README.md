@@ -69,6 +69,28 @@ Users will continue to have the choice of either:
 The goal is not to replace either workflow, but to provide the
 most convenient experience for every type of user.
 
+# Planned Browser User Interface and Potential Job Scheduling
+
+A browser-based user interface to submit pivot code generation
+requests to an Easy Pivot stored procedure will be under
+development after MySQL support has been added to the project.
+MySQL will be the first to try out this new innovation, due to
+MySQL not having the capability of executing anonymous blocks
+of code.
+
+This has been a blessing in disguise, because it has forced
+the Easy Pivot project to innovate a way to convert the Easy
+Pivot algorithm into a stored procedure in MySQL.
+
+This opens up the possiblity for Easy Pivot to run in scheduled
+jobs. If successfully implemented, it would be unnecessary to
+regenerate pivot code as new data enters a database for the first
+time. Traditional pivot code becomes "stale" when this happens,
+and new pivot columns might not be generated because of this. A
+scheduled Easy Pivot job would, in theory, keep the pivoted data
+"fresh" by regenerating the pivot code during each scheduled
+job.
+
 # Future Directions
 
 One of the guiding principles of Easy Pivot has always been to
