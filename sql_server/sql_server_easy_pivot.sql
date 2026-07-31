@@ -1,3 +1,36 @@
+/* Easy Pivot configuration section */
+
+-- Change to 1 to print generated pivot code
+DECLARE @generate_source_code_only AS BIT = 0
+
+-- Change name of temp table "#car_prices" to name of your data source
+DECLARE @source_table AS NVARCHAR(MAX)= '#car_prices'
+
+-- Change group & pivot field information to match your data source
+--
+-- One Group entry with comma-separated list of fields to group on
+--
+-- One Pivot section with one or more lines in it, separated by commas,
+-- and first line has no comma in front of it; lines that follow do have them
+DECLARE @config AS NVARCHAR(MAX) = '
+[
+    {
+        "Group": ["COUNTRY"],
+        "Order": ["ASC"],
+        "Pivot": [
+             {"Pivot_Field": "COMPANY", "Pivot_Type": "Sum", "Pivot_Data": "PRICE"}
+            ,{"Pivot_Field": "COMPANY", "Pivot_Type": "Avg", "Pivot_Data": "PRICE"}
+            ,{"Pivot_Field": "COMPANY", "Pivot_Type": "Count", "Pivot_Data": "PRICE"}
+            ,{"Pivot_Field": "COMPANY", "Pivot_Type": "Min", "Pivot_Data": "PRICE"}
+            ,{"Pivot_Field": "COMPANY", "Pivot_Type": "Max", "Pivot_Data": "PRICE"}
+            ,{"Pivot_Field": "COMPANY", "Pivot_Type": "Stdev", "Pivot_Data": "PRICE"}
+            ,{"Pivot_Field": "COMPANY", "Pivot_Type": "Var", "Pivot_Data": "PRICE"}
+            ,{"Pivot_Field": "COMPANY", "Pivot_Type": "VarP", "Pivot_Data": "PRICE"}
+        ]
+    }
+]
+'
+
 /* Perform Easy Pivot based on configuration section */
 DROP TABLE IF EXISTS #easypivot_group_table
 SELECT TRIM(g_table.[Group_Field]) AS Group_Field
