@@ -1,36 +1,3 @@
-/* Easy Pivot configuration section */
-
--- Change to 1 to print generated pivot code
-DECLARE @generate_source_code_only AS BIT = 0
-
--- Change name of temp table "#car_prices" to name of your data source
-DECLARE @source_table AS NVARCHAR(MAX)= '#car_prices'
-
--- Change group & pivot field information to match your data source
---
--- One Group entry with comma-separated list of fields to group on
---
--- One Pivot section with one or more lines in it, separated by commas,
--- and first line has no comma in front of it; lines that follow do have them
-DECLARE @config AS NVARCHAR(MAX) = '
-[
-    {
-        "Group": ["COUNTRY"],
-        "Order": ["ASC"],
-        "Pivot": [
-             {"Pivot_Field": "COMPANY", "Pivot_Type": "Sum", "Pivot_Data": "PRICE"}
-            ,{"Pivot_Field": "COMPANY", "Pivot_Type": "Avg", "Pivot_Data": "PRICE"}
-            ,{"Pivot_Field": "COMPANY", "Pivot_Type": "Count", "Pivot_Data": "PRICE"}
-            ,{"Pivot_Field": "COMPANY", "Pivot_Type": "Min", "Pivot_Data": "PRICE"}
-            ,{"Pivot_Field": "COMPANY", "Pivot_Type": "Max", "Pivot_Data": "PRICE"}
-            ,{"Pivot_Field": "COMPANY", "Pivot_Type": "Stdev", "Pivot_Data": "PRICE"}
-            ,{"Pivot_Field": "COMPANY", "Pivot_Type": "Var", "Pivot_Data": "PRICE"}
-            ,{"Pivot_Field": "COMPANY", "Pivot_Type": "VarP", "Pivot_Data": "PRICE"}
-        ]
-    }
-]
-'
-
 /* Perform Easy Pivot based on configuration section */
 DROP TABLE IF EXISTS #easypivot_group_table
 SELECT TRIM(g_table.[Group_Field]) AS Group_Field
@@ -84,9 +51,9 @@ DECLARE
     @group_field AS NVARCHAR(MAX), @pivot_field AS NVARCHAR(MAX), @pivot_data AS NVARCHAR(MAX), @pivot_true AS NVARCHAR(MAX),
     @pivot_false AS NVARCHAR(MAX), @pivot_type AS NVARCHAR(MAX), @follows_field AS NVARCHAR(MAX), @sort_order AS NVARCHAR(MAX), @columns_sql AS NVARCHAR(MAX),
     @json AS NVARCHAR(MAX), @pivot_column_name AS NVARCHAR(MAX), @dynamic_pivot_query AS NVARCHAR(MAX) = '', @dynamic_select AS NVARCHAR(MAX) = '',
-    @dynamic_from AS NVARCHAR(MAX) = '', @pivot_counter AS INT = 1, @numeric_flag AS INT, @comma_flag AS INT = 0, @comma_flag_FROM AS INT = 0,
+    @dynamic_from AS NVARCHAR(MAX) = '', @pivot_counter AS INT = 1, @numeric_flag AS INT, @comma_flag AS INT = 0, @comma_flag_FROM AS INT = 0, @build_chip AS BIT = 1,
     @linkage_for_pivots AS NVARCHAR(MAX) = '', @linkage_count AS INT = 0, @cnt AS INT = 0, @pass_counter AS INT = 0, @dynamic_order_by AS NVARCHAR(MAX) = '',
-    @pivot_group_name AS NVARCHAR(MAX) = '', @pivot_order_name AS NVARCHAR(MAX) = '', @pivot_groups_for_FROM_section AS NVARCHAR(MAX) = ''
+    @pivot_group_name AS NVARCHAR(MAX) = '', @pivot_order_name AS NVARCHAR(MAX) = '', @pivot_groups_for_FROM_section AS NVARCHAR(MAX) = '', @pivot_columns_fetch_status AS INT = 0
 DECLARE group_cursor CURSOR LOCAL FAST_FORWARD FOR SELECT Group_Field FROM #easypivot_group_table
 DECLARE order_cursor CURSOR LOCAL FAST_FORWARD FOR SELECT Order_Field FROM #easypivot_order_table
 OPEN group_cursor
@@ -125,6 +92,7 @@ SET @dynamic_select = @dynamic_select + 'SELECT' + CHAR(13) + CHAR(10)
 SET @dynamic_from = @dynamic_from + 'FROM (SELECT DISTINCT' + CHAR(13) + CHAR(10)
 SET @dynamic_from = @dynamic_from + @pivot_groups_for_FROM_section + 'FROM' + CHAR(13) + CHAR(10)
 SET @dynamic_from = @dynamic_from + @source_table + ') AS ep' + CHAR(13) + CHAR(10)
+
 BEGIN
     WHILE @pass_counter < 2
         BEGIN
@@ -158,9 +126,25 @@ BEGIN
                                         SELECT j_table.[PIVOT_FIELD] FROM OPENJSON(@json) WITH ([PIVOT_FIELD] NVARCHAR(MAX) '$.PIVOT_FIELD') as j_table
                                     SET @numeric_flag = (SELECT COUNT(*) AS n FROM #easypivot_pivot_table pt INNER JOIN #easypivot_numeric_field_table nft ON nft.name = pt.Pivot_Data WHERE nft.name = @pivot_data)
                                     SET @comma_flag_FROM = 0
+                                    SET @build_chip = 1
                                     OPEN pivot_columns_cursor
                                     FETCH NEXT FROM pivot_columns_cursor INTO @pivot_column_name
-                                    IF @@FETCH_STATUS = 0
+                                    SET @pivot_columns_fetch_status = @@FETCH_STATUS
+                                    IF @pivot_column_name IS NULL
+                                    BEGIN
+                                        SET @pivot_columns_fetch_status = -1
+                                        SET @build_chip = 0
+                                        PRINT
+                                            'Easy Pivot skipped Pivot_Field "' + @pivot_field +
+                                            '" because it contains NULL pivot values. ' +
+                                            'Use COALESCE() or filter NULL values in the source query.'
+                                        SELECT
+                                            'Easy Pivot skipped Pivot_Field "' + @pivot_field +
+                                            '" because it contains NULL values. ' +
+                                            'Use COALESCE() or filter NULL pivot values in the source query.'
+                                            AS Warning_Message
+                                    END
+                                    IF @build_chip = 1
                                         BEGIN
                                             SET @dynamic_from = @dynamic_from + 'LEFT JOIN (' + CHAR(13) + CHAR(10)
                                             SET @dynamic_from = @dynamic_from + 'SELECT pivot_table.* FROM' + CHAR(13) + CHAR(10)
@@ -189,7 +173,7 @@ BEGIN
                                                 SET @dynamic_from = @dynamic_from + UPPER(@pivot_type) + '([' + @pivot_field + '])' + CHAR(13) + CHAR(10)
                                             SET @dynamic_from = @dynamic_from + 'FOR [' + @pivot_field + ']' + ' IN (' + CHAR(13) + CHAR(10)
                                         END
-                                    WHILE @@FETCH_STATUS = 0
+                                    WHILE @pivot_columns_fetch_status = 0
                                         BEGIN
                                             IF @pivot_data IS NULL
                                                 BEGIN
@@ -214,14 +198,19 @@ BEGIN
                                                     SET @comma_flag_FROM = 1
                                                 END
                                             FETCH NEXT FROM pivot_columns_cursor INTO @pivot_column_name
+                                            SET @pivot_columns_fetch_status = @@FETCH_STATUS
                                         END
+       
                                     CLOSE pivot_columns_cursor
                                     DEALLOCATE pivot_columns_cursor
-                                    SET @dynamic_from = @dynamic_from + ')' + CHAR(13) + CHAR(10)
-                                    SET @dynamic_from = @dynamic_from + ') AS pivot_table' + CHAR(13) + CHAR(10)
-                                    SET @dynamic_from = @dynamic_from + ') AS p' + CAST(@pivot_counter AS NVARCHAR)
-                                    SET @dynamic_from = @dynamic_from + REPLACE(@linkage_for_pivots, 'template', 'p' + CAST(@pivot_counter AS NVARCHAR))
-                                    SET @pivot_counter = @pivot_counter + 1
+                                    IF @build_chip = 1
+                                      BEGIN
+                                        SET @dynamic_from = @dynamic_from + ')' + CHAR(13) + CHAR(10)
+                                        SET @dynamic_from = @dynamic_from + ') AS pivot_table' + CHAR(13) + CHAR(10)
+                                        SET @dynamic_from = @dynamic_from + ') AS p' + CAST(@pivot_counter AS NVARCHAR)
+                                        SET @dynamic_from = @dynamic_from + REPLACE(@linkage_for_pivots, 'template', 'p' + CAST(@pivot_counter AS NVARCHAR))
+                                        SET @pivot_counter = @pivot_counter + 1
+                                      END
                                 END
                             FETCH NEXT FROM pivot_cursor INTO @pivot_field, @pivot_data, @pivot_true, @pivot_false, @pivot_type, @follows_field, @sort_order
                         END
