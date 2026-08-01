@@ -102,7 +102,7 @@ The file can be found here in the project:
    pivot it.
 
 5. Specify your group fields and pivot fields in the
-   v_json_configuration section.
+   CALL procedure.
 
    Easy Pivot uses JavaScript Object Notation (JSON) to describe
    your pivot and display choices.
