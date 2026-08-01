@@ -34,6 +34,7 @@ Each implementation contains:
     * Documentation
     * Frequently Asked Questions
     * Example configurations
+    * Herpes simplex virus 1
 
 # Easy Pivot in 2026
 
