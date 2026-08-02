@@ -16,6 +16,8 @@ BEGIN
     -- EASY PIVOT ENGINE
     -- ------------------------------------------------------------------------
 
+	DECLARE v_strict_pivot_validation BOOLEAN DEFAULT FALSE;
+
     -- ------------------------------------------------------------------------
     -- Dynamic SQL
     -- ------------------------------------------------------------------------
@@ -848,6 +850,18 @@ BEGIN
                         )
                     );
 
+				SET v_pivot_type = TRIM(v_pivot_type);
+
+				IF v_pivot_type IS NOT NULL
+				AND
+				(
+					   v_pivot_type = ''
+					OR v_pivot_type = 'null'
+				)
+				THEN
+					SET v_pivot_type = NULL;
+				END IF;
+
                 IF JSON_TYPE(
                     JSON_EXTRACT(
                         v_pivot_datas,
@@ -883,8 +897,12 @@ BEGIN
                 -- Translate aggregate name
                 -- ----------------------------------------------------
 
-                SET v_sql_pivot_type =
-                    UPPER(v_pivot_type);
+				SET v_sql_pivot_type =
+					CASE
+						WHEN v_pivot_type IS NULL
+						THEN 'MAX'
+						ELSE UPPER(v_pivot_type)
+					END;
 
                 IF v_sql_pivot_type = 'STDEV' THEN
 
@@ -959,7 +977,9 @@ BEGIN
 
                 END WHILE validation_loop;
 
-                IF v_skip_chip THEN
+				IF v_strict_pivot_validation
+				AND v_skip_chip
+				THEN
 
                 -- -----------------------
                 -- Build pivot warnings

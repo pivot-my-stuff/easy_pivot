@@ -30,9 +30,11 @@ CALL easy_pivot
 ]}', FALSE, @warnings); 
 
 
--- There will be two tabs for the Result Grids.
+-- IF YOU REMOVE THE TWO DASHES FROM THE LAST LINE YOU
+-- WILL GET TWO GRIDS.
 
--- The first Result Grid Tab contains your pivoted data.
--- The second Result Grid Tab contains warning messages.
+-- The first Grid Tab contains your pivoted data.
+-- The second Grid Tab contains warning messages if
+-- Easy Pivot was installed with strict mode enabled.
 
-SELECT @warnings AS Warning_Messages;
+-- SELECT @warnings AS Warning_Messages;
