@@ -50,6 +50,10 @@ FROM
 -- Change to 1 to print generated pivot code
 DECLARE @generate_source_code_only AS BIT = 0
 
+-- Change to 1 to issue warnings and stop building pivot entries that
+-- generate NULL column names
+DECLARE @strict_pivot_validation AS BIT = 0
+
 -- Change name of temp table "#car_prices" to name of your data source
 DECLARE @source_table AS NVARCHAR(MAX)= '#items_and_flags'
 
@@ -206,17 +210,27 @@ BEGIN
                                     SET @pivot_columns_fetch_status = @@FETCH_STATUS
                                     IF @pivot_column_name IS NULL
                                     BEGIN
-                                        SET @pivot_columns_fetch_status = -1
-                                        SET @build_chip = 0
-                                        PRINT
-                                            'Easy Pivot skipped Pivot_Field "' + @pivot_field +
-                                            '" because it contains NULL pivot values. ' +
-                                            'Use COALESCE() or filter NULL values in the source query.'
-                                        SELECT
-                                            'Easy Pivot skipped Pivot_Field "' + @pivot_field +
-                                            '" because it contains NULL values. ' +
-                                            'Use COALESCE() or filter NULL pivot values in the source query.'
-                                            AS Warning_Message
+                                        IF @strict_pivot_validation = 1
+                                        BEGIN
+                                            SET @pivot_columns_fetch_status = -1
+                                            SET @build_chip = 0
+
+                                            PRINT
+                                                'Easy Pivot skipped Pivot_Field "' + @pivot_field +
+                                                '" because it contains NULL pivot values. ' +
+                                                'Use COALESCE() or filter NULL values in the source query.'
+
+                                            SELECT
+                                                'Easy Pivot skipped Pivot_Field "' + @pivot_field +
+                                                '" because it contains NULL values. ' +
+                                                'Use COALESCE() or filter NULL pivot values in the source query.'
+                                                AS Warning_Message
+                                        END
+                                        ELSE
+                                        BEGIN
+                                            FETCH NEXT FROM pivot_columns_cursor INTO @pivot_column_name
+                                            SET @pivot_columns_fetch_status = @@FETCH_STATUS
+                                        END
                                     END
                                     IF @build_chip = 1
                                         BEGIN
@@ -242,9 +256,16 @@ BEGIN
                                             SET @dynamic_from = @dynamic_from + ') p' + CHAR(13) + CHAR(10)
                                             SET @dynamic_from = @dynamic_from + 'PIVOT (' + CHAR(13) + CHAR(10)
                                             IF @pivot_data IS NOT NULL
-                                                SET @dynamic_from = @dynamic_from + UPPER(@pivot_type) + '([' + @pivot_data + '])' + CHAR(13) + CHAR(10)
+                                            BEGIN
+                                                SET @dynamic_from =
+                                                    @dynamic_from + UPPER(@pivot_type) + '([' + @pivot_data + '])' + CHAR(13) + CHAR(10)
+                                            END
                                             ELSE
-                                                SET @dynamic_from = @dynamic_from + UPPER(@pivot_type) + '([' + @pivot_field + '])' + CHAR(13) + CHAR(10)
+                                            BEGIN
+                                                SET @pivot_type = 'MAX'
+                                                SET @dynamic_from =
+                                                    @dynamic_from + UPPER(@pivot_type) + '([' + @pivot_field + '])' + CHAR(13) + CHAR(10)
+                                            END
                                             SET @dynamic_from = @dynamic_from + 'FOR [' + @pivot_field + ']' + ' IN (' + CHAR(13) + CHAR(10)
                                         END
                                     WHILE @pivot_columns_fetch_status = 0
