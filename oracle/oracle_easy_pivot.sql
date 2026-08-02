@@ -74,6 +74,12 @@ DECLARE
 
     TYPE number_table IS TABLE OF NUMBER INDEX BY PLS_INTEGER;
 
+    TYPE pivot_true_array IS TABLE OF VARCHAR2(4000)
+        INDEX BY PLS_INTEGER;
+    
+    TYPE pivot_false_array IS TABLE OF VARCHAR2(4000)
+        INDEX BY PLS_INTEGER;
+
     v_pivot_field                VARCHAR2(4000);
     v_pivot_discovery_sql        CLOB;
     v_pivot_value                VARCHAR2(4000);
@@ -95,6 +101,8 @@ DECLARE
     v_pivot_sort_orders          pivot_sort_array;
     v_pivot_value_fields         pivot_value_field_table;
     v_numeric_flags              number_table;
+    v_pivot_trues                pivot_true_array;
+    v_pivot_falses               pivot_false_array;
 
     ----------------------------------------------------------------------------
     -- Build procedure working variables (added during Oracle refactoring)
@@ -137,12 +145,13 @@ DECLARE
         l_desc_tab      DBMS_SQL.DESC_TAB2;
         l_numeric_flag  NUMBER := 0;
     BEGIN
+
         /*
             Open parse cursor.
         */
     
         l_cursor := DBMS_SQL.OPEN_CURSOR;
-    
+
         /*
             Parse source query without executing it.
         */
@@ -152,7 +161,7 @@ DECLARE
             statement    => p_source_sql,
             language_flag => DBMS_SQL.NATIVE
         );
-    
+
         /*
             Retrieve result set metadata.
         */
@@ -162,7 +171,7 @@ DECLARE
             col_cnt     => l_column_count,
             desc_t      => l_desc_tab
         );
-    
+
         /*
             Locate Pivot_Data column.
         */
@@ -197,17 +206,19 @@ DECLARE
         */
     
         DBMS_SQL.CLOSE_CURSOR(l_cursor);
-    
+
         RETURN l_numeric_flag;
     
-    EXCEPTION
-        WHEN OTHERS THEN
-            IF DBMS_SQL.IS_OPEN(l_cursor)
-            THEN
-                DBMS_SQL.CLOSE_CURSOR(l_cursor);
-            END IF;
-    
-            RETURN 0;
+        EXCEPTION
+            WHEN OTHERS THEN
+
+                IF DBMS_SQL.IS_OPEN(l_cursor)
+                THEN
+                    DBMS_SQL.CLOSE_CURSOR(l_cursor);
+                END IF;
+        
+                RETURN 0;
+
     END is_numeric_column;
 
     ----------------------------------------------------------------------------
@@ -316,7 +327,35 @@ DECLARE
         
             v_pivot_types(v_pivot_count) :=
                 r.pivot_type;
+
+            /*
+                Oracle treats empty strings as NULL.
             
+                Preserve user intent by storing a single space whenever
+                Pivot_True or Pivot_False is blank. The generated SQL
+                will emit a visually blank value instead of Oracle NULL.
+            */
+
+            IF r.pivot_true IS NULL THEN
+            
+                v_pivot_trues(v_pivot_count) := ' ';
+            
+            ELSE
+            
+                v_pivot_trues(v_pivot_count) := r.pivot_true;
+            
+            END IF;
+            
+            IF r.pivot_false IS NULL THEN
+            
+                v_pivot_falses(v_pivot_count) := ' ';
+            
+            ELSE
+            
+                v_pivot_falses(v_pivot_count) := r.pivot_false;
+            
+            END IF;
+
             v_pivot_follows(v_pivot_count) :=
                 r.follows_field;
             
@@ -327,13 +366,9 @@ DECLARE
 
         IF v_pivot_count > 0 THEN
         
---            DBMS_OUTPUT.PUT_LINE('IF v_pivot_count > 0');
-
             FOR pivot_number IN 1 .. v_pivot_count
             LOOP
             
---            DBMS_OUTPUT.PUT_LINE('pivot_number_loop');
-
                 v_pivot_field :=
                     v_pivot_fields(pivot_number);
                 
@@ -379,6 +414,20 @@ DECLARE
                        ELSE 'ASC'
                    END;
  
+                IF v_debug = 1 THEN
+
+                    print_banner('Metadata Discovery');
+
+                    DBMS_OUTPUT.PUT_LINE(
+                        'Pivot Field: ' ||
+                        NVL(v_pivot_field,'<NULL>')
+                    );
+
+                    DBMS_OUTPUT.PUT_LINE(CHR(10));
+                    DBMS_OUTPUT.PUT_LINE(v_pivot_discovery_sql);
+
+                END IF;
+
                 OPEN pivot_cursor FOR v_pivot_discovery_sql;
             
                 LOOP
@@ -387,7 +436,14 @@ DECLARE
                     INTO v_pivot_value;
 
                     EXIT WHEN pivot_cursor%NOTFOUND;
-         
+
+                    IF v_debug = 1 THEN
+                        DBMS_OUTPUT.PUT_LINE(
+                            'Metadata Value: ' ||
+                            NVL(v_pivot_value,'<NULL>')
+                        );
+                    END IF;
+
                      v_duplicate_found := FALSE;
                     
                     FOR existing_chip IN 1 .. v_pivot_value_count
@@ -580,19 +636,12 @@ DECLARE
                         -- Determine whether THIS pivot's data is numeric
                         -------------------------------------------------
                         
-                        v_numeric_flag := 0;
+                        v_numeric_flag := v_numeric_flags(pivot_number);
                         
-                        IF v_pivot_data IS NOT NULL
-                        AND TRIM(v_pivot_data) <> ''
-                        THEN
-                        
-                            v_numeric_flag :=
-                                is_numeric_column
-                                (
-                                    v_user_sql,
-                                    v_pivot_data
-                                );
-                        
+                        IF v_debug = 1 THEN
+                            DBMS_OUTPUT.PUT_LINE(
+                                'Numeric Flag: ' || v_numeric_flag
+                            );
                         END IF;
 
                         -------------------------------------------------
@@ -616,6 +665,30 @@ DECLARE
                             || CHR(10)
                             || 'ORDER BY 1';
 
+                        IF v_debug = 1 THEN
+
+                            print_banner('Pivot Discovery');
+
+                            DBMS_OUTPUT.PUT_LINE(
+                                'Pivot Field : ' ||
+                                NVL(v_pivot_field,'<NULL>')
+                            );
+
+                            DBMS_OUTPUT.PUT_LINE(
+                                'Pivot Type  : ' ||
+                                NVL(v_pivot_type,'<NULL>')
+                            );
+
+                            DBMS_OUTPUT.PUT_LINE(
+                                'Pivot Data  : ' ||
+                                NVL(v_pivot_data,'<NULL>')
+                            );
+
+                            DBMS_OUTPUT.PUT_LINE(CHR(10));
+                            DBMS_OUTPUT.PUT_LINE(v_discovery_sql);
+
+                        END IF;
+
                         OPEN discovery_cursor FOR
                             v_discovery_sql;
                         
@@ -623,17 +696,36 @@ DECLARE
                         
                             FETCH discovery_cursor
                             INTO v_current_pivot_value;
-                        
+                            
                             EXIT WHEN discovery_cursor%NOTFOUND;
-                        
+                            
+                            IF v_debug = 1 THEN
+                                DBMS_OUTPUT.PUT_LINE(
+                                    'Pivot Value: ' ||
+                                    NVL(v_current_pivot_value,'<NULL>')
+                                );
+                            END IF;
+                            
+                            IF v_current_pivot_value IS NULL THEN
+                            
+                                IF v_debug = 1 THEN
+                                    DBMS_OUTPUT.PUT_LINE(
+                                        'Skipping NULL pivot value.'
+                                    );
+                                END IF;
+                            
+                                CONTINUE;
+                            
+                            END IF;
+                            
                             v_local_pivot_count :=
                                 v_local_pivot_count + 1;
-                        
+                            
                             v_local_pivot_values(v_local_pivot_count) :=
                                 v_current_pivot_value;
                         
                         END LOOP;
-                        
+
                         CLOSE discovery_cursor;
 
                         -------------------------------------------------
@@ -666,6 +758,34 @@ DECLARE
                                     || '"';
 
                             ELSIF v_pivot_data IS NULL THEN
+                            
+                                v_dynamic_select :=
+                                       v_dynamic_select
+                                    || ','
+                                    || CHR(10)
+                                    || '    CASE'
+                                    || CHR(10)
+                                    || '        WHEN '
+                                    || 'p'
+                                    || v_pivot_alias
+                                    || '."'
+                                    || v_local_pivot_values(chip_number)
+                                    || '"'
+                                    || ' IS NULL'
+                                    || CHR(10)
+                                    || '        THEN '''
+                                    || v_pivot_falses(pivot_number)
+                                    || ''''
+                                    || CHR(10)
+                                    || '        ELSE '''
+                                    || v_pivot_trues(pivot_number)
+                                    || ''''
+                                    || CHR(10)
+                                    || '    END AS "'
+                                    || v_local_pivot_values(chip_number)
+                                    || '"';
+
+                            ELSE
 
                                 v_dynamic_select :=
                                     v_dynamic_select
@@ -677,25 +797,6 @@ DECLARE
                                     || '."'
                                     || v_local_pivot_values(chip_number)
                                     || '",'''') AS "'
-                                    || CASE
-                                           WHEN v_pivot_type IS NULL
-                                           THEN ''
-                                           ELSE v_pivot_type || '_'
-                                       END
-                                    || v_local_pivot_values(chip_number)
-                                    || '"';
-
-                            ELSE
-
-                                v_dynamic_select :=
-                                    v_dynamic_select
-                                    || ','
-                                    || CHR(10)
-                                    || '    p'
-                                    || v_pivot_alias
-                                    || '."'
-                                    || v_local_pivot_values(chip_number)
-                                    || '" AS "'
                                     || CASE
                                            WHEN v_pivot_type IS NULL
                                            THEN ''
@@ -990,9 +1091,6 @@ DECLARE
             || CHR(10)
             || v_dynamic_order_by;
     
---            DBMS_OUTPUT.PUT_LINE('*** BUILD FINAL SQL ***');
---            DBMS_OUTPUT.PUT_LINE(v_final_sql);
-
     END;
     
     PROCEDURE execute_final_sql
@@ -1032,9 +1130,9 @@ DECLARE
     build_final_sql;
     -- ==============================
 
-    --  ========= EXECUTE ============
+    --  ========= EXECUTE ===========
     execute_final_sql;
-    --  ==============================
+    --  =============================
     
     END;
     /
