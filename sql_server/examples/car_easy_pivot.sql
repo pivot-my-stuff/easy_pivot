@@ -246,6 +246,21 @@ BEGIN
                                                 'Use COALESCE() or filter NULL pivot values in the source query.'
                                                 AS Warning_Message
                                         END
+                                        ELSE
+                                        BEGIN
+                                            -- Normal mode:
+                                            -- Ignore NULL pivot values and continue looking for the
+                                            -- first valid pivot column.
+
+                                            WHILE @pivot_column_name IS NULL
+                                              AND @pivot_columns_fetch_status = 0
+                                            BEGIN
+                                                FETCH NEXT FROM pivot_columns_cursor
+                                                    INTO @pivot_column_name
+
+                                                SET @pivot_columns_fetch_status = @@FETCH_STATUS
+                                            END
+                                        END
                                     END
                                     IF @build_chip = 1
                                         BEGIN
