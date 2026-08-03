@@ -234,11 +234,6 @@ BEGIN
                                                 'Use COALESCE() or filter NULL pivot values in the source query.'
                                                 AS Warning_Message
                                         END
-                                        ELSE
-                                        BEGIN
-                                            FETCH NEXT FROM pivot_columns_cursor INTO @pivot_column_name
-                                            SET @pivot_columns_fetch_status = @@FETCH_STATUS
-                                        END
                                     END
                                     IF @build_chip = 1
                                         BEGIN
