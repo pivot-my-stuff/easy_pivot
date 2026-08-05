@@ -2,22 +2,23 @@
 
 # Daily updates
 
-August 5, 2026 
+August 6, 2026 
 
-Yesterday, the Easy Pivot PostgreSQL version was brought to parity
-with the other database versions. If you were trying to use Easy
-Pivot with PostgreSQL support recently, please download the entire
-project again or do a "git pull" and see if it improves anything.
-It should.
+The Easy Pivot Workbench continues to make steady progress toward
+Version 1.0. The application has moved beyond the prototype stage
+and now provides a functional user interface for constructing Easy
+Pivot JSON configurations interactively. There is no requirement
+to know JSON when using Easy Pivot Workbench. The JSON is shown
+in case someone wants to use Easy Pivot for scheduling database
+jobs. In that case, the JSON information would need to be
+included in the job when calling the Easy Pivot stored procedure.
 
-Development of the Easy Pivot web application started yesterday and
-will continue today. The target database continues to be MySQL
-because it is already implemented as a stored procedure. The other
-supported databases will follow with a stored procedure option and
-the web application.
+The target database continues to be MySQL because it is already
+implemented as a stored procedure. The other supported databases
+will follow with a stored procedure option and the web application.
 
 <p align="center">
-<img src="img/PIVOTY_JSON_HELP_DESK.jpg" width="60%" height="60%">
+<img src="img/easy_pivot_workbench.jpg">
 </p>
 
 # Introduction
