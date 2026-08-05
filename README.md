@@ -2,27 +2,19 @@
 
 # Daily updates
 
-August 4, 2026 
+August 5, 2026 
 
-Development is happening so fast now I've decided to try to provide
-daily updates.
+Yesterday, the Easy Pivot PostgreSQL version was brought to parity
+with the other database versions. If you were trying to use Easy
+Pivot with PostgreSQL support recently, please download the entire
+project again or do a "git pull" and see if it improves anything.
+It should.
 
-This morning the Easy Pivot PostgreSQL version will be brought to
-parity with the other database versions. Somehow it has fallen behind
-the other supported databases and is a little crashy. But after this
-morning, no more.
-
-Then the fun begins. Development work will switch to a lightweight
-user interface requiring only the installation of PHP on your computer.
-No more of that messy JSON stuff! The idea is that you can paste
-your SQL data source query into a text box in this interface and the
-PHP code will connect with your database to produce the pivot query.
-A second text box will hold that returned code. Then you can just copy
-and paste it to your SQL developement application.
-
-The experiment begins with MySQL because it is already implemented as
-a stored procedure. The other versions will follow with a stored
-procedure option and the lightweight user interface.
+Development of the Easy Pivot web application started yesterday and
+will continue today. The target database continues to be MySQL
+because it is already implemented as a stored procedure. The other
+supported databases will follow with a stored procedure option and
+the web application.
 
 <p align="center">
 <img src="img/PIVOTY_JSON_HELP_DESK.jpg" width="60%" height="60%">
