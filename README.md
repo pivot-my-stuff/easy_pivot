@@ -1,23 +1,49 @@
-# Daily updates
-
-August 6, 2026 
-
-The Easy Pivot Workbench continues to make steady progress toward
-Version 1.0. The application has moved beyond the prototype stage
-and now provides a functional user interface for constructing Easy
-Pivot JSON configurations interactively. There is no requirement
-to know JSON when using Easy Pivot Workbench. The JSON is shown
-in case someone wants to use Easy Pivot for scheduling database
-jobs. In that case, the JSON information would need to be
-included in the job when calling the Easy Pivot stored procedure.
-
-The target database continues to be MySQL because it is already
-implemented as a stored procedure. The other supported databases
-will follow with a stored procedure option and the web application.
-
 <p align="center">
-<img src="img/easy_pivot_workbench.jpg">
+<img src="img/easy_pivot_workbench_w_php.jpg">
 </p>
+
+August 7, 2026 
+
+# Easy Pivot Workbench
+
+Easy Pivot is evolving from a SQL stored procedure into a complete graphical application.
+
+The new **Easy Pivot Workbench** provides a visual interface for creating Group and Pivot definitions without manually editing JSON configuration files. The Workbench automatically generates the required JSON, communicates with the Easy Pivot engine through a lightweight local PHP server, and returns production-ready SQL pivot code that you specified in the interface.
+
+The application runs entirely on your own computer. No cloud services, subscriptions, or external web servers are required beyond PHP and a supported database.
+
+## Current Features
+
+- Visual Group editor
+- Visual Pivot Chip editor
+- Automatic JSON generation
+- Built-in validation
+- Dynamic SQL pivot code generation
+- Local PHP application server (using PHP's built-in development server)
+- Direct integration with the Easy Pivot stored procedure
+
+## Current Platform
+
+Easy Pivot Workbench is currently under active development and tested on:
+
+- Microsoft Windows
+- PHP 8.x
+- MySQL
+
+## Planned Platforms
+
+Future releases are planned for:
+
+- Linux
+- macOS
+
+## Future Database Support
+
+Easy Pivot Workbench is being designed as a common graphical interface for every Easy Pivot implementation. Planned database support includes:
+
+- SQL Server
+- PostgreSQL
+- Oracle
 
 # Introduction
 
@@ -53,7 +79,6 @@ Each implementation contains:
     * Documentation
     * Frequently Asked Questions
     * Example configurations
-    * Herpes simplex virus 1
 
 # Easy Pivot in 2026
 
