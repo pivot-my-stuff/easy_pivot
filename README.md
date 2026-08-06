@@ -1,5 +1,3 @@
-![Easy Pivot](img/easy_pivot.jpg)
-
 # Daily updates
 
 August 6, 2026 
