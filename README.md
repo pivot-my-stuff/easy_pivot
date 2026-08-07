@@ -2,10 +2,6 @@
 <img src="img/easy_pivot_workbench_w_php.jpg">
 </p>
 
-<p align="center">
-<img src="img/easy_pivot_workbench_chips.jpg">
-</p>
-
 August 7, 2026 
 
 # Easy Pivot Workbench
