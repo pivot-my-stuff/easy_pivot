@@ -2,7 +2,11 @@
 <img src="img/easy_pivot_workbench_w_php.jpg">
 </p>
 
-August 7, 2026 
+August 8, 2026 
+
+# Latest Development Update
+
+Introduced the first working version of the Easy Pivot Workbench. The Workbench now generates JSON configurations, invokes the MySQL Easy Pivot stored procedure, displays generated SQL, and supports copying SQL directly to the clipboard. Continued improvements to the user interface and support for additional databases are ongoing.
 
 # Easy Pivot Workbench
 
