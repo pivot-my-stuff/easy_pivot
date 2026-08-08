@@ -1,12 +1,28 @@
 <p align="center">
-<img src="img/easy_pivot_workbench_w_php.jpg">
+<img src="img/easy_pivot_workbench_demo_1.jpg">
 </p>
 
-August 8, 2026 
+<p align="center">
+<img src="img/easy_pivot_workbench_demo_2.jpg">
+</p>
 
-# Latest Development Update
+<p align="center">
+<img src="img/easy_pivot_workbench_demo_3.jpg">
+</p>
 
-Introduced the first working version of the Easy Pivot Workbench. The Workbench now generates JSON configurations, invokes the MySQL Easy Pivot stored procedure, displays generated SQL, and supports copying SQL directly to the clipboard. Continued improvements to the user interface and support for additional databases are ongoing.
+<p align="center">
+<img src="img/easy_pivot_workbench_demo_4.jpg">
+</p>
+
+<p align="center">
+<img src="img/easy_pivot_workbench_demo_5.jpg">
+</p>
+
+### August 9, 2026 — Easy Pivot Workbench Takes Shape
+
+**Easy Pivot Workbench is officially no longer vaporware.** 😄 After a tremendous amount of development and testing, the project has evolved from a collection of SQL-generation code into a complete, polished interactive workbench. Users can enter a source query, configure groups and pivot chips through the interface, generate the resulting pivot SQL, and execute that SQL against the database. The workbench now includes dynamic configuration, validation, editing and deletion, NULL handling, multiple aggregation types, follows relationships, sorting, automatic source-query parsing, and a redesigned visual interface featuring the new Pivoty office and chalkboard-style SQL workspace.
+
+The next step is **beta release**. We expect to make Easy Pivot Workbench available as beta software within the next day or two. Although the application is already remarkably mature, we want real users to put it through its paces before calling it production-ready. **Feedback, bug reports, usability observations, and suggestions are very welcome.** We've deliberately spent considerable time testing unusual combinations and trying to break the application ourselves, but there's nothing quite like having other people approach a tool with completely different ideas about how it should be used. If you've ever wished that constructing complicated pivot queries could be easier, we'd love for you to give Easy Pivot a try and tell us what you think.
 
 # Easy Pivot Workbench
 
