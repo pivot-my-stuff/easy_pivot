@@ -18,19 +18,15 @@
 <img src="img/easy_pivot_workbench_demo_5.jpg">
 </p>
 
-### August 9, 2026 — Easy Pivot Workbench Takes Shape
+### August 10, 2026 — Easy Pivot Workbench & Web Servers
+
+Work was done yesterday implementing database connection functionality. And Easy Pivot Workbench will be able to run standalone on one computer or made available by another webserver hosting the Easy Pivot Workbench application. The webserver needs to have PHP support enabled.
+
+# Easy Pivot Workbench
 
 **Easy Pivot Workbench is officially no longer vaporware.** 😄 After a tremendous amount of development and testing, the project has evolved from a collection of SQL-generation code into a complete, polished interactive workbench. Users can enter a source query, configure groups and pivot chips through the interface, generate the resulting pivot SQL, and execute that SQL against the database. The workbench now includes dynamic configuration, validation, editing and deletion, NULL handling, multiple aggregation types, follows relationships, sorting, automatic source-query parsing, and a redesigned visual interface featuring the new Pivoty office and chalkboard-style SQL workspace.
 
 The next step is **beta release**. We expect to make Easy Pivot Workbench available as beta software within the next day or two. Although the application is already remarkably mature, we want real users to put it through its paces before calling it production-ready. **Feedback, bug reports, usability observations, and suggestions are very welcome.** We've deliberately spent considerable time testing unusual combinations and trying to break the application ourselves, but there's nothing quite like having other people approach a tool with completely different ideas about how it should be used. If you've ever wished that constructing complicated pivot queries could be easier, we'd love for you to give Easy Pivot a try and tell us what you think.
-
-# Easy Pivot Workbench
-
-Easy Pivot is evolving from a SQL stored procedure into a complete graphical application.
-
-The new **Easy Pivot Workbench** provides a visual interface for creating Group and Pivot definitions without manually editing JSON configuration files. The Workbench automatically generates the required JSON, communicates with the Easy Pivot engine through a lightweight local PHP server, and returns production-ready SQL pivot code that you specified in the interface.
-
-The application runs entirely on your own computer. No cloud services, subscriptions, or external web servers are required beyond PHP and a supported database.
 
 ## Current Features
 
