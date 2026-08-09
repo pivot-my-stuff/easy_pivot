@@ -20,7 +20,7 @@
 
 ### August 10, 2026 — Easy Pivot Workbench & Web Servers
 
-Work was done yesterday implementing database connection functionality. And Easy Pivot Workbench will be able to run standalone on one computer or made available by another webserver hosting the Easy Pivot Workbench application. The webserver needs to have PHP support enabled.
+Work was done yesterday implementing database connection functionality. And Easy Pivot Workbench will be able to run standalone on one computer or made available by another web server hosting the Easy Pivot Workbench application. The web server needs to have PHP support enabled.
 
 # Easy Pivot Workbench
 
