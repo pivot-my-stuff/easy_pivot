@@ -18,9 +18,17 @@
 <img src="img/easy_pivot_workbench_demo_5.jpg">
 </p>
 
-### August 10, 2026 — Easy Pivot Workbench & Web Servers
+### August 11, 2026 — Easy Pivot Workbench Installation Instructions
 
-Work was done yesterday implementing database connection functionality. And Easy Pivot Workbench will be able to run standalone on one computer or made available by another web server hosting the Easy Pivot Workbench application. The web server needs to have PHP support enabled.
+The **Easy Pivot Workbench** provides both standalone and web-based access to Easy Pivot.
+
+Installation instructions, configuration details, and information about running the Workbench are available in the documentation included in the:
+
+`easy_pivot_workbench`
+
+folder.
+
+For MySQL users, the installation documentation includes instructions for installing the Easy Pivot stored procedure and configuring the Workbench.
 
 # Easy Pivot Workbench
 

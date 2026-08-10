@@ -2882,24 +2882,91 @@ const EasyPivot = {
         const text =
             document.getElementById("generated_sql").value;
 
-        navigator.clipboard
-            .writeText(text)
-            .then(() =>
-            {
-                const button =
-                    document.getElementById("copy_button");
+        const button =
+            document.getElementById("copy_button");
 
+        const showCopied =
+            () =>
+            {
                 button.textContent = "Copied!";
 
                 setTimeout(() =>
                 {
                     button.textContent = "Copy to Clipboard";
                 }, 1000);
-            })
-            .catch(err =>
+            };
+
+        const fallbackCopy =
+            () =>
             {
-                console.error("Clipboard copy failed:", err);
-            });
+                const textarea =
+                    document.createElement("textarea");
+
+                textarea.value = text;
+                textarea.setAttribute("readonly", "");
+                textarea.style.position = "fixed";
+                textarea.style.left = "-9999px";
+
+                document.body.appendChild(textarea);
+
+                textarea.select();
+                textarea.setSelectionRange(0, textarea.value.length);
+
+                const successful =
+                    document.execCommand("copy");
+
+                document.body.removeChild(textarea);
+
+                if (!successful)
+                {
+                    throw new Error("Clipboard copy failed.");
+                }
+            };
+
+        if (
+            navigator.clipboard &&
+            typeof navigator.clipboard.writeText === "function"
+        )
+        {
+            navigator.clipboard
+                .writeText(text)
+                .then(showCopied)
+                .catch(err =>
+                {
+                    console.warn(
+                        "Clipboard API failed; trying fallback:",
+                        err
+                    );
+
+                    try
+                    {
+                        fallbackCopy();
+                        showCopied();
+                    }
+                    catch (fallbackError)
+                    {
+                        console.error(
+                            "Clipboard copy failed:",
+                            fallbackError
+                        );
+                    }
+                });
+        }
+        else
+        {
+            try
+            {
+                fallbackCopy();
+                showCopied();
+            }
+            catch (err)
+            {
+                console.error(
+                    "Clipboard copy failed:",
+                    err
+                );
+            }
+        }
     },
 
     toggleWorkspace(hidden) {
