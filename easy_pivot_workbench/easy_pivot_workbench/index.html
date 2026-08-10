@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>
+
+        Easy Pivot Workbench — Dynamic SQL Pivoting
+
+    </title>
+
+    <!-- W3.CSS -->
+
+    <link
+        rel="stylesheet"
+        href="css/w3.css">
+
+    <!-- Easy Pivot Workbench -->
+
+    <link
+        rel="stylesheet"
+        href="css/easy_pivot.css">
+
+</head>
+
+<body>
+
+<!-- ========================================================= -->
+<!-- APPLICATION HEADER                                        -->
+<!-- ========================================================= -->
+
+<header id="application_header">
+
+    <h2>
+
+        Easy Pivot Workbench
+
+    </h2>
+
+    <div id="workspace_toggle_container">
+
+        <label id="workspace_toggle">
+
+            <input
+                id="hide_workspace"
+                type="checkbox">
+
+            Hide Workspace
+
+        </label>
+
+    </div>
+
+</header>
+
+<!-- ========================================================= -->
+<!-- APPLICATION WORKSPACE                                     -->
+<!-- ========================================================= -->
+
+<main id="application_workspace">
+
+<!-- ========================================================= -->
+<!-- LEFT PANEL (60%)                                          -->
+<!-- ========================================================= -->
+
+<section id="workbench_panel">
+
+    <!-- ===================================================== -->
+    <!-- DATABASE                                               -->
+    <!-- ===================================================== -->
+
+    <section class="ep-section">
+
+        <div class="ep-section-title">
+
+            Database
+
+        </div>
+
+        <div id="database_selection">
+
+            <label><input type="radio" name="database" value="mysql" checked> MySQL</label>
+
+            <label><input type="radio" name="database" value="oracle"> Oracle</label>
+
+            <label><input type="radio" name="database" value="postgresql"> PostgreSQL</label>
+
+            <label><input type="radio" name="database" value="sqlserver"> SQL Server</label>
+
+        </div>
+
+    </section>
+
+    <!-- ===================================================== -->
+    <!-- CONNECTION                                             -->
+    <!-- ===================================================== -->
+
+    <section class="ep-section">
+
+        <div class="ep-section-title ep-connection-title">
+
+            <span>
+                Connection
+            </span>
+
+        </div>
+
+        <div id="connection_selection">
+
+            <div class="connection-row">
+
+                <label for="connection_select">
+                    Connection
+                </label>
+
+                <select
+                    id="connection_select"
+                    class="w3-select w3-border">
+
+                    <option value="local_mysql">
+                        Local MySQL
+                    </option>
+
+                </select>
+
+                <button
+                    id="manage_connections_button"
+                    class="w3-button w3-small w3-round">
+
+                    Manage...
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- ===================================================== -->
+    <!-- GROUPS                                                 -->
+    <!-- ===================================================== -->
+
+    <section class="ep-section">
+
+        <div class="ep-section-title ep-group-title">
+
+            <span>
+                Groups
+            </span>
+
+            <button
+                id="clear_group_button"
+                class="w3-button w3-small w3-round">
+
+                Clear Groups
+
+            </button>
+
+            <button
+                id="add_group_button"
+                class="w3-button w3-small w3-round">
+
+                + Add
+
+            </button>
+
+        </div>
+
+        <div class="ep-list">
+
+            <div class="ep-list-header">
+
+                <span>Field</span>
+
+                <span>Sort</span>
+
+                <span></span>
+
+            </div>
+
+            <div id="group_container">
+
+                <!-- Groups inserted here -->
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- ===================================================== -->
+    <!-- PIVOT CHIPS                                            -->
+    <!-- ===================================================== -->
+
+    <section class="ep-section">
+
+        <div class="ep-section-title ep-pivot-title">
+
+            <span>
+                Pivot Chips
+            </span>
+
+            <button
+                id="clear_pivot_button"
+                class="w3-button w3-small w3-round">
+
+                Clear Pivot Chips
+
+            </button>
+
+            <button
+                id="add_pivot_button"
+                class="w3-button w3-small w3-round">
+
+                + Add Chip
+
+            </button>
+
+        </div>
+
+        <div class="ep-list">
+
+            <div class="ep-pivot-header">
+
+                <span>Field</span>
+
+                <span>Type</span>
+
+                <span>Data</span>
+
+                <span>True</span>
+
+                <span>False</span>
+
+                <span>Follows</span>
+
+                <span>Sort</span>
+
+                <span></span>
+
+            </div>
+
+            <div id="pivot_container">
+
+                <!-- Pivot Chips inserted here -->
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- ===================================================== -->
+    <!-- GENERATED JSON                                         -->
+    <!-- ===================================================== -->
+
+    <section class="ep-section">
+
+        <div class="ep-section-title ep-json-title">
+
+            Generated JSON
+
+        </div>
+
+        <textarea
+            id="generated_json"
+            readonly>
+
+{
+
+}
+
+        </textarea>
+
+    </section>
+
+    <!-- ===================================================== -->
+    <!-- GENERATE BUTTON                                        -->
+    <!-- ===================================================== -->
+
+    <div id="generate_button_area">
+
+        <button
+            id="generate_sql_button"
+            class="w3-button w3-round w3-card">
+
+            Generate Pivot Query
+
+        </button>
+
+    </div>
+
+</section>
+
+<!-- ========================================================= -->
+<!-- RIGHT PANEL (40%)                                         -->
+<!-- ========================================================= -->
+
+<section id="sql_panel">
+
+    <section class="ep-section">
+
+        <div class="ep-section-title">
+
+            Source Data Query
+
+        </div>
+
+        <textarea
+            id="source_query"
+            spellcheck="false"
+            placeholder="Paste or type your source SQL query here...">
+
+        </textarea>
+
+    </section>
+
+</section>
+
+</main>
+
+<!-- ========================================================= -->
+<!-- GENERATED SQL WINDOW                                      -->
+<!-- ========================================================= -->
+
+<!-- ========================================================= -->
+<!-- MANAGE CONNECTIONS DIALOG                                -->
+<!-- ========================================================= -->
+
+<div
+    id="connection_dialog"
+    class="w3-modal">
+
+    <div
+        class="w3-modal-content w3-card-4 ep-dialog">
+
+        <!-- Title -->
+
+        <header
+            class="w3-container ep-connection-title">
+
+            <span
+                id="close_connection_dialog"
+                class="w3-button w3-display-topright">
+
+                &times;
+
+            </span>
+
+            <h3>
+                Manage Connections
+            </h3>
+
+        </header>
+
+        <!-- Body -->
+
+        <div class="w3-container ep-dialog-body">
+
+            <label for="connection_name">
+                <b>Connection Name</b>
+            </label>
+
+            <input
+                id="connection_name"
+                class="w3-input w3-border"
+                type="text"
+                value="Local MySQL">
+
+            <br>
+
+            <label for="connection_host">
+                <b>Host</b>
+            </label>
+
+            <input
+                id="connection_host"
+                class="w3-input w3-border"
+                type="text"
+                value="localhost">
+
+            <br>
+
+            <div class="connection-field-row">
+
+                <div>
+
+                    <label for="connection_port">
+                        <b>Port</b>
+                    </label>
+
+                    <input
+                        id="connection_port"
+                        class="w3-input w3-border"
+                        type="number"
+                        value="3306">
+
+                </div>
+
+                <div>
+
+                    <label for="connection_database">
+                        <b>Database</b>
+                    </label>
+
+                    <input
+                        id="connection_database"
+                        class="w3-input w3-border"
+                        type="text"
+                        value="easy_pivot">
+
+                </div>
+
+            </div>
+
+            <br>
+
+            <label for="connection_authentication">
+                <b>Authentication</b>
+            </label>
+
+            <select
+                id="connection_authentication"
+                class="w3-select w3-border">
+
+                <option value="password">
+                    Username / Password
+                </option>
+
+            </select>
+
+            <br><br>
+
+            <label for="connection_username">
+                <b>User Name</b>
+            </label>
+
+            <input
+                id="connection_username"
+                class="w3-input w3-border"
+                type="text"
+                value="root"
+                autocomplete="off">
+
+            <br>
+
+            <label for="connection_password">
+                <b>Password</b>
+            </label>
+
+            <input
+                id="connection_password"
+                class="w3-input w3-border"
+                type="password"
+                value=""
+                autocomplete="off">
+
+            <div class="connection-note">
+                Connection settings are stored in this browser. Passwords are not saved.
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+
+        <footer
+            class="w3-container w3-padding">
+
+            <div class="w3-right">
+
+                <button
+                    id="delete_connection_button"
+                    class="w3-button w3-round">
+
+                    Delete
+
+                </button>
+
+                <button
+                    id="cancel_connection_button"
+                    class="w3-button w3-light-grey">
+
+                    Cancel
+
+                </button>
+
+                <button
+                    id="save_connection_button"
+                    class="w3-button w3-round">
+
+                    Save
+
+                </button>
+
+            </div>
+
+        </footer>
+
+    </div>
+
+</div>
+
+<!-- ========================================================= -->
+<!-- ADD GROUP DIALOG                                          -->
+<!-- ========================================================= -->
+
+<div
+    id="group_dialog"
+    class="w3-modal">
+
+    <div
+        class="w3-modal-content w3-card-4"
+        style="max-width:520px;">
+
+        <!-- Title Bar -->
+
+        <header
+            class="w3-container ep-group-title">
+
+            <span
+                id="close_group_dialog"
+                class="w3-button w3-display-topright">
+
+                &times;
+
+            </span>
+
+            <h3>
+
+                Add Group
+
+            </h3>
+
+        </header>
+
+        <!-- Body -->
+
+        <div
+            class="w3-container"
+            style="padding-top:20px;padding-bottom:20px;">
+
+            <label>
+
+                <b>Field</b>
+
+            </label>
+
+        <input
+            id="group_field"
+            class="w3-input w3-border"
+            type="text"
+            list="available_fields"
+            placeholder="Enter group field...">
+
+        <datalist id="available_fields">
+        </datalist>
+
+            <br>
+
+            <label>
+
+                <b>Sort</b>
+
+            </label>
+
+            <p>
+
+                <input
+                    id="group_sort_asc"
+                    class="w3-radio"
+                    type="radio"
+                    name="group_sort"
+                    checked>
+
+                <label for="group_sort_asc">
+
+                    Ascending (ASC)
+
+                </label>
+
+            </p>
+
+            <p>
+
+                <input
+                    id="group_sort_desc"
+                    class="w3-radio"
+                    type="radio"
+                    name="group_sort">
+
+                <label for="group_sort_desc">
+
+                    Descending (DESC)
+
+                </label>
+
+            </p>
+
+        </div>
+
+        <!-- Footer -->
+
+        <footer
+            class="w3-container w3-padding">
+
+            <div class="w3-right">
+
+                <button
+                    id="cancel_group_button"
+                    class="w3-button w3-light-grey">
+
+                    Cancel
+
+                </button>
+
+                <button
+                    id="save_group_button"
+                    class="w3-button w3-round">
+
+                    Add Group
+
+                </button>
+
+            </div>
+
+        </footer>
+
+    </div>
+
+</div>
+
+<!-- ========================================================= -->
+<!-- ADD PIVOT CHIP DIALOG                                     -->
+<!-- ========================================================= -->
+
+<div
+    id="pivot_dialog"
+    class="w3-modal">
+
+    <div
+        class="w3-modal-content w3-card-4 ep-dialog">
+
+        <!-- Title -->
+
+        <header
+            class="w3-container ep-pivot-title">
+
+            <span
+                id="close_pivot_dialog"
+                class="w3-button w3-display-topright">
+
+                &times;
+
+            </span>
+
+            <h3>
+
+                Add Pivot Chip
+
+            </h3>
+
+        </header>
+
+        <!-- Body -->
+
+        <div class="w3-container ep-dialog-body">
+
+            <label>
+
+                <b>Field</b>
+
+            </label>
+
+        <input
+            id="pivot_field"
+            class="w3-input w3-border"
+            type="text"
+            list="available_fields"
+            placeholder="Enter pivot field...">
+
+            <br>
+
+            <label>
+
+                <b>Aggregate Type</b>
+
+            </label>
+
+        <input
+            id="pivot_aggregate"
+            class="w3-input w3-border"
+            type="text"
+            list="pivot_aggregate_types"
+            value="SUM"
+            autocomplete="off"
+            placeholder="Enter aggregate type...">
+
+        <datalist id="pivot_aggregate_types">
+        </datalist>
+
+        <div
+            id="custom_aggregate_message"
+            class="custom-aggregate-message">
+            Custom aggregation type
+        </div>
+
+            <br>
+
+            <label>
+
+                <b>Data Field</b>
+
+            </label>
+
+        <input
+            id="pivot_data_field"
+            class="w3-input w3-border"
+            type="text"
+            list="available_fields"
+            placeholder="Enter data field...">
+
+            <br>
+
+            <div id="boolean_section">
+
+                <label>
+
+                    <b>Boolean Values</b>
+
+                </label>
+
+                <div class="boolean-row">
+
+                    <div>
+
+                        <label>True</label>
+
+                        <input
+                            id="pivot_true"
+                            class="w3-input w3-border"
+                            type="text">
+
+                    </div>
+
+                    <div>
+
+                        <label>False</label>
+
+                        <input
+                            id="pivot_false"
+                            class="w3-input w3-border"
+                            type="text">
+
+                    </div>
+
+                </div>
+
+                <br>
+
+            </div>
+
+            <label>
+
+                <b>Follows</b>
+
+            </label>
+
+            <select
+                id="pivot_follows"
+                class="w3-select w3-border">
+
+                <option>None</option>
+
+            </select>
+
+            <br><br>
+
+            <label>
+
+                <b>Sort</b>
+
+            </label>
+
+            <div class="sort-row">
+
+                <label>
+
+                    <input
+                        id="pivot_sort_asc"
+                        class="w3-radio"
+                        type="radio"
+                        name="pivot_sort"
+                        value="ASC"
+                        checked>
+
+                    ASC
+
+                </label>
+
+                <label>
+
+                    <input
+                        id="pivot_sort_desc"
+                        class="w3-radio"
+                        type="radio"
+                        name="pivot_sort"
+                        value="DESC">
+
+                    DESC
+                    
+                </label>
+
+            </div>
+
+            <div class="pivot-options">
+
+                <label>
+                    <input
+                        id="pivot_easy_headings"
+                        class="w3-check"
+                        type="checkbox"
+                        checked>
+
+                    Easy Pivot style column names
+                </label>
+
+                <label>
+                    <input
+                        id="pivot_remove_null_columns"
+                        class="w3-check"
+                        type="checkbox"
+                        checked>
+
+                    Remove NULL pivot columns
+                </label>
+
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+
+        <footer
+            class="w3-container w3-padding">
+
+            <div class="w3-right">
+
+                <button
+                    id="cancel_pivot_button"
+                    class="w3-button w3-light-grey">
+
+                    Cancel
+
+                </button>
+
+                <button
+                    id="save_pivot_button"
+                    class="w3-button w3-round">
+
+                    Add Pivot Chip
+
+                </button>
+
+            </div>
+
+        </footer>
+
+    </div>
+
+</div>
+
+<div id="output_overlay">
+
+    <div id="output_window">
+
+        <h3>
+
+            Generated Pivot Query
+
+        </h3>
+
+        <textarea
+            id="generated_sql"
+            readonly>
+
+        </textarea>
+
+        <div id="output_buttons">
+
+            <button
+                id="copy_button"
+                class="w3-button w3-round">
+
+                Copy to Clipboard
+
+            </button>
+
+                <button
+                    id="close_button"
+                    class="w3-button w3-round">
+
+                Close
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="js/easy_pivot.js"></script>
+
+</body>
+
+</html>

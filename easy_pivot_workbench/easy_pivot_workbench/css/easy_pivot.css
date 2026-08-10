@@ -1,0 +1,1260 @@
+/******************************************************************************
+ *
+ * Easy Pivot Workbench
+ *
+ * Copyright (C) 2026 Timothy David Sharpe
+ *
+ * Released under the Unlicense.
+ *
+ ******************************************************************************/
+
+/******************************************************************************
+    Color Palette
+******************************************************************************/
+
+:root {
+
+    --application-blue: #2D5FA8;
+
+    --group-blue: #2F7ED8;
+
+    --pivot-green: #3AAE4F;
+
+    --json-purple: #6B4EB7;
+
+    --workspace-gray: #EEF2F6;
+
+    --panel-white: #FFFFFF;
+
+    --header-black: #2B2B2B;
+
+    --border-gray: #D9D9D9;
+
+    --alternate-blue: #F5F9FF;
+
+    --alternate-green: #F6FFF6;
+
+    --json-background: #FCFBFF;
+
+    --json-text: #555555;
+
+}
+
+/******************************************************************************
+    Global
+******************************************************************************/
+
+html,
+body {
+
+    margin:0;
+
+    padding:0;
+
+    min-height:100%;
+
+    background:var(--workspace-gray);
+
+    font-family:
+
+        "Segoe UI",
+
+        Arial,
+
+        sans-serif;
+
+}
+
+body::before {
+
+    content:"";
+
+    position:fixed;
+
+    inset:0;
+
+    background:
+        url("../images/office_background.jpg")
+        center center / contain
+        no-repeat;
+
+    pointer-events:none;
+
+    z-index:0;
+
+    opacity:0;
+
+    transition:opacity .35s ease;
+
+}
+
+body.workspace-hidden::before {
+
+    opacity:1;
+
+}
+
+/******************************************************************************
+    Header
+******************************************************************************/
+
+#application_header {
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    background:var(--application-blue);
+
+    color:white;
+
+    padding:14px 24px;
+
+    box-sizing:border-box;
+
+    position:relative;
+
+    z-index:1000;
+
+    box-shadow:
+
+        0 2px 10px rgba(0,0,0,.18);
+
+}
+
+#application_header h2 {
+
+    margin:0;
+
+    font-weight:500;
+
+}
+
+#workspace_toggle_container {
+
+    display:flex;
+
+    align-items:center;
+
+    padding:6px 10px;
+
+    background:var(--application-blue);
+
+    border-radius:4px;
+
+    flex-shrink:0;
+
+} 
+
+body.workspace-hidden #application_header {
+
+    height:0;
+
+    padding:0;
+
+    box-shadow:none;
+
+}
+
+body.workspace-hidden #application_header h2 {
+
+    display:none;
+
+}
+
+body.workspace-hidden #workspace_toggle_container {
+
+    position:fixed;
+
+    top:10px;
+
+    right:10px;
+
+    z-index:1100;
+
+    padding:8px 12px;
+
+}
+
+#workspace_toggle {
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    color:white;
+
+    font-size:15px;
+
+    cursor:pointer;
+
+    user-select:none;
+
+    white-space:nowrap;
+
+}
+
+#hide_workspace {
+
+    width:18px;
+
+    height:18px;
+
+    margin:0;
+
+    cursor:pointer;
+
+}
+
+/******************************************************************************
+    Workspace
+******************************************************************************/
+
+#application_workspace {
+
+    display:grid;
+
+    grid-template-columns:
+        55fr
+        45fr;
+
+    gap:20px;
+
+    padding:20px;
+
+    box-sizing:border-box;
+
+    position:relative;
+
+    z-index:1;
+
+    opacity:1;
+
+    transition:opacity .35s ease;
+
+}
+
+#application_workspace.workspace-hidden {
+
+    opacity:0;
+
+    pointer-events:none;
+
+}
+
+/******************************************************************************
+    Panels
+******************************************************************************/
+
+#workbench_panel,
+#sql_panel {
+
+    min-width:0;
+
+}
+
+/******************************************************************************
+    Sections
+******************************************************************************/
+
+.ep-section {
+
+    background:white;
+
+    border:1px solid var(--border-gray);
+
+    border-radius:6px;
+
+    margin-bottom:20px;
+
+    overflow:visible;
+
+    box-shadow:
+        inset 0 0 0 1px rgba(0,0,0,.04),
+        inset 0 0 8px rgba(0,0,0,.035),
+        0 2px 8px rgba(0,0,0,.12);
+
+}
+
+/******************************************************************************
+    Section Titles
+******************************************************************************/
+
+.ep-section-title
+{
+
+    display: grid;
+
+    grid-template-columns: 1fr auto 1fr auto;
+
+    align-items: center;
+
+    padding: 10px 14px;
+
+}
+
+#sql_panel .ep-section-title {
+
+    background:
+        linear-gradient(
+            180deg,
+            #815838 0%,
+            #6B482F 45%,
+            #583B28 100%
+        ); 
+
+    color:white;
+
+    border-radius:6px 6px 0 0;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.12),
+        inset 0 -2px 4px rgba(0,0,0,.25);
+
+}
+
+.ep-section-title span
+{
+
+    justify-self: start;
+
+}
+
+.ep-section-title button:first-of-type
+{
+
+    justify-self: center;
+
+}
+
+.ep-section-title button:last-of-type
+{
+
+    justify-self: end;
+    
+}
+
+.ep-group-title {
+
+    background:var(--group-blue);
+
+    color:white;
+
+}
+
+.ep-pivot-title {
+
+    background:var(--pivot-green);
+
+    color:white;
+
+}
+
+.ep-json-title {
+
+    background:var(--json-purple);
+
+    color:white;
+
+}
+
+/******************************************************************************
+    Database
+******************************************************************************/
+
+#database_selection {
+
+    padding:14px;
+
+}
+
+#database_selection label {
+
+    margin-right:18px;
+
+}
+
+/******************************************************************************
+    Connection
+******************************************************************************/
+
+.ep-connection-title {
+
+    background:var(--application-blue);
+
+    color:white;
+
+}
+
+#connection_selection {
+
+    padding:14px;
+
+}
+
+.connection-row {
+
+    display:grid;
+
+    grid-template-columns:120px 1fr auto;
+
+    gap:12px;
+
+    align-items:center;
+
+}
+
+.connection-row label {
+
+    font-weight:bold;
+
+}
+
+#connection_select {
+
+    min-width:0;
+
+}
+
+#manage_connections_button {
+
+    background:var(--application-blue);
+
+    color:white;
+
+}
+
+#manage_connections_button:hover {
+
+    background:#244F8F;
+
+}
+
+#connection_dialog {
+
+    z-index:2000;
+
+}
+
+#connection_dialog .w3-modal-content {
+
+    border-radius:6px;
+
+    overflow:hidden;
+
+    box-shadow:
+        0 6px 24px rgba(0,0,0,.25);
+
+}
+
+#connection_dialog header {
+
+    background:var(--application-blue);
+
+    color:white;
+
+}
+
+#connection_dialog h3 {
+
+    margin:0;
+
+    padding:14px 0;
+
+    font-weight:500;
+
+}
+
+#connection_dialog label {
+
+    font-weight:bold;
+
+}
+
+#connection_dialog input,
+#connection_dialog select {
+
+    margin-top:6px;
+
+}
+
+.connection-field-row {
+
+    display:grid;
+
+    grid-template-columns:120px 1fr;
+
+    gap:18px;
+
+}
+
+.connection-note {
+
+    margin-top:18px;
+
+    padding:10px 12px;
+
+    background:var(--workspace-gray);
+
+    border-left:4px solid var(--application-blue);
+
+    color:#555555;
+
+    font-size:13px;
+
+}
+
+#connection_dialog footer {
+
+    background:#F7F7F7;
+
+    border-top:1px solid #DDDDDD;
+
+}
+
+#delete_connection_button {
+
+    margin-right:8px;
+
+    background:#C62828;
+
+    color:white;
+
+}
+
+#delete_connection_button:hover {
+
+    background:#A61F1F;
+
+}
+
+#delete_connection_button:disabled {
+
+    background:#CCCCCC;
+
+    color:#777777;
+
+    cursor:not-allowed;
+
+}
+
+#cancel_connection_button {
+
+    margin-right:8px;
+
+}
+
+#save_connection_button {
+
+    background:var(--application-blue);
+
+    color:white;
+
+}
+
+#save_connection_button:hover {
+
+    background:#244F8F;
+
+}
+
+/******************************************************************************
+    Monospace
+******************************************************************************/
+
+.ep-list,
+.ep-list-header,
+.ep-pivot-header,
+.group-row,
+.pivot-row,
+#generated_json,
+#source_query,
+#generated_sql {
+
+    font-family:
+
+        Consolas,
+
+        "Courier New",
+
+        monospace;
+
+}
+
+/******************************************************************************
+    Group Header
+******************************************************************************/
+
+.ep-list-header {
+
+    display:grid;
+
+    grid-template-columns:
+
+        1fr
+        80px
+        24px;
+
+    background:var(--header-black);
+
+    color:white;
+
+    padding:8px 12px;
+
+}
+
+/******************************************************************************
+    Group Rows
+******************************************************************************/
+
+.group-row {
+
+    position:relative;
+
+    display:grid;
+
+    grid-template-columns:
+
+        1fr
+        80px;
+
+    padding:8px 12px;
+
+    align-items:center;
+
+    margin-right:18px;
+
+}
+
+.group-row:nth-child(even) {
+
+    background:var(--alternate-blue);
+
+}
+
+/******************************************************************************
+    Pivot Header
+******************************************************************************/
+
+.ep-pivot-header {
+
+    display:grid;
+
+    grid-template-columns:
+
+        2fr
+        1fr
+        1fr
+        1fr
+        1fr
+        2fr
+        1fr
+        24px;
+
+    background:var(--header-black);
+
+    color:white;
+
+    padding:8px 10px;
+
+}
+
+/******************************************************************************
+    Pivot Rows
+******************************************************************************/
+
+.pivot-row {
+
+    position:relative;
+
+    display:grid;
+
+    grid-template-columns:
+
+        2fr
+        1fr
+        1fr
+        1fr
+        1fr
+        2fr
+        1fr;
+
+    padding:8px 10px;
+
+    align-items:center;
+
+    margin-right:18px;
+
+}
+
+.pivot-row:nth-child(even) {
+
+    background:var(--alternate-green);
+
+}
+
+/******************************************************************************
+    Hanging Delete Button
+******************************************************************************/
+
+.delete {
+
+    position:absolute;
+
+    right:-14px;
+
+    top:50%;
+
+    transform:translateY(-50%);
+
+    width:22px;
+
+    height:22px;
+
+    line-height:20px;
+
+    text-align:center;
+
+    border-radius:50%;
+
+    border:1px solid #CCCCCC;
+
+    background:white;
+
+    color:#666666;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    transition:.15s;
+
+}
+
+.delete:hover {
+
+    background:#C62828;
+
+    border-color:#C62828;
+
+    color:white;
+
+}
+
+/******************************************************************************
+    Generated JSON
+******************************************************************************/
+
+#generated_json {
+
+    width:100%;
+
+    height:180px;
+
+    border:none;
+
+    resize:none;
+
+    padding:16px;
+
+    box-sizing:border-box;
+
+    background:var(--json-background);
+
+    color:var(--json-text);
+
+    line-height:1.5;
+
+}
+
+/******************************************************************************
+    Source Query
+******************************************************************************/
+
+/******************************************************************************
+    Source Query
+******************************************************************************/
+
+#source_query {
+
+    width:100%;
+
+    height:760px;
+
+    resize:none;
+
+    padding:18px;
+
+    box-sizing:border-box;
+
+    font-family:
+        Consolas,
+        "Courier New",
+        monospace;
+
+    font-size:16px;
+
+    line-height:1.55;
+
+    color:#F3F0E6;
+
+    background:
+        radial-gradient(
+            circle at 20% 30%,
+            rgba(255,255,255,.035) 0,
+            rgba(255,255,255,0) 35%
+        ),
+        radial-gradient(
+            circle at 80% 70%,
+            rgba(255,255,255,.025) 0,
+            rgba(255,255,255,0) 40%
+        ),
+        linear-gradient(
+            135deg,
+            #26362F 0%,
+            #1F2D27 50%,
+            #26362F 100%
+        );
+
+    border:10px solid #6B482F;
+
+    border-radius:2px;
+
+    box-shadow:
+        inset 0 0 0 2px rgba(0,0,0,.35),
+        inset 0 0 25px rgba(0,0,0,.35),
+        0 3px 10px rgba(0,0,0,.20);
+
+    text-shadow:
+        0 0 1px rgba(255,255,255,.45);
+
+}
+
+#source_query:focus {
+
+    outline:none;
+
+    border-color:#7A5336;
+
+    box-shadow:
+        inset 0 0 0 2px rgba(255,255,255,.08),
+        inset 0 0 25px rgba(0,0,0,.35),
+        0 3px 10px rgba(0,0,0,.20);
+
+}
+
+/******************************************************************************
+    Generate Button
+******************************************************************************/
+
+#generate_button_area {
+
+    text-align:center;
+
+    margin-top:24px;
+
+}
+
+#generate_sql_button {
+
+    width:280px;
+
+    background:var(--application-blue);
+
+    color:white;
+
+}
+
+#generate_sql_button:hover {
+
+    background:#244F8F;
+
+}
+
+/******************************************************************************
+    Output Window
+******************************************************************************/
+
+#output_overlay {
+
+    display:none;
+
+    position:fixed;
+
+    inset:0;
+
+    z-index:1500;
+
+    background:
+
+        rgba(0,0,0,.45);
+
+}
+
+#output_window {
+
+    position:absolute;
+
+    top:7%;
+
+    left:17%;
+    
+    width:66%;
+
+    height:86%;
+
+    background:rgba(0,0,0,.50);
+
+    border-radius:8px;
+
+    padding:20px;
+
+    box-sizing:border-box;
+
+    box-shadow:
+        0 4px 20px rgba(0,0,0,.25);
+}
+
+#output_window h3 {
+    color:white;
+}
+
+#generated_sql {
+
+    width:100%;
+
+    height:87%;
+
+    resize:none;
+
+    border-radius:8px;
+
+    border:2px solid var(--border-gray);
+
+    padding:16px;
+
+    box-sizing:border-box;
+
+    background:white;
+
+    color:black;
+
+}
+
+#generated_sql:focus {
+
+    outline:none;
+
+    border:2px solid var(--application-blue);
+
+}
+
+#output_buttons {
+
+    margin-top:16px;
+
+    text-align:right;
+
+}
+
+#output_buttons button {
+
+    background:var(--application-blue);
+
+    color:white;
+
+    border:none;
+
+}
+
+#output_buttons button:hover {
+
+    background:#244F8F;
+
+}
+
+/******************************************************************************
+    Responsive
+******************************************************************************/
+
+@media (max-width:1200px) {
+
+    #application_workspace {
+
+        grid-template-columns:
+
+            1fr;
+
+    }
+
+}
+
+@media (max-width:600px) {
+
+    #application_header {
+
+        padding:10px 12px;
+
+    }
+
+    #application_header h2 {
+
+        font-size:22px;
+
+    }
+
+    #workspace_toggle_container {
+
+        padding:4px 6px;
+
+    }
+
+    #workspace_toggle {
+
+        font-size:14px;
+
+    }
+
+}
+
+/******************************************************************************
+    Add Group Dialog
+******************************************************************************/
+
+#group_dialog {
+
+    z-index: 2000;
+
+}
+
+#group_dialog .w3-modal-content {
+
+    border-radius: 6px;
+
+    overflow: hidden;
+
+    box-shadow:
+        0 6px 24px rgba(0,0,0,.25);
+
+}
+
+/******************************************************************************
+    Dialog Header
+******************************************************************************/
+
+#group_dialog header {
+
+    background: var(--group-blue);
+
+    color: white;
+
+}
+
+#group_dialog h3 {
+
+    margin: 0;
+
+    padding: 14px 0;
+
+    font-weight: 500;
+
+}
+
+/******************************************************************************
+    Dialog Body
+******************************************************************************/
+
+#group_dialog label {
+
+    font-weight: bold;
+
+}
+
+#group_field {
+
+    margin-top: 6px;
+
+    margin-bottom: 18px;
+
+    font-family:
+
+        Consolas,
+        "Courier New",
+        monospace;
+
+}
+
+/******************************************************************************
+    Radio Buttons
+******************************************************************************/
+
+#group_dialog p {
+
+    margin-top: 10px;
+
+    margin-bottom: 10px;
+
+}
+
+#group_dialog .w3-radio {
+
+    margin-right: 8px;
+
+}
+
+/******************************************************************************
+    Footer
+******************************************************************************/
+
+#group_dialog footer {
+
+    background: #F7F7F7;
+
+    border-top: 1px solid #DDDDDD;
+
+}
+
+#cancel_group_button {
+
+    margin-right: 8px;
+
+}
+
+#save_group_button {
+
+    background: var(--group-blue);
+
+    color: white;
+
+}
+
+#save_group_button:hover {
+
+    background: #2368C6;
+
+}
+
+/******************************************************************************
+    Close Button
+******************************************************************************/
+
+#close_group_dialog {
+
+    font-size: 22px;
+
+    font-weight: bold;
+
+}
+
+#close_group_dialog:hover {
+
+    background: rgba(255,255,255,.18);
+
+    color: white;
+
+}
+
+/******************************************************************************
+    Pivot Dialog
+******************************************************************************/
+
+#boolean_section {
+
+    display:none;
+
+}
+
+.aggregate-row,
+.sort-row {
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:18px;
+
+    margin-top:8px;
+
+}
+
+.pivot-options {
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:10px;
+
+    margin-top:18px;
+
+}
+
+.pivot-options label {
+
+    font-weight:normal;
+
+}
+
+.pivot-options .w3-check {
+
+    margin-right:8px;
+
+}
+
+#pivot_aggregate {
+
+    margin-top:6px;
+
+}
+
+.custom-aggregate-message {
+
+    display:none;
+
+    margin-top:6px;
+
+    font-size:13px;
+
+    color:var(--json-text);
+
+}
+
+.boolean-row {
+
+    display:flex;
+
+    gap:24px;
+
+    margin-top:8px;
+
+}
+
+.boolean-row > div {
+
+    flex:1;
+
+}
+
+#save_pivot_button {
+
+    background:var(--pivot-green);
+
+    color:white;
+
+}
+
+#save_pivot_button:hover {
+
+    background:#2F9743;
+
+}
+
+#output_buttons button:active
+{
+    transform: translateY(1px);
+    filter: brightness(0.90);
+}

@@ -1,0 +1,13 @@
+Easy Pivot is released under The Unlicense.
+
+Easy Pivot Workbench includes W3.CSS.
+
+W3.CSS is © W3Schools: https://www.w3schools.com/w3css/
+
+/* W3.CSS 5.01 March 11 2026 by Jan Egil and Borge Refsnes */
+
+Redistributed in accordance with the W3.CSS redistribution terms.
+
+The original W3.CSS file is included unmodified.
+
+All Easy Pivot Workbench custom styling is contained in easy_pivot.css.
