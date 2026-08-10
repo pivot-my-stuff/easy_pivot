@@ -78,11 +78,28 @@ The exact installation method depends on the database platform. Use the appropri
 
 ## What the stand-alone deployment requires
 
-The **Easy Pivot Workbench stand-alone deployment requires PHP 8.x for Windows**.
+The **Easy Pivot Workbench stand-alone deployment requires PHP 8.x for Windows**, with **PDO and the PDO driver for the database you intend to use** available to PHP.
 
 It does **not** require Apache, IIS, XAMPP, or another web server. The stand-alone launcher uses PHP's built-in development web server.
 
 PHP is a prerequisite for Easy Pivot and is not included with the Easy Pivot repository.
+
+### Required PHP database support
+
+Easy Pivot uses PHP Data Objects (PDO) to communicate with the database.
+
+PDO itself is normally enabled by default in the official Windows PHP distribution, but it should be verified. The database-specific PDO driver must also be available.
+
+For example:
+
+- **MySQL** — `PDO` and `pdo_mysql`
+- **PostgreSQL** — `PDO` and `pdo_pgsql`
+- **SQL Server** — `PDO` and `pdo_sqlsrv`
+- **Oracle** — `PDO` and `pdo_oci`
+
+If either PDO or the required database driver is missing, Easy Pivot will not be able to connect to the database.
+
+> **Important:** PHP installation is not complete for Easy Pivot until both PDO and the appropriate database-specific PDO driver have been verified.
 
 ## 3.1 Check whether PHP is already installed
 
@@ -163,7 +180,7 @@ Windows therefore needs to know where PHP is located.
 
 **Do not replace the existing PATH.** Add the PHP directory as a new entry.
 
-## 3.5 Verify PHP
+## 3.5 Verify PHP and database support
 
 Close any Command Prompt windows that were already open before changing PATH.
 
@@ -174,7 +191,34 @@ php -v
 where php
 ```
 
-If both commands work, PHP is successfully installed and configured for Easy Pivot.
+Then verify PDO and the driver for your database.
+
+For MySQL, for example:
+
+```bat
+php -m | findstr /I "PDO mysql"
+```
+
+You should see:
+
+```text
+PDO
+pdo_mysql
+```
+
+For other databases, verify the corresponding driver:
+
+```text
+PostgreSQL  → pdo_pgsql
+SQL Server  → pdo_sqlsrv
+Oracle      → pdo_oci
+```
+
+If `PDO` or the required database driver is not listed, the PHP installation must be configured before Easy Pivot can connect to that database.
+
+After changing `php.ini`, restart PHP/the web server as appropriate and repeat the verification.
+
+If `php -v` and `where php` work and the required PDO support is present, PHP is ready for Easy Pivot.
 
 ---
 
@@ -288,6 +332,30 @@ Easy Pivot is **not limited to Apache**.
 If your organization uses IIS or another PHP-enabled web server, follow that server's normal procedure for deploying PHP applications.
 
 **Your web-server administrator is responsible for configuring the server and PHP.**
+
+## PHP database extensions
+
+The PHP installation used by the web server must have **PDO and the PDO driver required by the selected database platform** available and enabled.
+
+PDO itself is normally enabled by default in the official Windows PHP distribution, but the database-specific driver must be available. The same database-driver requirement applies to the stand-alone and web deployments.
+
+For example:
+
+- **MySQL** — `pdo_mysql`
+- **PostgreSQL** — `pdo_pgsql`
+- **SQL Server** — `pdo_sqlsrv`
+- **Oracle** — `pdo_oci`
+
+If the required PHP database driver is not enabled, Easy Pivot will not be able to establish the database connection and may report:
+
+```text
+Connection failed.
+could not find driver
+```
+
+This is a **PHP/server configuration issue**, not an Easy Pivot database connection setting.
+
+Your web-server administrator should verify that the appropriate PHP database extension is installed and enabled before troubleshooting the Easy Pivot connection itself.
 
 ---
 
