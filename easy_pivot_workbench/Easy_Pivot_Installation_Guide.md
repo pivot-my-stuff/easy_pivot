@@ -37,7 +37,44 @@ Inside, you should see **another `easy_pivot_workbench` folder**.
 
 ---
 
-# Step 2 — Install and Verify PHP on Windows
+# Step 2 — Install the Easy Pivot Database Stored Procedure
+
+Before using Easy Pivot Workbench, install the Easy Pivot stored procedure for the database platform you intend to use.
+
+The Easy Pivot project contains a database folder for each supported database platform:
+
+```text
+easy_pivot_workbench
+├── mysql
+├── oracle
+├── postgresql
+└── sql_server
+```
+
+Open the folder for your database platform and locate the supplied Easy Pivot stored-procedure script.
+
+Install the procedure in the **database where you want Easy Pivot to be available**.
+
+The procedure is installed at the database level. You do **not** need to create a special database for Easy Pivot, and you do not need to install Easy Pivot across the entire database server.
+
+For example, a database administrator can choose to make Easy Pivot available in one database while leaving it unavailable in another.
+
+The Easy Pivot Workbench database connection must point to a database where the Easy Pivot procedure has been installed.
+
+### Database-specific installation
+
+- **MySQL** — install the procedure from the `mysql` folder.
+- **Oracle** — install the procedure from the `oracle` folder.
+- **PostgreSQL** — install the procedure from the `postgresql` folder.
+- **SQL Server** — install the procedure from the `sql_server` folder.
+
+The exact installation method depends on the database platform. Use the appropriate database tool to execute the supplied script.
+
+> **Important:** Installing the stored procedure and configuring a Workbench database connection are two separate steps. The procedure must exist in the target database before Easy Pivot can use that database.
+
+---
+
+# Step 3 — Install and Verify PHP on Windows
 
 ## What the stand-alone deployment requires
 
@@ -47,7 +84,7 @@ It does **not** require Apache, IIS, XAMPP, or another web server. The stand-alo
 
 PHP is a prerequisite for Easy Pivot and is not included with the Easy Pivot repository.
 
-## 2.1 Check whether PHP is already installed
+## 3.1 Check whether PHP is already installed
 
 Open a **new Windows Command Prompt** and run:
 
@@ -75,7 +112,7 @@ C:\php\php.exe
 
 If both commands work, PHP is ready for Easy Pivot.
 
-## 2.2 If PHP is not installed
+## 3.2 If PHP is not installed
 
 Download PHP from the official PHP for Windows project:
 
@@ -87,7 +124,7 @@ For the stand-alone Easy Pivot Workbench, use the **Non Thread Safe (NTS)** ZIP 
 
 You do not need the Debug Pack, Development package, Apache, IIS, or XAMPP.
 
-## 2.3 Extract PHP
+## 3.3 Extract PHP
 
 Create a directory such as:
 
@@ -107,7 +144,7 @@ You can test the installation directly:
 C:\php\php.exe -v
 ```
 
-## 2.4 Add PHP to the Windows PATH
+## 3.4 Add PHP to the Windows PATH
 
 Easy Pivot's launcher executes:
 
@@ -126,7 +163,7 @@ Windows therefore needs to know where PHP is located.
 
 **Do not replace the existing PATH.** Add the PHP directory as a new entry.
 
-## 2.5 Verify PHP
+## 3.5 Verify PHP
 
 Close any Command Prompt windows that were already open before changing PATH.
 
@@ -141,7 +178,7 @@ If both commands work, PHP is successfully installed and configured for Easy Piv
 
 ---
 
-# Step 3 — Put Easy Pivot on the Desktop and Create a Shortcut
+# Step 4 — Put Easy Pivot on the Desktop and Create a Shortcut
 
 Open the Easy Pivot folder you identified in Step 1.
 
@@ -167,7 +204,7 @@ You can now double-click the **Easy Pivot Workbench** shortcut to launch the sta
 
 ---
 
-# Step 4 — Start Easy Pivot Workbench
+# Step 5 — Start Easy Pivot Workbench
 
 Double-click the **Easy Pivot Workbench** desktop shortcut.
 
@@ -211,7 +248,7 @@ If you later launch Easy Pivot again while the previous PHP server is still runn
 
 ---
 
-# Step 5 — Deploy Easy Pivot to a Web Server
+# Step 6 — Deploy Easy Pivot to a Web Server
 
 Easy Pivot Workbench is a PHP web application. The same Workbench used by the stand-alone deployment can also be deployed to an existing web server.
 
@@ -254,7 +291,7 @@ If your organization uses IIS or another PHP-enabled web server, follow that ser
 
 ---
 
-# Step 6 — Stand-Alone or Web Deployment?
+# Step 7 — Stand-Alone or Web Deployment?
 
 Easy Pivot Workbench is the **same web application** in both deployment models. The difference is where PHP hosts it.
 
