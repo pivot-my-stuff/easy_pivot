@@ -1,3 +1,7 @@
+2026-08-09: The project has reached the point where CHANGELOG.txt makes
+            no sense. We need time to work on other more important stuff
+            instead. Have a nice day. :)
+
 2026-07-27: * Add MR_PIVOTS_PIVOT_CHIP_CHiP_ENCOUNTER.jpg
 
 2026-07-25: * Oracle Easy Pivot implementation completed and promoted to
