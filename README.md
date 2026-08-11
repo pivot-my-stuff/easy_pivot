@@ -1,21 +1,21 @@
 <p align="center">
-  <img src="img/easy_pivot_workbench_demo_1.jpg">`{=html}
+  <img src="img/easy_pivot_workbench_demo_1.jpg">
 </p>
 
 <p align="center">
-  <img src="img/easy_pivot_workbench_demo_2.jpg">`{=html}
+  <img src="img/easy_pivot_workbench_demo_2.jpg">
 </p>
 
 <p align="center">
-  <img src="img/easy_pivot_workbench_demo_3.jpg">`{=html}
+  <img src="img/easy_pivot_workbench_demo_3.jpg">
 </p>
 
 <p align="center">
-  <img src="img/easy_pivot_workbench_demo_4.jpg">`{=html}
+  <img src="img/easy_pivot_workbench_demo_4.jpg">
 </p>
 
 <p align="center">
-  <img src="img/easy_pivot_workbench_demo_5.jpg">`{=html}
+  <img src="img/easy_pivot_workbench_demo_5.jpg">
 </p>
 
 ### August 12, 2026 --- Easy Pivot Workbench Installation Instructions
