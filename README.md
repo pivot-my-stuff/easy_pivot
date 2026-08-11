@@ -34,6 +34,16 @@ For Oracle, PostgreSQL and SQL Server users: do not feel left out. Your support 
 
 And for SQLite and MariaDB users: we see you out there. Give us time.
 
+If you would like to help this project through donations, you can do so through this link:
+
+https://github.com/pivot-my-stuff
+
+<p align="center">
+<img src="img/pivot_my_stuff_sponsor.jpg">
+</p>
+
+Easy Pivot is free. But development work takes time and money. You won't be continually nagged to donate, but donations will help the project. :)
+
 # Easy Pivot Workbench
 
 **Easy Pivot Workbench is officially no longer vaporware.** 😄 After a tremendous amount of development and testing, the project has evolved from a collection of SQL-generation code into a complete, polished interactive workbench. Users can enter a source query, configure groups and pivot chips through the interface, generate the resulting pivot SQL, and execute that SQL against the database. The workbench now includes dynamic configuration, validation, editing and deletion, NULL handling, multiple aggregation types, follows relationships, sorting, automatic source-query parsing, and a redesigned visual interface featuring the new Pivoty office and chalkboard-style SQL workspace.
