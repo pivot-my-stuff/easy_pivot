@@ -30,6 +30,8 @@ folder.
 
 For MySQL users, the installation documentation includes instructions for installing the Easy Pivot stored procedure and configuring the Workbench.
 
+For Oracle, PostgreSQL and SQL Server users: do not feel left out. Your support is coming soon. We here at the Easy Pivot project are using the MySQL users as human guinea pigs for development poirposes. But don't tell them that or they might get mad at us for calling them guinea pigs. And human. :)
+
 # Easy Pivot Workbench
 
 **Easy Pivot Workbench is officially no longer vaporware.** 😄 After a tremendous amount of development and testing, the project has evolved from a collection of SQL-generation code into a complete, polished interactive workbench. Users can enter a source query, configure groups and pivot chips through the interface, generate the resulting pivot SQL, and execute that SQL against the database. The workbench now includes dynamic configuration, validation, editing and deletion, NULL handling, multiple aggregation types, follows relationships, sorting, automatic source-query parsing, and a redesigned visual interface featuring the new Pivoty office and chalkboard-style SQL workspace.
