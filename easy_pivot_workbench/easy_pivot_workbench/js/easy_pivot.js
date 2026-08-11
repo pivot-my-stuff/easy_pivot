@@ -96,29 +96,23 @@ const EasyPivot = {
 
     editingPivotIndex: -1,
 
+    validationErrors:
+    {
+        groups: {},
+        pivots: {}
+    },
+
     /**************************************************************************
         Connection UI
     **************************************************************************/
 
-    connections: [
-        {
-            id: "local_mysql",
-            name: "Local MySQL",
-            databaseType: "mysql",
-            host: "localhost",
-            port: 3306,
-            authentication: "password",
-            username: "root",
-            password: "",
-            database: "easy_pivot"
-        }
-    ],
+    connections: [],
 
-    selectedConnectionId: "local_mysql",
+    selectedConnectionId: "",
 
     selectedConnectionsByDatabase:
     {
-        mysql: "local_mysql",
+        mysql: "",
         oracle: "",
         postgresql: "",
         sqlserver: ""
@@ -128,11 +122,295 @@ const EasyPivot = {
 
     temporaryConnectionId: "",
 
+    /*
+        Password confirmation is session-only.
+
+        The connection object may legitimately contain an empty password,
+        so the presence of a password cannot itself tell us whether the
+        user has already been prompted for this connection.
+    */
+    passwordPromptedConnections: {},
+
+    /**************************************************************************
+        Host / Connection Identity
+    **************************************************************************/
+
+    formatHostName(host)
+    {
+        const value =
+            String(host || "").trim();
+
+        if (
+            value === "" ||
+            value.toLowerCase() === "localhost" ||
+            value === "127.0.0.1" ||
+            value === "::1"
+        )
+        {
+            return "Localhost";
+        }
+
+        return value.toUpperCase();
+    },
+
+    refreshApplicationHost()
+    {
+        const header =
+            document.querySelector(
+                "#application_header h2"
+            );
+
+        if (!header)
+        {
+            return;
+        }
+
+        const serverHost =
+            this.formatHostName(
+                window.location.hostname
+            );
+
+        header.textContent =
+            "Easy Pivot Workbench on " +
+            serverHost;
+    },
+
+    refreshConnectionIdentity()
+    {
+        const label =
+            document.querySelector(
+                'label[for="connection_select"]'
+            );
+
+        if (!label)
+        {
+            return;
+        }
+
+        const connection =
+            this.connections.find(
+                item =>
+                    item.id ===
+                    this.selectedConnectionId
+            );
+
+        if (!connection)
+        {
+            label.textContent = "Connect to...";
+            return;
+        }
+
+        label.textContent =
+            "Connect to " +
+            this.formatHostName(connection.host) +
+            ":" +
+            connection.port +
+            "/" +
+            connection.database;
+    },
+
+
+    promptForPassword(connection)
+    {
+
+        return new Promise(resolve =>
+        {
+
+            const dialog =
+                document.createElement("dialog");
+
+            dialog.style.padding = "0";
+            dialog.style.border = "none";
+            dialog.style.borderRadius = "10px";
+            dialog.style.width = "420px";
+            dialog.style.maxWidth = "90vw";
+
+            const form =
+                document.createElement("form");
+
+            form.method = "dialog";
+            form.style.padding = "24px";
+
+            const message =
+                document.createElement("div");
+
+            message.textContent =
+                "Enter the password for \"" +
+                connection.name +
+                "\" on " +
+                this.formatHostName(connection.host) +
+                ".";
+
+            message.style.marginBottom = "12px";
+
+            const note =
+                document.createElement("div");
+
+            note.textContent =
+                "The password will be kept only for this " +
+                "browser session. It will not be saved.";
+
+            note.style.marginBottom = "16px";
+            note.style.fontSize = "0.9em";
+
+            const input =
+                document.createElement("input");
+
+            input.type = "password";
+            input.autocomplete = "current-password";
+            input.style.width = "100%";
+            input.style.boxSizing = "border-box";
+            input.style.padding = "10px";
+            input.style.marginBottom = "18px";
+
+            const buttons =
+                document.createElement("div");
+
+            buttons.style.display = "flex";
+            buttons.style.justifyContent = "flex-end";
+            buttons.style.gap = "10px";
+
+            const cancel =
+                document.createElement("button");
+
+            cancel.type = "button";
+            cancel.textContent = "Cancel";
+
+            const ok =
+                document.createElement("button");
+
+            ok.type = "submit";
+            ok.textContent = "OK";
+
+            buttons.appendChild(cancel);
+            buttons.appendChild(ok);
+
+            form.appendChild(message);
+            form.appendChild(note);
+            form.appendChild(input);
+            form.appendChild(buttons);
+
+            dialog.appendChild(form);
+            document.body.appendChild(dialog);
+
+            let finished = false;
+
+            const finish = value =>
+            {
+
+                if (finished)
+                {
+                    return;
+                }
+
+                finished = true;
+
+                dialog.close();
+                dialog.remove();
+
+                resolve(value);
+
+            };
+
+            form.addEventListener(
+                "submit",
+                event =>
+                {
+                    event.preventDefault();
+
+                    finish(input.value);
+                }
+            );
+
+            cancel.addEventListener(
+                "click",
+                () =>
+                {
+                    finish(null);
+                }
+            );
+
+            dialog.addEventListener(
+                "cancel",
+                event =>
+                {
+                    event.preventDefault();
+
+                    finish(null);
+                }
+            );
+
+            dialog.showModal();
+
+            input.focus();
+
+        });
+
+    },
+
+    async ensureConnectionPassword(connection)
+    {
+        if (!connection)
+        {
+            return false;
+        }
+
+        if (connection.authentication !== "password")
+        {
+            return true;
+        }
+
+        if (
+            this.passwordPromptedConnections[
+                connection.id
+            ]
+        )
+        {
+            return true;
+        }
+
+        /*
+            A password already present in memory came from the current
+            session (for example, the connection was just saved).
+            Do not prompt again.
+        */
+        if (connection.password !== "")
+        {
+            this.passwordPromptedConnections[
+                connection.id
+            ] = true;
+
+            return true;
+        }
+
+        const password =
+            await this.promptForPassword(connection);
+
+        if (password === null)
+        {
+            return false;
+        }
+
+        /*
+            Empty passwords are allowed. The session flag distinguishes
+            an intentionally empty password from an unprompted connection.
+        */
+        connection.password = password;
+
+        this.passwordPromptedConnections[
+            connection.id
+        ] = true;
+
+        return true;
+    },
+
     /**************************************************************************
         Initialization
     **************************************************************************/
 
     init() {
+
+        this.refreshApplicationHost();
 
         this.registerEvents();
 
@@ -206,39 +484,14 @@ const EasyPivot = {
 
             validConnections.forEach(savedConnection =>
             {
-
                 /*
-                    The built-in Local MySQL connection is always retained.
-
-                    Earlier versions could accidentally save a YETI
-                    connection under the built-in "local_mysql" ID.
-                    If that happened, migrate the saved connection to a
-                    new ID instead of overwriting Local MySQL.
+                    Local MySQL was a built-in connection in earlier beta
+                    versions. It is no longer part of the application.
+                    Ignore that legacy record so it cannot recreate an
+                    implicit database connection.
                 */
-                if (
-                    savedConnection.id === "local_mysql" &&
-                    savedConnection.name !== "Local MySQL"
-                )
+                if (savedConnection.id === "local_mysql")
                 {
-                    const migratedConnection =
-                    {
-                        ...savedConnection,
-                        id:
-                            "connection_migrated_" +
-                            Date.now() +
-                            "_" +
-                            Math.random()
-                                .toString(36)
-                                .substring(2, 8),
-                        port:
-                            Number(savedConnection.port),
-                        password: ""
-                    };
-
-                    this.connections.push(
-                        migratedConnection
-                    );
-
                     return;
                 }
 
@@ -271,7 +524,6 @@ const EasyPivot = {
                         password: ""
                     });
                 }
-
             });
 
             const savedSelectedId =
@@ -281,48 +533,28 @@ const EasyPivot = {
 
             if (
                 savedSelectedId &&
+                savedSelectedId !== "local_mysql" &&
                 this.connections.some(
                     connection =>
                         connection.id === savedSelectedId
                 )
             )
             {
-                /*
-                    If the selected connection was the old
-                    local_mysql record that contained YETI, select
-                    the migrated connection instead.
-                */
-                if (
-                    savedSelectedId === "local_mysql" &&
-                    validConnections.some(
-                        connection =>
-                            connection.id === "local_mysql" &&
-                            connection.name !== "Local MySQL"
-                    )
-                )
-                {
-                    const migrated =
-                        this.connections
-                            .slice()
-                            .reverse()
-                            .find(
-                                connection =>
-                                    connection.id !== "local_mysql" &&
-                                    connection.name !== "Local MySQL" &&
-                                    connection.databaseType ===
-                                        this.workspace.database
-                            );
+                this.selectedConnectionId =
+                    savedSelectedId;
 
-                    if (migrated)
-                    {
-                        this.selectedConnectionId =
-                            migrated.id;
-                    }
-                }
-                else
+                const selectedConnection =
+                    this.connections.find(
+                        connection =>
+                            connection.id ===
+                            this.selectedConnectionId
+                    );
+
+                if (selectedConnection)
                 {
-                    this.selectedConnectionId =
-                        savedSelectedId;
+                    this.selectedConnectionsByDatabase[
+                        selectedConnection.databaseType
+                    ] = selectedConnection.id;
                 }
             }
         }
@@ -363,6 +595,482 @@ const EasyPivot = {
             this.selectedConnectionId
         );
 
+    },
+
+    getFileTimestamp()
+    {
+        const now = new Date();
+
+        const pad =
+            value =>
+                String(value).padStart(2, "0");
+
+        return (
+            now.getFullYear() +
+            pad(now.getMonth() + 1) +
+            pad(now.getDate()) +
+            "-" +
+            pad(now.getHours()) +
+            pad(now.getMinutes()) +
+            pad(now.getSeconds())
+        );
+    },
+
+    downloadJsonFile(filename, data)
+    {
+        const blob =
+            new Blob(
+                [JSON.stringify(data, null, 4)],
+                {
+                    type: "application/json"
+                }
+            );
+
+        const url =
+            URL.createObjectURL(blob);
+
+        const link =
+            document.createElement("a");
+
+        link.href = url;
+        link.download = filename;
+
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        URL.revokeObjectURL(url);
+    },
+
+    openJsonFile(callback)
+    {
+        const input =
+            document.createElement("input");
+
+        input.type = "file";
+        input.accept = ".json,application/json";
+        input.style.display = "none";
+
+        input.addEventListener(
+            "change",
+            async () =>
+            {
+                const file = input.files[0];
+
+                input.remove();
+
+                if (!file)
+                {
+                    return;
+                }
+
+                try
+                {
+                    const text =
+                        await file.text();
+
+                    const data =
+                        JSON.parse(text);
+
+                    callback(data);
+                }
+                catch (error)
+                {
+                    console.error(
+                        "Easy Pivot could not load JSON file.",
+                        error
+                    );
+
+                    alert(
+                        "The selected file could not be loaded.\n\n" +
+                        "Please select a valid Easy Pivot JSON file."
+                    );
+                }
+            }
+        );
+
+        document.body.appendChild(input);
+        input.click();
+    },
+
+    saveConnectionsToFile()
+    {
+        const connections =
+            this.connections.map(connection =>
+            {
+                const savedConnection =
+                {
+                    ...connection
+                };
+
+                /*
+                    Passwords are intentionally excluded from exported
+                    connection files. They remain available only for
+                    the current browser session.
+                */
+                delete savedConnection.password;
+
+                return savedConnection;
+            });
+
+        const configuration =
+        {
+            version: 1,
+            selectedConnectionId:
+                this.selectedConnectionId,
+            connections: connections
+        };
+
+        this.downloadJsonFile(
+            "easy_pivot_connections_" +
+            this.getFileTimestamp() +
+            ".json",
+            configuration
+        );
+    },
+
+    loadConnectionsFromFile()
+    {
+        this.openJsonFile(
+            data =>
+            {
+                let importedConnections;
+
+                let selectedConnectionId = "";
+
+                /*
+                    Accept both the current file format and a plain
+                    connection array for simple backward compatibility.
+                */
+                if (Array.isArray(data))
+                {
+                    importedConnections = data;
+                }
+                else if (
+                    data &&
+                    Array.isArray(data.connections)
+                )
+                {
+                    importedConnections =
+                        data.connections;
+
+                    if (
+                        typeof data.selectedConnectionId ===
+                        "string"
+                    )
+                    {
+                        selectedConnectionId =
+                            data.selectedConnectionId;
+                    }
+                }
+
+                if (!importedConnections)
+                {
+                    alert(
+                        "The selected file is not a valid Easy Pivot " +
+                        "connections file."
+                    );
+
+                    return;
+                }
+
+                const validConnections =
+                    importedConnections.filter(connection =>
+                        connection &&
+                        typeof connection.id === "string" &&
+                        typeof connection.name === "string" &&
+                        typeof connection.databaseType === "string" &&
+                        typeof connection.host === "string" &&
+                        Number.isInteger(Number(connection.port)) &&
+                        typeof connection.database === "string" &&
+                        typeof connection.username === "string"
+                    );
+
+                if (validConnections.length === 0)
+                {
+                    alert(
+                        "The selected connections file contains no " +
+                        "valid connections."
+                    );
+
+                    return;
+                }
+
+                validConnections.forEach(
+                    importedConnection =>
+                    {
+                        /*
+                            Local MySQL was a built-in connection in earlier
+                            beta versions. Do not import that legacy record.
+                        */
+                        if (importedConnection.id === "local_mysql")
+                        {
+                            return;
+                        }
+
+                        const existing =
+                            this.connections.find(
+                                connection =>
+                                    connection.id ===
+                                    importedConnection.id
+                            );
+
+                        const imported =
+                        {
+                            ...importedConnection,
+                            port:
+                                Number(importedConnection.port)
+                        };
+
+                        if (existing)
+                        {
+                            const password =
+                                existing.password || "";
+
+                            Object.assign(
+                                existing,
+                                imported,
+                                {
+                                    password: password
+                                }
+                            );
+                        }
+                        else
+                        {
+                            this.connections.push(
+                            {
+                                ...imported,
+                                password: ""
+                            });
+                        }
+                    }
+                );
+
+                if (
+                    selectedConnectionId &&
+                    this.connections.some(
+                        connection =>
+                            connection.id ===
+                            selectedConnectionId
+                    )
+                )
+                {
+                    this.selectedConnectionId =
+                        selectedConnectionId;
+                }
+
+                this.saveConnections();
+                this.refreshConnectionList();
+                this.loadSelectedConnection();
+                this.updateDeleteConnectionButton();
+
+                alert(
+                    "Connections loaded successfully."
+                );
+            }
+        );
+    },
+
+    saveConfigurationToFile()
+    {
+        const configuration =
+        {
+            version: 1,
+            database:
+                this.workspace.database,
+            selectedConnectionId:
+                this.selectedConnectionId,
+            sourceQuery:
+                document.getElementById(
+                    "source_query"
+                ).value,
+            groups:
+                this.workspace.groups,
+            pivotChips:
+                this.workspace.pivotChips
+        };
+
+        this.downloadJsonFile(
+            "easy_pivot_configuration_" +
+            this.getFileTimestamp() +
+            ".json",
+            configuration
+        );
+    },
+
+    loadConfigurationFromFile()
+    {
+        this.openJsonFile(
+            data =>
+            {
+                if (
+                    !data ||
+                    typeof data !== "object" ||
+                    typeof data.database !== "string" ||
+                    typeof data.sourceQuery !== "string" ||
+                    !Array.isArray(data.groups) ||
+                    !Array.isArray(data.pivotChips)
+                )
+                {
+                    alert(
+                        "The selected file is not a valid Easy Pivot " +
+                        "configuration file."
+                    );
+
+                    return;
+                }
+
+                const validDatabases =
+                    [
+                        "mysql",
+                        "oracle",
+                        "postgresql",
+                        "sqlserver"
+                    ];
+
+                if (
+                    !validDatabases.includes(
+                        data.database
+                    )
+                )
+                {
+                    alert(
+                        "The configuration contains an unsupported " +
+                        "database type."
+                    );
+
+                    return;
+                }
+
+                /*
+                    Load the database selection first so the generated
+                    JSON and aggregate lists use the correct database.
+                */
+                this.workspace.database =
+                    data.database;
+
+                const databaseRadio =
+                    document.querySelector(
+                        'input[name="database"][value="' +
+                        data.database +
+                        '"]'
+                    );
+
+                if (databaseRadio)
+                {
+                    databaseRadio.checked = true;
+                }
+
+                const sourceQuery =
+                    this.normalizeSourceQuery(
+                        data.sourceQuery
+                    );
+
+                document.getElementById(
+                    "source_query"
+                ).value = sourceQuery;
+
+                this.workspace.groups =
+                    data.groups.map(group =>
+                    ({
+                        field:
+                            typeof group.field === "string"
+                                ? group.field
+                                : "",
+                        sort:
+                            group.sort === "DESC"
+                                ? "DESC"
+                                : "ASC"
+                    }))
+                    .filter(group =>
+                        group.field !== ""
+                    );
+
+                this.workspace.pivotChips =
+                    data.pivotChips
+                        .filter(
+                            pivot =>
+                                pivot &&
+                                typeof pivot.field === "string"
+                        )
+                        .map(pivot =>
+                        ({
+                            field: pivot.field,
+                            type:
+                                typeof pivot.type === "string"
+                                    ? pivot.type
+                                    : "SUM",
+                            dataField:
+                                typeof pivot.dataField === "string"
+                                    ? pivot.dataField
+                                    : "",
+                            trueValue:
+                                typeof pivot.trueValue === "string"
+                                    ? pivot.trueValue
+                                    : "",
+                            falseValue:
+                                typeof pivot.falseValue === "string"
+                                    ? pivot.falseValue
+                                    : "",
+                            follows:
+                                typeof pivot.follows === "string"
+                                    ? pivot.follows
+                                    : "",
+                            sort:
+                                pivot.sort === "DESC"
+                                    ? "DESC"
+                                    : "ASC",
+                            removeNullColumns:
+                                pivot.removeNullColumns !== false,
+                            easyPivotHeadings:
+                                pivot.easyPivotHeadings !== false
+                        }));
+
+                /*
+                    discoverFields(..., false) rebuilds the derived
+                    available-field list without wiping the loaded
+                    Groups and Pivot Chips.
+                */
+                this.discoverFields(
+                    sourceQuery,
+                    false
+                );
+
+                /*
+                    A configuration may refer to a connection saved in
+                    a separate connections file. Use it when available;
+                    otherwise retain the current connection for the
+                    selected database.
+                */
+                if (
+                    typeof data.selectedConnectionId === "string" &&
+                    this.connections.some(
+                        connection =>
+                            connection.id ===
+                                data.selectedConnectionId &&
+                            connection.databaseType ===
+                                data.database
+                    )
+                )
+                {
+                    this.selectedConnectionId =
+                        data.selectedConnectionId;
+                }
+                else
+                {
+                    this.restoreDatabaseConnection();
+                }
+
+                this.refreshConnectionList();
+                this.loadSelectedConnection();
+                this.updateDeleteConnectionButton();
+                this.refreshWorkspace();
+
+                alert(
+                    "Configuration loaded successfully."
+                );
+            }
+        );
     },
 
     restoreDatabaseConnection()
@@ -466,6 +1174,8 @@ const EasyPivot = {
                 "__new_connection__";
         }
 
+        this.refreshConnectionIdentity();
+
     },
 
     loadSelectedConnection()
@@ -505,6 +1215,8 @@ const EasyPivot = {
         document.getElementById("connection_select").value =
             connection.id;
 
+        this.refreshConnectionIdentity();
+
     },
 
     showConnectionDialog()
@@ -536,7 +1248,6 @@ const EasyPivot = {
 
         button.disabled =
             this.temporaryConnectionId !== "" ||
-            this.selectedConnectionId === "local_mysql" ||
             !this.connections.some(
                 connection =>
                     connection.id ===
@@ -839,15 +1550,6 @@ const EasyPivot = {
             return;
         }
 
-        if (connection.id === "local_mysql")
-        {
-            alert(
-                "Local MySQL is a built-in connection and cannot be deleted."
-            );
-
-            return;
-        }
-
         const confirmed =
             window.confirm(
                 'Delete connection "' +
@@ -1000,13 +1702,31 @@ const EasyPivot = {
             };
 
             this.connections.push(connection);
+
+            if (connection.password !== "")
+            {
+                this.passwordPromptedConnections[
+                    connection.id
+                ] = true;
+            }
         }
         else
         {
+            const passwordChanged =
+                connection.password !==
+                values.password;
+
             Object.assign(
                 connection,
                 values
             );
+
+            if (passwordChanged)
+            {
+                delete this.passwordPromptedConnections[
+                    connection.id
+                ];
+            }
         }
 
         this.selectedConnectionId =
@@ -1042,7 +1762,52 @@ const EasyPivot = {
             .getElementById("manage_connections_button")
             .addEventListener(
                 "click",
-                () => this.showConnectionDialog()
+                () =>
+                {
+                    if (
+                        this.selectedConnectionId &&
+                        this.connections.some(
+                            connection =>
+                                connection.id ===
+                                this.selectedConnectionId
+                        )
+                    )
+                    {
+                        this.showConnectionDialog();
+                    }
+                    else
+                    {
+                        this.newConnection();
+                    }
+                }
+            );
+
+        document
+            .getElementById("load_connections_button")
+            .addEventListener(
+                "click",
+                () => this.loadConnectionsFromFile()
+            );
+
+        document
+            .getElementById("save_connections_button")
+            .addEventListener(
+                "click",
+                () => this.saveConnectionsToFile()
+            );
+
+        document
+            .getElementById("load_configuration_button")
+            .addEventListener(
+                "click",
+                () => this.loadConfigurationFromFile()
+            );
+
+        document
+            .getElementById("save_configuration_button")
+            .addEventListener(
+                "click",
+                () => this.saveConfigurationToFile()
             );
 
         document
@@ -1101,6 +1866,7 @@ const EasyPivot = {
                     this.saveConnections();
 
                     this.loadSelectedConnection();
+                    this.refreshConnectionIdentity();
 
                     this.updateDeleteConnectionButton();
                 }
@@ -1274,6 +2040,7 @@ const EasyPivot = {
                         this.restoreDatabaseConnection();
                         this.refreshConnectionList();
                         this.loadSelectedConnection();
+                        this.refreshConnectionIdentity();
                         this.refreshWorkspace();
                     });
             });
@@ -1364,6 +2131,12 @@ const EasyPivot = {
     },
 
     refreshWorkspace() {
+
+        this.validationErrors =
+        {
+            groups: {},
+            pivots: {}
+        };
 
         this.refreshGroups();
 
@@ -1486,17 +2259,21 @@ const EasyPivot = {
             .trim();
     },
 
-    discoverFields(sql)
+    discoverFields(sql, resetWorkspace = true)
     {
         sql = this.normalizeSourceQuery(sql);
 
         this.lastProcessedSourceQuery = sql;
 
-        // New query = new project
+        // A normal query change starts a new project.
+        // Configuration loading can preserve the loaded Groups/Pivot Chips.
 
-        this.workspace.groups = [];
+        if (resetWorkspace)
+        {
+            this.workspace.groups = [];
 
-        this.workspace.pivotChips = [];
+            this.workspace.pivotChips = [];
+        }
 
         this.workspace.availableFields = [];
 
@@ -1805,6 +2582,13 @@ const EasyPivot = {
 
             row.className = "group-row";
 
+            if (this.validationErrors.groups[index])
+            {
+                row.classList.add("validation-error");
+                row.title =
+                    this.validationErrors.groups[index];
+            }
+
             row.innerHTML = `
 
                 <span>${group.field}</span>
@@ -1988,6 +2772,13 @@ const EasyPivot = {
             const row = document.createElement("div");
 
             row.className = "pivot-row";
+
+            if (this.validationErrors.pivots[index])
+            {
+                row.classList.add("validation-error");
+                row.title =
+                    this.validationErrors.pivots[index];
+            }
 
             row.innerHTML = `
                 <span>${pivot.field}</span>
@@ -2749,63 +3540,343 @@ const EasyPivot = {
         SQL Generation
     **************************************************************************/
 
-    generatePivotQuery() {
-
+    async generatePivotQuery()
+    {
         if (!this.validateWorkspace())
+        {
+            return;
+        }
+
+        const connection =
+            this.connections.find(
+                item =>
+                    item.id ===
+                    this.selectedConnectionId
+            );
+
+        if (!connection)
+        {
+            alert(
+                "Please select a database connection."
+            );
+
+            return;
+        }
+
+        /*
+            The first database operation against a password-authenticated
+            connection establishes the password for this browser session.
+            Subsequent operations on the same connection do not prompt.
+        */
+        if (!await this.ensureConnectionPassword(connection))
         {
             return;
         }
 
         this.generateJSON();
 
-        this.showOutputWindow();
+        /*
+            Always regenerate the JSON immediately before sending the
+            request. This prevents a stale generated_json field from being
+            sent if the workspace changed since the last refresh.
+        */
+        this.refreshGeneratedJSON();
 
+        const request =
+        {
+            database:
+                document.querySelector(
+                    'input[name="database"]:checked'
+                ).value,
+
+            connection:
+            {
+                host: connection.host,
+                port: connection.port,
+                database: connection.database,
+                authentication: connection.authentication,
+                username: connection.username,
+                password: connection.password
+            },
+
+            source_query:
+                document.getElementById(
+                    "source_query"
+                ).value,
+
+            generated_json:
+                document.getElementById(
+                    "generated_json"
+                ).value
+        };
+
+        const generatedSql =
+            document.getElementById(
+                "generated_sql"
+            );
+
+        generatedSql.value = "";
+
+        const generateButton =
+            document.getElementById(
+                "generate_sql_button"
+            );
+
+        /*
+            The database request may take several seconds on a remote or
+            slower host. Show the browser's busy cursor and prevent a
+            second request until this one completes.
+        */
+        document.body.style.cursor = "wait";
+        generateButton.style.cursor = "wait";
+        generateButton.disabled = true;
+
+        try
+        {
+            const response =
+                await fetch(
+                    "php/generate.php",
+                    {
+                        method: "POST",
+                        headers:
+                        {
+                            "Content-Type":
+                                "application/json"
+                        },
+                        body:
+                            JSON.stringify(request)
+                    }
+                );
+
+            const text =
+                await response.text();
+
+            if (!response.ok)
+            {
+                throw new Error(
+                    text ||
+                    "Database request failed."
+                );
+            }
+
+            const processedSql =
+                this.postProcessGeneratedSql(text);
+
+            generatedSql.value =
+                processedSql;
+
+            this.showOutputWindow();
+
+            generatedSql.focus();
+        }
+        catch (error)
+        {
+            /*
+                If authentication failed, allow the next attempt to prompt
+                again rather than trapping the user with a bad password.
+            */
+            delete this.passwordPromptedConnections[
+                connection.id
+            ];
+
+            alert(
+                "Pivot query generation failed.\\n\\n" +
+                (error.message || error)
+            );
+        }
+        finally
+        {
+            /*
+                Restore normal interaction after the database request
+                succeeds or fails.
+            */
+            document.body.style.cursor = "";
+            generateButton.style.cursor = "";
+            generateButton.disabled = false;
+        }
     },
 
     validateWorkspace() {
 
-        if (this.workspace.pivotChips.length === 0)
+        this.validationErrors =
         {
-            alert("Please add at least one Pivot Chip.");
+            groups: {},
+            pivots: {}
+        };
+
+        /*
+            Generate Pivot Query is the strict validation boundary.
+
+            Easy Pivot remains permissive while the user is building a
+            configuration. Field discovery is assistive only and is not
+            used here to reject manually entered fields.
+        */
+
+        const sourceQuery =
+            document.getElementById("source_query").value.trim();
+
+        if (sourceQuery === "")
+        {
+            alert(
+                "Cannot generate the pivot query.\n\n" +
+                "Please enter a source SQL query."
+            );
 
             return false;
         }
 
-        const validGroups = this.workspace.groups.map(group => group.field);
-
-        for (const pivot of this.workspace.pivotChips)
+        if (this.workspace.groups.length === 0)
         {
-            if (pivot.follows &&
-                !validGroups.includes(pivot.follows))
-            {
-                alert(
-                    "Cannot generate the pivot query.\n\n" +
-                    'Pivot "' + pivot.field + ' (' + pivot.type + ')" follows "' +
-                    pivot.follows + '", but that Group no longer exists.\n\n' +
-                    "You may:\n\n" +
-                    "• Add the Group back.\n" +
-                    "• Edit the Pivot Chip and choose another Follows Group.\n" +
-                    "• Delete the Pivot Chip if it is no longer needed."
-                );
+            alert(
+                "Cannot generate the pivot query.\n\n" +
+                "Please add at least one Group."
+            );
 
-                return false;
+            return false;
+        }
+
+        if (this.workspace.pivotChips.length === 0)
+        {
+            alert(
+                "Cannot generate the pivot query.\n\n" +
+                "Please add at least one Pivot Chip."
+            );
+
+            return false;
+        }
+
+        /*
+            A Group field must contain something. This normally cannot
+            happen through the UI because saveGroup() already enforces it,
+            but it can occur in a loaded configuration.
+        */
+        for (
+            let index = 0;
+            index < this.workspace.groups.length;
+            index++
+        )
+        {
+            const group =
+                this.workspace.groups[index];
+
+            if (
+                !group ||
+                typeof group.field !== "string" ||
+                group.field.trim() === ""
+            )
+            {
+                this.validationErrors.groups[index] =
+                    "This Group has no field.";
+            }
+        }
+
+        const validGroups =
+            this.workspace.groups
+                .filter(
+                    group =>
+                        group &&
+                        typeof group.field === "string" &&
+                        group.field.trim() !== ""
+                )
+                .map(group => group.field);
+
+        for (
+            let index = 0;
+            index < this.workspace.pivotChips.length;
+            index++
+        )
+        {
+            const pivot =
+                this.workspace.pivotChips[index];
+
+            if (
+                !pivot ||
+                typeof pivot.field !== "string" ||
+                pivot.field.trim() === ""
+            )
+            {
+                this.validationErrors.pivots[index] =
+                    "This Pivot Chip has no field.";
+
+                continue;
             }
 
+            if (
+                !pivot.type ||
+                typeof pivot.type !== "string" ||
+                pivot.type.trim() === ""
+            )
+            {
+                this.validationErrors.pivots[index] =
+                    "This Pivot Chip has no aggregate type.";
+
+                continue;
+            }
+
+            if (
+                pivot.type.toUpperCase() !== "BOOLEAN" &&
+                (
+                    typeof pivot.dataField !== "string" ||
+                    pivot.dataField.trim() === ""
+                )
+            )
+            {
+                this.validationErrors.pivots[index] =
+                    "This Pivot Chip requires a data field.";
+
+                continue;
+            }
+
+            /*
+                At generation time a field cannot be both a Group and
+                a Pivot field.
+            */
             if (validGroups.includes(pivot.field))
             {
-                alert(
-                    "Cannot generate the pivot query.\n\n" +
-                    'Pivot field "' + pivot.field + '" is also a Group field.\n\n' +
-                    "A field cannot be used as both a Group and a Pivot Field.\n\n" +
-                    "You may:\n\n" +
-                    "• Edit the Pivot Chip and choose another field.\n" +
-                    "• Remove the Group if it is no longer needed.\n" +
-                    "• Delete the Pivot Chip if it is no longer needed."
-                );
+                this.validationErrors.pivots[index] =
+                    "This Pivot field is also a Group field.";
 
-                return false;
+                continue;
             }
-        }        
+
+            /*
+                Follows is a real structural relationship. If it names a
+                Group that does not exist, the Pivot cannot be generated.
+            */
+            if (
+                pivot.follows &&
+                !validGroups.includes(pivot.follows)
+            )
+            {
+                this.validationErrors.pivots[index] =
+                    'This Pivot follows "' +
+                    pivot.follows +
+                    '", but that Group does not exist.';
+
+                continue;
+            }
+        }
+
+        /*
+            Show all identified row errors at once instead of stopping at
+            the first bad row.
+        */
+        if (
+            Object.keys(this.validationErrors.groups).length > 0 ||
+            Object.keys(this.validationErrors.pivots).length > 0
+        )
+        {
+            this.refreshGroups();
+            this.refreshPivotChips();
+
+            alert(
+                "Cannot generate the pivot query.\n\n" +
+                "One or more Groups or Pivot Chips need attention. " +
+                "The invalid row(s) have been highlighted."
+            );
+
+            return false;
+        }
 
         const connection =
             this.connections.find(
@@ -2819,57 +3890,7 @@ const EasyPivot = {
             return false;
         }
 
-        const request = {
-            database: document.querySelector('input[name="database"]:checked').value,
-            connection: {
-                host: connection.host,
-                port: connection.port,
-                database: connection.database,
-                authentication: connection.authentication,
-                username: connection.username,
-                password: connection.password
-            },
-            source_query: document.getElementById("source_query").value,
-            generated_json: document.getElementById("generated_json").value
-        };
-
-        fetch("php/generate.php", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(request)
-        })
-        .then(async response =>
-        {
-            const text = await response.text();
-
-            if (!response.ok)
-            {
-                throw new Error(text || "Database request failed.");
-            }
-
-            return text;
-        })
-        .then(text => {
-            const generatedSql =
-                document.getElementById("generated_sql");
-
-            const processedSql =
-                this.postProcessGeneratedSql(text);
-
-            generatedSql.value = processedSql;
-
-            document.getElementById("output_overlay").style.display = "flex";
-
-            generatedSql.focus();
-        })
-        .catch(error => {
-            alert(error.message || error);
-        });
-
         return true;
-
     },
 
     /**************************************************************************

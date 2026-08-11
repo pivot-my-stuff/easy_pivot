@@ -1,3 +1,15 @@
+2026-08-11: The CHANGELOG.txt file is being updated once again. :)
+
+              * Added connection diagnostics.
+              * Connection testing now verifies:
+                - Database connectivity
+                - Database engine version
+                - Easy Pivot stored procedure availability
+              * Added Easy Pivot stored procedure detection during connection testing.
+              * Added host:port/database display in connection selector.
+              * Verified Workbench hosted on one machine can connect to Easy Pivot databases hosted on another machine.
+              * Added cross-database deployment validation using YETI web server and CRYPTID MySQL database.
+
 2026-08-09: The project has reached the point where CHANGELOG.txt makes
             no sense. We need time to work on other more important stuff
             instead. Have a nice day. :)

@@ -42,6 +42,33 @@ try
          "\n\n" .
          'MySQL version: ' .
          $version;
+
+
+    /*
+       Check for Easy Pivot stored procedure
+    */
+
+    $stmt = $pdo->query("
+        SELECT COUNT(*) AS procedure_count
+        FROM information_schema.ROUTINES
+        WHERE ROUTINE_SCHEMA = DATABASE()
+        AND ROUTINE_NAME = 'easy_pivot'
+    ");
+
+    $procedure = $stmt->fetch(PDO::FETCH_ASSOC);
+
+
+    echo "\n\n";
+
+    if (($procedure['procedure_count'] ?? 0) > 0)
+    {
+        echo 'Easy Pivot procedure found.';
+    }
+    else
+    {
+        echo 'Easy Pivot procedure NOT found.';
+    }
+
 }
 catch (Throwable $e)
 {

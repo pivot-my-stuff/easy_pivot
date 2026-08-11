@@ -72,26 +72,101 @@
 <section id="workbench_panel">
 
     <!-- ===================================================== -->
-    <!-- DATABASE                                               -->
+    <!-- DATABASE                                             -->
     <!-- ===================================================== -->
 
     <section class="ep-section">
 
-        <div class="ep-section-title">
-
-            Database
-
-        </div>
-
         <div id="database_selection">
 
-            <label><input type="radio" name="database" value="mysql" checked> MySQL</label>
+            <div id="database_controls">
 
-            <label><input type="radio" name="database" value="oracle"> Oracle</label>
+                <span id="database_label">
+                    Database
+                </span>
 
-            <label><input type="radio" name="database" value="postgresql"> PostgreSQL</label>
+                <div id="database_types">
 
-            <label><input type="radio" name="database" value="sqlserver"> SQL Server</label>
+                    <label>
+                        <input
+                            type="radio"
+                            name="database"
+                            value="mysql"
+                            checked>
+                        MySQL
+                    </label>
+
+                    <label>
+                        <input
+                            type="radio"
+                            name="database"
+                            value="oracle">
+                        Oracle
+                    </label>
+
+                    <label>
+                        <input
+                            type="radio"
+                            name="database"
+                            value="postgresql">
+                        PostgreSQL
+                    </label>
+
+                    <label>
+                        <input
+                            type="radio"
+                            name="database"
+                            value="sqlserver">
+                        SQL Server
+                    </label>
+
+                </div>
+
+                <div id="workspace_file_buttons">
+
+                    <div class="workspace_file_pair">
+
+                        <button
+                            id="load_connections_button"
+                            class="w3-button w3-small w3-round">
+
+                            Load Connections
+
+                        </button>
+
+                        <button
+                            id="load_configuration_button"
+                            class="w3-button w3-small w3-round">
+
+                            Load Configuration
+
+                        </button>
+
+                    </div>
+
+                    <div class="workspace_file_pair">
+
+                        <button
+                            id="save_connections_button"
+                            class="w3-button w3-small w3-round">
+
+                            Save Connections
+
+                        </button>
+
+                        <button
+                            id="save_configuration_button"
+                            class="w3-button w3-small w3-round">
+
+                            Save Configuration
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
 
         </div>
 
@@ -102,14 +177,6 @@
     <!-- ===================================================== -->
 
     <section class="ep-section">
-
-        <div class="ep-section-title ep-connection-title">
-
-            <span>
-                Connection
-            </span>
-
-        </div>
 
         <div id="connection_selection">
 
@@ -122,11 +189,6 @@
                 <select
                     id="connection_select"
                     class="w3-select w3-border">
-
-                    <option value="local_mysql">
-                        Local MySQL
-                    </option>
-
                 </select>
 
                 <button
@@ -372,7 +434,7 @@
                 id="connection_name"
                 class="w3-input w3-border"
                 type="text"
-                value="Local MySQL">
+                value="">
 
             <br>
 
@@ -384,7 +446,7 @@
                 id="connection_host"
                 class="w3-input w3-border"
                 type="text"
-                value="localhost">
+                value="">
 
             <br>
 
@@ -414,7 +476,7 @@
                         id="connection_database"
                         class="w3-input w3-border"
                         type="text"
-                        value="easy_pivot">
+                        value="">
 
                 </div>
 
@@ -446,7 +508,7 @@
                 id="connection_username"
                 class="w3-input w3-border"
                 type="text"
-                value="root"
+                value=""
                 autocomplete="off">
 
             <br>

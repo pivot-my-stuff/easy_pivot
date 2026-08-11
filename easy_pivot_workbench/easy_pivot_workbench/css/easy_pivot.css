@@ -30,9 +30,9 @@
 
     --border-gray: #D9D9D9;
 
-    --alternate-blue: #F5F9FF;
+    --alternate-blue: #E3EEFC;
 
-    --alternate-green: #F6FFF6;
+    --alternate-green: #E4F5E6;
 
     --json-background: #FCFBFF;
 
@@ -293,7 +293,7 @@ body.workspace-hidden #workspace_toggle_container {
 
     align-items: center;
 
-    padding: 10px 14px;
+    padding: 5px 14px;
 
 }
 
@@ -400,7 +400,7 @@ body.workspace-hidden #workspace_toggle_container {
 
     display:grid;
 
-    grid-template-columns:120px 1fr auto;
+    grid-template-columns:minmax(120px, auto) 1fr auto;
 
     gap:12px;
 
@@ -417,6 +417,10 @@ body.workspace-hidden #workspace_toggle_container {
 #connection_select {
 
     min-width:0;
+
+    padding-left:11px;
+
+    white-space:nowrap;
 
 }
 
@@ -744,6 +748,31 @@ body.workspace-hidden #workspace_toggle_container {
     color:white;
 
 }
+
+/******************************************************************************
+    Generated JSON
+******************************************************************************/
+
+/******************************************************************************
+    Validation
+******************************************************************************/
+
+.validation-error {
+
+    background:#FFE0E0 !important;
+
+    border-left:4px solid #C62828;
+
+}
+
+.validation-error:hover {
+
+    background:#FFD0D0 !important;
+
+    cursor:pointer;
+
+}
+
 
 /******************************************************************************
     Generated JSON
@@ -1257,4 +1286,85 @@ body.workspace-hidden #workspace_toggle_container {
 {
     transform: translateY(1px);
     filter: brightness(0.90);
+}
+
+/******************************************************************************
+    Database Controls
+******************************************************************************/
+
+#database_controls {
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    gap:24px;
+
+}
+
+#database_controls span {
+
+    font-weight:bold;
+
+}
+
+#database_types {
+
+    display:flex;
+
+    align-items:center;
+
+    flex-wrap:wrap;
+
+    gap:18px;
+
+}
+
+
+#database_types label {
+
+    margin:0;
+
+}
+
+
+#workspace_file_buttons {
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+}
+
+
+.workspace_file_pair {
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:8px;
+
+}
+
+
+.workspace_file_pair button {
+
+    width:190px;
+
+    background:var(--application-blue);
+
+    color:white;
+
+}
+
+
+.workspace_file_pair button:hover {
+
+    background:#244F8F;
+
 }
