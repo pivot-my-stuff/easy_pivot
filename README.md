@@ -1,39 +1,24 @@
-```{=html}
 <p align="center">
-```
-`<img src="img/easy_pivot_workbench_demo_1.jpg">`{=html}
-```{=html}
+  <img src="img/easy_pivot_workbench_demo_1.jpg">`{=html}
 </p>
-```
-```{=html}
+
 <p align="center">
-```
-`<img src="img/easy_pivot_workbench_demo_2.jpg">`{=html}
-```{=html}
+  <img src="img/easy_pivot_workbench_demo_2.jpg">`{=html}
 </p>
-```
-```{=html}
+
 <p align="center">
-```
-`<img src="img/easy_pivot_workbench_demo_3.jpg">`{=html}
-```{=html}
+  <img src="img/easy_pivot_workbench_demo_3.jpg">`{=html}
 </p>
-```
-```{=html}
+
 <p align="center">
-```
-`<img src="img/easy_pivot_workbench_demo_4.jpg">`{=html}
-```{=html}
+  <img src="img/easy_pivot_workbench_demo_4.jpg">`{=html}
 </p>
-```
-```{=html}
+
 <p align="center">
-```
-`<img src="img/easy_pivot_workbench_demo_5.jpg">`{=html}
-```{=html}
+  <img src="img/easy_pivot_workbench_demo_5.jpg">`{=html}
 </p>
-```
-### August 11, 2026 --- Easy Pivot Workbench Installation Instructions
+
+### August 12, 2026 --- Easy Pivot Workbench Installation Instructions
 
 The **Easy Pivot Workbench** provides both standalone and web-based
 access to Easy Pivot.
