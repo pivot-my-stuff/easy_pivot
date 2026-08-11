@@ -34,7 +34,7 @@ For Oracle, PostgreSQL and SQL Server users: do not feel left out. Your support 
 
 And for SQLite and MariaDB users: we see you out there. Give us time.
 
-If you would like to help this project through donations, you can do so through this link:
+If you would like to help this project through donations (Sponsor), you can do so through this link:
 
 https://github.com/pivot-my-stuff
 
