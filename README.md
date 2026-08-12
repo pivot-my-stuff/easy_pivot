@@ -18,6 +18,21 @@
   <img src="img/easy_pivot_workbench_demo_5.jpg">
 </p>
 
+### If you would like to donate to the Easy Pivot Workbench project, you can donate here:
+
+https://github.com/pivot-my-stuff
+
+I won't nag you for donations. But your support REALLY helps. :) I want you to pivot in
+pride with a good graphical interface. Something stylish that only donations can help
+bring into existense.
+
+Nah, on second thought, who am I kidding? I would do this just for the fun of it, anyway.
+So forget about the donations. I'll take care of it myself. :)
+
+"I see you no longer want donations because you would do this for the fun of it anyway.
+Would you like donations instead? -- Pivoty, valued member of the Easy Pivot support
+team.
+
 ### August 12, 2026 --- Easy Pivot Workbench Installation Instructions
 
 The **Easy Pivot Workbench** provides both standalone and web-based
