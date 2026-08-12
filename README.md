@@ -37,6 +37,29 @@ https://github.com/pivot-my-stuff/easy_pivot/blob/main/comics/PIVOTY_EASY_PIVOT_
 
 https://github.com/pivot-my-stuff/easy_pivot/blob/main/comics/PIVOTY_HELPS_ANOTHER_CUSTOMER.jpg
 
+### August 13, 2026 --- Easy Pivot Workbench Database Support & Windows Authentication
+
+### Multi-Database Support
+
+Easy Pivot Workbench has been developed to support four database platforms:
+
+- **MySQL**
+- **PostgreSQL**
+- **Oracle**
+- **Microsoft SQL Server**
+
+At this time, **only the MySQL implementation has been officially released and supported**.
+
+Support for PostgreSQL, Oracle, and Microsoft SQL Server has been developed and is currently undergoing testing. Depending on the results of that testing, support for these additional database platforms may be released as early as the next few days. Then it's on to experimenting with Easy Pivot and database job scheduling integration. And then SQLite and MariaDB support.
+
+### Windows Authentication
+
+Easy Pivot Workbench is also being developed to support **Windows authentication across all four database platforms**.
+
+Because meaningful Windows-authentication testing requires an Active Directory environment, a simulated Windows domain environment has been established using **Samba Active Directory Domain Controller (AD/DC) on Linux**. This provides a controlled environment for testing domain authentication, Kerberos, and integrated database connectivity.
+
+**Windows-authentication testing is currently in progress.**
+
 ### August 12, 2026 --- Easy Pivot Workbench Installation Instructions
 
 The **Easy Pivot Workbench** provides both standalone and web-based
