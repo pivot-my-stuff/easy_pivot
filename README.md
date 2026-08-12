@@ -30,7 +30,7 @@ Nah, on second thought, who am I kidding? I would do this just for the fun of it
 So forget about the donations. I'll take care of it myself. :)
 
 "I see you no longer want donations because you would do this for the fun of it anyway.
-Would you like donations instead? -- Pivoty, valued member of the Easy Pivot support
+Would you like donations instead?" -- Pivoty, valued member of the Easy Pivot support
 team.
 
 ### August 12, 2026 --- Easy Pivot Workbench Installation Instructions
