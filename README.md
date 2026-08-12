@@ -33,6 +33,10 @@ So forget about the donations. I'll take care of it myself. :)
 Would you like donations instead?" -- Pivoty, valued member of the Easy Pivot support
 team.
 
+https://github.com/pivot-my-stuff/easy_pivot/blob/main/comics/PIVOTY_EASY_PIVOT_TECH_SUPPORT_HOTLINE.jpg
+
+https://github.com/pivot-my-stuff/easy_pivot/blob/main/comics/PIVOTY_HELPS_ANOTHER_CUSTOMER.jpg
+
 ### August 12, 2026 --- Easy Pivot Workbench Installation Instructions
 
 The **Easy Pivot Workbench** provides both standalone and web-based
