@@ -37,6 +37,30 @@ https://github.com/pivot-my-stuff/easy_pivot/blob/main/comics/PIVOTY_EASY_PIVOT_
 
 https://github.com/pivot-my-stuff/easy_pivot/blob/main/comics/PIVOTY_HELPS_ANOTHER_CUSTOMER.jpg
 
+### Test Lab Established
+
+**2026-08-14:** Yesterday we completed the initial Easy Pivot multi-database test lab setup. A second Windows 10 Pro workstation was added to the `easypivot.test` domain, providing a dedicated environment for cross-machine and cross-database testing. The lab infrastructure is now in place and operational, although database configuration and the `ERP_Easy.Inventory` test workload have not yet been installed.
+
+**Test lab components established:**
+
+- Windows 10 Pro domain workstation
+- Linux-based Active Directory-compatible domain controller (`DC1`)
+- DNS services for the `easypivot.test` domain
+- Windows domain authentication and domain membership
+- Cross-machine name resolution
+- Remote Desktop connectivity by computer name
+- SSH connectivity to the domain server
+- MySQL
+- Oracle Database 26ai Free
+- PostgreSQL 18
+- SQL Server 2025 Enterprise Developer Edition
+- SQL Server Management Studio 22
+- FlySpeed SQL Query as the common database connectivity client
+- Existing Apache/web and database infrastructure on the primary development workstation
+- Network connectivity between the lab systems
+
+**Next phase:** Configure the four database platforms, establish appropriate authentication and permissions, create the common `ERP_Easy.Inventory` simulated ERP test workload, and begin systematic cross-database connectivity and Easy Pivot testing.
+
 ### August 13, 2026 --- Easy Pivot Workbench Database Support & Windows Authentication
 
 ### Multi-Database Support
