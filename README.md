@@ -37,10 +37,9 @@ https://github.com/pivot-my-stuff/easy_pivot/blob/main/comics/PIVOTY_EASY_PIVOT_
 
 https://github.com/pivot-my-stuff/easy_pivot/blob/main/comics/PIVOTY_HELPS_ANOTHER_CUSTOMER.jpg
 
-### Negotiating With Bomb #20 regarding Pivots
-https://www.youtube.com/watch?v=_LXen-07Qds
+### Skeet Surfing --- No Reason, I Just Wanted To Do It
 
-https://www.youtube.com/watch?v=g_47mmt5SZY
+https://www.youtube.com/watch?v=aJOS7dKuwcQ
 
 ### August 14, 2026 --- Test Lab Established
 
