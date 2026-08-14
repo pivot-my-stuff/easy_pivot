@@ -37,6 +37,10 @@ https://github.com/pivot-my-stuff/easy_pivot/blob/main/comics/PIVOTY_EASY_PIVOT_
 
 https://github.com/pivot-my-stuff/easy_pivot/blob/main/comics/PIVOTY_HELPS_ANOTHER_CUSTOMER.jpg
 
+### Negotiating With The Database Regarding Pivot Insanity
+
+https://www.youtube.com/watch?v=_LXen-07Qds
+
 ### August 14, 2026 --- Test Lab Established
 
 Yesterday we completed the initial Easy Pivot multi-database test lab setup. A second Windows 10 Pro workstation was added to the `easypivot.test` domain, providing a dedicated environment for cross-machine and cross-database testing. The lab infrastructure is now in place and operational, although database configuration and the `ERP_Easy.Inventory` test workload have not yet been installed.
