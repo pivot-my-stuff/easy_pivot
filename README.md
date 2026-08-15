@@ -39,6 +39,8 @@ https://github.com/pivot-my-stuff/easy_pivot/blob/main/comics/PIVOTY_HELPS_ANOTH
 
 ### August 15, 2026 --- Test Lab Work With SQL Server & Windows Authentication
 
+(Sorry for the project slowing down a bit. We do have full support ready for all four supported databases... but... we are trying to get the Windows authentication correct. We are presently working through issues with that and SQL Server. But we are making steady progress and once we grok that, it's all downhill from there. We win. You win.)
+
 Continued Easy Pivot Workbench SQL Server integration testing. Established Windows Authentication test accounts `EASYPIVOT\squatch` and `EASYPIVOT\admin` on the CRYPTID SQL Server Express instance, with elevated lab privileges for testing. Renamed the SQL Server test database from `baan` to `erp_easy` and verified access to the existing `inventory` test data. Configured SQL Server Express for TCP/IP connections and opened TCP port 1433 through the Windows firewall. Successfully established a remote Windows-authenticated SQL Server connection from IDEARACE to CRYPTID using the `EASYPIVOT\IDEARACE$` machine account. Confirmed that IDEARACE can also connect to CRYPTID using MySQL, establishing that the remote network and Workbench infrastructure are functioning correctly. SQL Server Easy Pivot procedure execution remains unresolved: both the previous and enhanced stored procedure versions eventually time out when called remotely. Current investigation points toward SQL Server metadata/catalog operations, particularly the numeric/string column detection and related metadata queries, as a possible source of the timeout. Further SQL Server stored procedure isolation testing is planned.
 
 ### August 14, 2026 --- Test Lab Established
