@@ -37,6 +37,28 @@ https://github.com/pivot-my-stuff/easy_pivot/blob/main/comics/PIVOTY_EASY_PIVOT_
 
 https://github.com/pivot-my-stuff/easy_pivot/blob/main/comics/PIVOTY_HELPS_ANOTHER_CUSTOMER.jpg
 
+
+### August 16, 2026 --- SQL Server Testing Success & Windows Authentication
+
+Great progress yesterday! The Easy Pivot Workbench SQL Server stored procedure is now working successfully, generating the expected pivot SQL.
+
+We also confirmed how Windows Authentication works with Easy Pivot Workbench.
+
+When running the **standalone Workbench** on a Windows desktop, Easy Pivot uses the logged-in Windows user's domain identity when connecting to SQL Server.
+
+When deployed through a **web server**, authentication is determined by the web server's configuration. The web server administrator can configure the appropriate identity for the organization's security environment.
+
+This gives Easy Pivot two simple deployment paths:
+
+- **Standalone Mode:** Run Easy Pivot directly on your Windows desktop and use your existing Windows/domain identity.
+- **Web Deployment Mode:** Host Easy Pivot on a web server and let the organization's administrators configure authentication according to their existing security policies.
+
+The result is simple: **start using Easy Pivot immediately as a standalone application, and move to centralized web deployment when your organization is ready.**
+
+<p align="center">
+  <img src="img/easy_pivot_workbench_windows_authentication.jpg">
+</p>
+
 ### August 15, 2026 --- Test Lab Work With SQL Server & Windows Authentication
 
 (Sorry for the project slowing down a bit. We do have full support ready for all four supported databases... but... we are trying to get the Windows authentication correct. We are presently working through issues with that and SQL Server. But we are making steady progress and once we grok that, it's all downhill from there. We win. You win.)
