@@ -47,6 +47,16 @@ Wrote a comic about it. Want to see it? Here it is:
 
 https://github.com/pivot-my-stuff/easy_pivot/blob/main/oracle/MR_PIVOT_VISITS_THE_ORACLE.jpg
 
+### August 17, 2026 --- Current Status
+
+**SQL Server and MySQL testing are complete.** SQL Server supports Windows Authentication through the Workbench. MySQL may also support Windows authentication in certain configurations, but this has not been implemented or tested because that capability requires a paid MySQL edition.
+
+**Oracle testing is nearing completion.** Oracle connectivity through PHP/PDO_OCI is working. However, Windows/External Authentication cannot currently be implemented in the Windows PHP environment because the required external authentication mechanism is not supported by the PHP Oracle interface on Windows. This is a limitation of the PHP/Oracle interface rather than Easy Pivot or the Oracle database itself.
+
+**PostgreSQL testing begins next.**
+
+After Oracle and PostgreSQL testing are complete, **Easy Pivot Workbench will support (in one way or another) all four databases: MySQL, Microsoft SQL Server, Oracle, and PostgreSQL.**
+
 ### August 16, 2026 --- SQL Server Testing Success & Windows Authentication
 
 Great progress yesterday! The Easy Pivot Workbench SQL Server stored procedure is now working successfully, generating the expected pivot SQL.
