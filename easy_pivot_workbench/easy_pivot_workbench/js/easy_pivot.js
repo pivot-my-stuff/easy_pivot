@@ -447,7 +447,81 @@ const EasyPivot = {
 
         this.loadSelectedConnection();
 
+        this.refreshAuthenticationOptions();
+
     },
+
+
+    refreshAuthenticationOptions()
+    {
+
+        const database =
+            document.querySelector(
+                'input[name="database"]:checked'
+            ).value;
+
+        const select =
+            document.getElementById(
+                "connection_authentication"
+            );
+
+        const currentValue =
+            select.value || "password";
+
+        const passwordOption =
+            select.querySelector(
+                'option[value="password"]'
+            );
+
+        const windowsOption =
+            select.querySelector(
+                'option[value="windows"]'
+            );
+
+        if (!passwordOption || !windowsOption)
+        {
+            return;
+        }
+
+        if (database === "sqlserver")
+        {
+            select.appendChild(windowsOption);
+            select.appendChild(passwordOption);
+        }
+        else
+        {
+            select.appendChild(passwordOption);
+            select.appendChild(windowsOption);
+        }
+
+        select.value = currentValue;
+
+        this.refreshAuthenticationFields();
+
+    },
+
+
+    refreshAuthenticationFields()
+    {
+
+        const authentication =
+            document.getElementById(
+                "connection_authentication"
+            ).value;
+
+        const windows =
+            authentication === "windows";
+
+        document.getElementById(
+            "connection_username"
+        ).disabled = windows;
+
+        document.getElementById(
+            "connection_password"
+        ).disabled = windows;
+
+    },
+
 
     loadSavedConnections()
     {
@@ -1215,6 +1289,8 @@ const EasyPivot = {
         document.getElementById("connection_select").value =
             connection.id;
 
+        this.refreshAuthenticationOptions();
+
         this.refreshConnectionIdentity();
 
     },
@@ -1334,7 +1410,7 @@ const EasyPivot = {
                 host: "localhost",
                 port: 1433,
                 database: "",
-                authentication: "password",
+                authentication: "windows",
                 username: "",
                 password: ""
             }
@@ -1436,6 +1512,11 @@ const EasyPivot = {
             database:
                 document.getElementById("connection_database").value.trim(),
 
+            databaseType:
+                document.querySelector(
+                    'input[name="database"]:checked'
+                ).value,
+
             authentication:
                 document.getElementById(
                     "connection_authentication"
@@ -1476,7 +1557,10 @@ const EasyPivot = {
             return;
         }
 
-        if (!connection.username)
+        if (
+            connection.authentication !== "windows" &&
+            !connection.username
+        )
         {
             alert("Database user name is required.");
             return;
@@ -1680,7 +1764,10 @@ const EasyPivot = {
             return;
         }
 
-        if (!values.username)
+        if (
+            values.authentication !== "windows" &&
+            !values.username
+        )
         {
             alert("Database user name is required.");
             return;
@@ -1692,7 +1779,10 @@ const EasyPivot = {
             {
                 id,
                 name: values.name,
-                databaseType: this.workspace.database,
+                databaseType:
+                    document.querySelector(
+                        'input[name="database"]:checked'
+                    ).value,
                 host: values.host,
                 port: values.port,
                 authentication: values.authentication,
@@ -2040,10 +2130,20 @@ const EasyPivot = {
                         this.restoreDatabaseConnection();
                         this.refreshConnectionList();
                         this.loadSelectedConnection();
+                        this.refreshAuthenticationOptions();
                         this.refreshConnectionIdentity();
                         this.refreshWorkspace();
                     });
             });
+
+        document
+            .getElementById("connection_authentication")
+            .addEventListener(
+                "change",
+                () =>
+                {
+                    this.refreshAuthenticationFields();
+                });
 
         const groupField = document.getElementById("group_field");
         const pivotField = document.getElementById("pivot_field");
@@ -3591,6 +3691,7 @@ const EasyPivot = {
 
             connection:
             {
+                databaseType: connection.databaseType,
                 host: connection.host,
                 port: connection.port,
                 database: connection.database,
