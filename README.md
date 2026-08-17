@@ -64,7 +64,7 @@ We are not trying to work around Oracle's security model, nor are we trying to h
 
 If no supported solution exists, we may conduct a controlled laboratory experiment by modifying and compiling the PDO_OCI source ourselves to determine whether the underlying Oracle client authentication mechanism can perform Windows/External Authentication when the PHP-side restriction is removed. Any such experiment will remain a reproducible source/build exercise rather than a redistributed binary.
 
-**PostgreSQL testing begins next.** Oracle does not get to hold the rest of the project hostage while we investigate this particular problem. :)
+**PostgreSQL testing begins next.** Oracle exploration will not hold up the project while we investigate this particular problem. :)
 
 After Oracle and PostgreSQL testing are complete, **Easy Pivot Workbench will support (in one way or another) all four databases: MySQL, Microsoft SQL Server, Oracle, and PostgreSQL.**
 
