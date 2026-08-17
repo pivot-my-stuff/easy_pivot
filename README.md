@@ -54,6 +54,8 @@ https://github.com/pivot-my-stuff/easy_pivot/blob/main/oracle/MR_PIVOT_VISITS_TH
 
 ### August 17, 2026 --- Current Status
 
+UPDATE: We WILL conduct a controlled laboratory experiment by modifying and compiling the PDO_OCI source ourselves to determine whether the underlying Oracle client authentication mechanism can perform Windows/External Authentication when the PHP-side restriction is removed.
+
 **SQL Server and MySQL testing are complete.** SQL Server supports Windows Authentication through the Workbench. MySQL may also support Windows authentication in certain configurations, but this has not been implemented or tested because that capability requires a paid MySQL edition.
 
 **Oracle testing is nearing completion.** Oracle connectivity through PHP/PDO_OCI is working. However, Windows/External Authentication cannot currently be implemented in the Windows PHP environment because the required external authentication mechanism is not supported by the PHP Oracle interface on Windows. This is a limitation of the PHP/Oracle interface rather than Easy Pivot or the Oracle database itself.
