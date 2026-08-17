@@ -106,13 +106,40 @@ function connectDatabase(?array $connection = null): PDO
 
         case 'postgresql':
 
-            return new PDO(
+            $dsn =
                 sprintf(
                     'pgsql:host=%s;port=%d;dbname=%s',
                     $host,
                     $port,
                     $database
-                ),
+                );
+
+            if ($authentication === 'windows')
+            {
+                /*
+                    Windows Authentication
+
+                    Do not supply a user name or password.
+                    libpq/PDO_PGSQL will use the Windows identity
+                    of the PHP process when the PostgreSQL server
+                    requests SSPI authentication.
+                */
+                return new PDO(
+                    $dsn,
+                    null,
+                    null,
+                    [
+                        PDO::ATTR_ERRMODE =>
+                            PDO::ERRMODE_EXCEPTION,
+
+                        PDO::ATTR_DEFAULT_FETCH_MODE =>
+                            PDO::FETCH_ASSOC,
+                    ]
+                );
+            }
+
+            return new PDO(
+                $dsn,
                 $username,
                 $password,
                 [

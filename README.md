@@ -58,7 +58,13 @@ https://github.com/pivot-my-stuff/easy_pivot/blob/main/oracle/MR_PIVOT_VISITS_TH
 
 **Oracle testing is nearing completion.** Oracle connectivity through PHP/PDO_OCI is working. However, Windows/External Authentication cannot currently be implemented in the Windows PHP environment because the required external authentication mechanism is not supported by the PHP Oracle interface on Windows. This is a limitation of the PHP/Oracle interface rather than Easy Pivot or the Oracle database itself.
 
-**PostgreSQL testing begins next.**
+Rather than simply declaring the problem unsolvable, **the Easy Pivot project has reached out to Oracle in good faith for help resolving it.** On August 17, we contacted Christopher Jones and Sharad Chandran Raju, maintainers of PDO_OCI, to explain the problem, describe the Windows enterprise use case, and ask whether there is a supported configuration or a technical reason for the current restriction.
+
+We are not trying to work around Oracle's security model, nor are we trying to harm or circumvent Oracle software. **We are trying to help solve a problem that appears to exist at the PHP/Oracle interface so that Oracle can work cleanly in a Windows-domain PHP environment.** If there is a supported solution, we would much rather use it than modify anything ourselves.
+
+If no supported solution exists, we may conduct a controlled laboratory experiment by modifying and compiling the PDO_OCI source ourselves to determine whether the underlying Oracle client authentication mechanism can perform Windows/External Authentication when the PHP-side restriction is removed. Any such experiment will remain a reproducible source/build exercise rather than a redistributed binary.
+
+**PostgreSQL testing begins next.** Oracle does not get to hold the rest of the project hostage while we investigate this particular problem. :)
 
 After Oracle and PostgreSQL testing are complete, **Easy Pivot Workbench will support (in one way or another) all four databases: MySQL, Microsoft SQL Server, Oracle, and PostgreSQL.**
 

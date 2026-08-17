@@ -952,8 +952,6 @@ const EasyPivot = {
             version: 1,
             database:
                 this.workspace.database,
-            selectedConnectionId:
-                this.selectedConnectionId,
             sourceQuery:
                 document.getElementById(
                     "source_query"
@@ -1111,29 +1109,13 @@ const EasyPivot = {
                 );
 
                 /*
-                    A configuration may refer to a connection saved in
-                    a separate connections file. Use it when available;
-                    otherwise retain the current connection for the
-                    selected database.
+                    Configuration files contain workspace information only.
+                    Database connection information is maintained separately.
+                    Restore the connection already associated with the
+                    selected database instead of importing a connection
+                    reference from the configuration file.
                 */
-                if (
-                    typeof data.selectedConnectionId === "string" &&
-                    this.connections.some(
-                        connection =>
-                            connection.id ===
-                                data.selectedConnectionId &&
-                            connection.databaseType ===
-                                data.database
-                    )
-                )
-                {
-                    this.selectedConnectionId =
-                        data.selectedConnectionId;
-                }
-                else
-                {
-                    this.restoreDatabaseConnection();
-                }
+                this.restoreDatabaseConnection();
 
                 this.refreshConnectionList();
                 this.loadSelectedConnection();
