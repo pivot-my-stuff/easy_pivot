@@ -64,12 +64,6 @@ And Steely Dan:
 
 https://www.youtube.com/watch?v=53jor9TG13Q&list=RD0AcS49UdrIM&index=9
 
-And the Intergalactic Laxative:
-
-https://www.youtube.com/watch?v=phAEpCfn3Rk&list=RDphAEpCfn3Rk&start_radio=1
-
-"As ceremoniously, they disturbed the cosmic sand."
-
 And Gerry Rafferty:
 
 https://www.youtube.com/watch?v=Fo6aKnRnBxM
