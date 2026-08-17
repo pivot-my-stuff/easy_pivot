@@ -52,24 +52,6 @@ Wrote a comic about it. Want to see it? Here it is:
 
 https://github.com/pivot-my-stuff/easy_pivot/blob/main/oracle/MR_PIVOT_VISITS_THE_ORACLE.jpg
 
-### August 18, 2026 --- Bomb #20
-
-Things are happening. I can't tell you about them now.
-
-But... in the meantime... enjoy Bomb #20
-
-https://www.youtube.com/watch?v=QiKi6_twn20
-
-And Steely Dan:
-
-https://www.youtube.com/watch?v=53jor9TG13Q&list=RD0AcS49UdrIM&index=9
-
-And Gerry Rafferty:
-
-https://www.youtube.com/watch?v=Fo6aKnRnBxM
-
-Good stuff, people.
-
 ### August 17, 2026 --- Current Status
 
 **SQL Server and MySQL testing are complete.** SQL Server supports Windows Authentication through the Workbench. MySQL may also support Windows authentication in certain configurations, but this has not been implemented or tested because that capability requires a paid MySQL edition.
