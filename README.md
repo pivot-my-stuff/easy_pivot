@@ -52,6 +52,16 @@ Wrote a comic about it. Want to see it? Here it is:
 
 https://github.com/pivot-my-stuff/easy_pivot/blob/main/oracle/MR_PIVOT_VISITS_THE_ORACLE.jpg
 
+### August 18, 2026 --- Limited Oracle Support
+
+The Easy Pivot Workbench project will support Oracle Database through direct username/password authentication. Windows/External Authentication will not be supported by the project.
+
+We have reached out to Oracle about Windows Authentication and have received no response whatsoever.
+
+We will find out on our own if this is possible, but won't be making it a part of our project.
+
+PostgreSQL testing and other databases will be our focus now.
+
 ### August 17, 2026 --- Current Status
 
 UPDATE: We WILL conduct a controlled laboratory experiment by modifying and compiling the PDO_OCI source ourselves to determine whether the underlying Oracle client authentication mechanism can perform Windows/External Authentication when the PHP-side restriction is removed.
