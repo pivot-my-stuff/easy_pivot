@@ -18,6 +18,11 @@
   <img src="img/easy_pivot_workbench_demo_5.jpg">
 </p>
 
+<p align="center">
+  <img src="img/mr_pivotmir.jpg">
+</p>
+
+
 ### If you would like to donate to the Easy Pivot Workbench project, you can donate here:
 
 https://github.com/pivot-my-stuff
