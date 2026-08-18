@@ -61,8 +61,6 @@ We will find out on our own if this is possible, but won't be making it a part o
 
 PostgreSQL testing and other databases will be our focus now.
 
-Oracle sucks. And I worked in an IT environment with Windows Authentication and Oracle. This is REALLY disappointing. The lack of response from Oracle support is inexusable.
-
 ### August 17, 2026 --- Current Status
 
 UPDATE: We WILL conduct a controlled laboratory experiment by modifying and compiling the PDO_OCI source ourselves to determine whether the underlying Oracle client authentication mechanism can perform Windows/External Authentication when the PHP-side restriction is removed.
