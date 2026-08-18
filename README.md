@@ -22,7 +22,11 @@
   <img src="img/mr_pivotmir.jpg">
 </p>
 
-https://www.youtube.com/watch?v=D5-bD372v5s
+### Easy Pivot The White
+
+I've been sent back. Until my Easy Pivot Workbench task is done.
+
+https://www.youtube.com/watch?v=0lhHDXimoLc
 
 ### If you would like to donate to the Easy Pivot Workbench project, you can donate here:
 
@@ -62,6 +66,8 @@ We have reached out to Oracle about Windows Authentication and have received no 
 We will find out on our own if this is possible, but won't be making it a part of our project.
 
 PostgreSQL testing and other databases will be our focus now.
+
+Oracle sucks. And I worked in an IT environment with Windows Authentication and Oracle. This is REALLY disappointing. The lack of response from Oracle support is inexusable.
 
 ### August 17, 2026 --- Current Status
 
