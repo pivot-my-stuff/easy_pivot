@@ -51,6 +51,21 @@ Wrote a comic about it. Want to see it? Here it is:
 
 https://github.com/pivot-my-stuff/easy_pivot/blob/main/oracle/MR_PIVOT_VISITS_THE_ORACLE.jpg
 
+### August 19, 2026 --- Testing Results
+
+## Database Authentication Status
+
+| Database | Username / Password | Windows Authentication |
+|---|---|---|
+| **SQL Server** | ✅ Yes | ✅ Yes |
+| **Oracle** | ✅ Yes | ⚠️ Possible, but **not through our PHP/Oracle implementation** |
+| **PostgreSQL** | ✅ Yes | ✅ **Yes — now proven** |
+| **MySQL** | ✅ Yes | ❓ **Maybe — still to be tested with Enterprise Edition some day** |
+
+PostgreSQL's broken stored procedure has been fixed. Sorry about that, Chief.
+
+Today we will do more Easy Pivot Workbench testing, but it should be usable now. We'll see what breaks and fix it speedily.
+
 ### August 18, 2026 --- Limited Oracle Support
 
 The Easy Pivot Workbench project will support Oracle Database through direct username/password authentication. Windows/External Authentication will not be supported by the project.
