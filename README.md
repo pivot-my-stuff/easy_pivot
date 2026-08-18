@@ -22,6 +22,7 @@
   <img src="img/mr_pivotmir.jpg">
 </p>
 
+https://www.youtube.com/watch?v=D5-bD372v5s
 
 ### If you would like to donate to the Easy Pivot Workbench project, you can donate here:
 
