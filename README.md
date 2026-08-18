@@ -22,11 +22,17 @@
   <img src="img/mr_pivotmir.jpg">
 </p>
 
+
+https://www.youtube.com/watch?v=aJOS7dKuwcQ
+
+
 ### Easy Pivot The White
 
 I've been sent back. Until my Easy Pivot Workbench task is done.
 
 https://www.youtube.com/watch?v=0lhHDXimoLc
+
+And I've defeated the 
 
 ### If you would like to donate to the Easy Pivot Workbench project, you can donate here:
 
