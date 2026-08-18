@@ -59,7 +59,7 @@ We have reached out to Oracle about Windows Authentication and have received no 
 
 We will find out on our own if this is possible, but won't be making it a part of our project.
 
-PostgreSQL testing and other databases will be our focus now.
+PostgreSQL testing and other databases will be our focus now. It looks like PostgreSQL supports Windows Authentication, so that is today's target.
 
 ### August 17, 2026 --- Current Status
 
