@@ -124,12 +124,57 @@ try
                 $cursorName
             ]);
 
+            /*
+                CALL returns the INOUT refcursor value as a result row.
+                Use the cursor name PostgreSQL actually returned rather
+                than assuming that the input name was retained.
+            */
+            $callResult =
+                $stmt->fetch(PDO::FETCH_ASSOC);
+
             $stmt->closeCursor();
+
+            if (!$callResult ||
+                !array_key_exists(
+                    'p_result_cursor',
+                    $callResult
+                ))
+            {
+                $pdo->rollBack();
+
+                throw new RuntimeException(
+                    'Easy Pivot did not return the PostgreSQL result cursor name.'
+                );
+            }
+
+            $returnedCursorName =
+                (string)$callResult['p_result_cursor'];
+
+            if ($returnedCursorName === '')
+            {
+                $pdo->rollBack();
+
+                throw new RuntimeException(
+                    'Easy Pivot returned an empty PostgreSQL result cursor name.'
+                );
+            }
+
+            if (!preg_match(
+                '/^[A-Za-z_][A-Za-z0-9_$]*$/',
+                $returnedCursorName
+            ))
+            {
+                $pdo->rollBack();
+
+                throw new RuntimeException(
+                    'Easy Pivot returned an invalid PostgreSQL result cursor name.'
+                );
+            }
 
             $result =
                 $pdo->query(
                     'FETCH ALL FROM "' .
-                    $cursorName .
+                    $returnedCursorName .
                     '"'
                 )->fetch(PDO::FETCH_ASSOC);
 

@@ -80,6 +80,24 @@ try
             break;
 
 
+        case 'postgresql':
+
+            $stmt = $pdo->query(
+                'SELECT version() AS version'
+            );
+
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            $version = $result['version'] ?? 'unknown';
+
+            echo 'Connection successful.' .
+                 "\n\n" .
+                 'PostgreSQL version: ' .
+                 $version;
+
+            break;
+
+
         default:
 
             echo 'Connection successful.';
@@ -120,6 +138,28 @@ try
             SELECT COUNT(*) AS procedure_count
             FROM sys.procedures
             WHERE name = 'easy_pivot'
+        ");
+
+        $procedure = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        echo "\n\n";
+
+        if (($procedure['procedure_count'] ?? 0) > 0)
+        {
+            echo 'Easy Pivot procedure found.';
+        }
+        else
+        {
+            echo 'Easy Pivot procedure NOT found.';
+        }
+    }
+    elseif ($databaseType === 'postgresql')
+    {
+        $stmt = $pdo->query("
+            SELECT COUNT(*) AS procedure_count
+            FROM pg_proc
+            WHERE proname = 'easy_pivot'
+            AND prokind = 'p'
         ");
 
         $procedure = $stmt->fetch(PDO::FETCH_ASSOC);

@@ -393,10 +393,6 @@ BEGIN
                     v_value
                 );
 
-			IF v_debug THEN
-			    RAISE NOTICE 'Pivot values: %',
-			        array_to_string(v_pivot_values, ', ');
-			END IF;
 
 			v_pivot_value_numbers :=
 			    array_append
@@ -929,11 +925,6 @@ BEGIN
     -- Build Final SQL
     ----------------------------------------------------------------------------
 
-	IF v_debug THEN
-	    RAISE NOTICE 'SELECT:%', E'\n' || v_dynamic_select;
-	    RAISE NOTICE 'FROM:%', E'\n' || v_dynamic_from;
-	    RAISE NOTICE 'ORDER BY:%', E'\n' || v_dynamic_order_by;
-	END IF;
 
     v_final_sql :=
            v_dynamic_select
@@ -968,18 +959,21 @@ BEGIN
 
     IF p_generate_source_code_only THEN
 
-		v_output :=
-		    E'\n\n' ||
-		    v_final_sql || E'\n';
+        ------------------------------------------------------------------------
+        -- Return the generated SQL through the procedure's refcursor.
+        --
+        -- The Workbench calls this procedure with
+        -- p_generate_source_code_only = TRUE and then FETCHes the cursor.
+        -- RAISE NOTICE does not create a cursor, so using NOTICE here caused
+        -- the caller to receive "cursor ... does not exist".
+        ------------------------------------------------------------------------
 
-		    v_output :=
-		        replace(
-		            replace(trim(v_output), E'\r\n', E'\n'),
-		            E'\r',
-		            E'\n'
-		        );
+        IF p_result_cursor IS NULL THEN
+            p_result_cursor := 'easy_pivot_cursor';
+        END IF;
 
-	RAISE NOTICE '%', v_output;
+        OPEN p_result_cursor FOR
+            SELECT v_final_sql AS "Generated_SQL";
 
     ELSE
 

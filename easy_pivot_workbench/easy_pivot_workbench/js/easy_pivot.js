@@ -38,6 +38,8 @@ const EasyPivot = {
 
     lastProcessedSourceQuery: "",
 
+    sourceQueryDirty: false,
+
     aggregateTypes:
     {
         mysql:
@@ -975,6 +977,12 @@ const EasyPivot = {
         this.openJsonFile(
             data =>
             {
+                const previousDatabase =
+                    this.workspace.database;
+
+                const previousConnectionId =
+                    this.selectedConnectionId;
+
                 if (
                     !data ||
                     typeof data !== "object" ||
@@ -1099,26 +1107,43 @@ const EasyPivot = {
                         }));
 
                 /*
-                    discoverFields(..., false) rebuilds the derived
-                    available-field list without wiping the loaded
-                    Groups and Pivot Chips.
+                    Field discovery rebuilds only the derived
+                    available-field list. It never wipes the loaded
+                    Groups or Pivot Chips.
                 */
-                this.discoverFields(
-                    sourceQuery,
-                    false
-                );
+                this.discoverFields(sourceQuery);
+
+                this.sourceQueryDirty = false;
 
                 /*
                     Configuration files contain workspace information only.
                     Database connection information is maintained separately.
-                    Restore the connection already associated with the
-                    selected database instead of importing a connection
-                    reference from the configuration file.
-                */
-                this.restoreDatabaseConnection();
 
+                    Loading a configuration must not automatically select
+                    or load a database connection. If the configuration uses
+                    the same database as the current workspace, preserve the
+                    connection already selected by the user. If it changes
+                    the database, require the user to select or create the
+                    appropriate connection.
+                */
+                if (data.database === previousDatabase)
+                {
+                    this.selectedConnectionId =
+                        previousConnectionId;
+                }
+                else
+                {
+                    this.selectedConnectionId = "";
+                }
+
+                this.refreshAuthenticationOptions();
                 this.refreshConnectionList();
-                this.loadSelectedConnection();
+
+                if (data.database !== previousDatabase)
+                {
+                    this.clearConnectionFields();
+                }
+
                 this.updateDeleteConnectionButton();
                 this.refreshWorkspace();
 
@@ -1233,6 +1258,38 @@ const EasyPivot = {
         this.refreshConnectionIdentity();
 
     },
+
+    clearConnectionFields()
+    {
+
+        document.getElementById("connection_name").value =
+            "";
+
+        document.getElementById("connection_host").value =
+            "";
+
+        document.getElementById("connection_port").value =
+            "";
+
+        document.getElementById("connection_database").value =
+            "";
+
+        document.getElementById("connection_authentication").value =
+            this.workspace.database === "sqlserver"
+                ? "windows"
+                : "password";
+
+        document.getElementById("connection_username").value =
+            "";
+
+        document.getElementById("connection_password").value =
+            "";
+
+        this.refreshAuthenticationOptions();
+        this.refreshConnectionIdentity();
+
+    },
+
 
     loadSelectedConnection()
     {
@@ -2063,6 +2120,13 @@ const EasyPivot = {
             document.getElementById("source_query");
 
         sourceQuery.addEventListener(
+            "input",
+            () =>
+            {
+                this.sourceQueryDirty = true;
+            });
+
+        sourceQuery.addEventListener(
             "paste",
             () =>
             {
@@ -2094,7 +2158,22 @@ const EasyPivot = {
                     sourceQuery.value = normalized;
                 }
 
-                if (normalized !== this.lastProcessedSourceQuery)
+                /*
+                    A blur by itself is not a source-query change.
+
+                    In particular, clicking Generate Pivot Query causes
+                    the Source Query textarea to lose focus. Do not let
+                    that incidental blur wipe the user's Groups and
+                    Pivot Chips.
+
+                    The input event marks the query dirty only when the
+                    user actually edits it. Paste/drop discovery already
+                    calls discoverFields(), which clears the dirty flag.
+                */
+                if (
+                    this.sourceQueryDirty &&
+                    normalized !== this.lastProcessedSourceQuery
+                )
                 {
                     this.discoverFields(normalized);
                 }
@@ -2341,21 +2420,23 @@ const EasyPivot = {
             .trim();
     },
 
-    discoverFields(sql, resetWorkspace = true)
+    discoverFields(sql)
     {
         sql = this.normalizeSourceQuery(sql);
 
         this.lastProcessedSourceQuery = sql;
+        this.sourceQueryDirty = false;
 
-        // A normal query change starts a new project.
-        // Configuration loading can preserve the loaded Groups/Pivot Chips.
+        /*
+            Field discovery is assistive only.
 
-        if (resetWorkspace)
-        {
-            this.workspace.groups = [];
+            Parsing the Source Query updates the derived available-field
+            list used by the Group and Pivot field selectors. It must never
+            destroy the user's existing Groups or Pivot Chips.
 
-            this.workspace.pivotChips = [];
-        }
+            The workspace configuration belongs to the user, while
+            availableFields is derived from the current Source Query.
+        */
 
         this.workspace.availableFields = [];
 
