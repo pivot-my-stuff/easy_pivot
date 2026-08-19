@@ -44,6 +44,264 @@ try
             )
         );
 
+    /*
+        Oracle is handled separately because the Easy Pivot Oracle
+        procedure returns generated source code through
+        DBMS_SQL.RETURN_RESULT.
+
+        PDO_OCI can establish the connection, but it does not expose
+        Oracle implicit result sets to PHP.  OCI8 does.
+    */
+
+    if ($databaseType === 'oracle')
+    {
+        if (!extension_loaded('oci8'))
+        {
+            throw new RuntimeException(
+                'Oracle source-code retrieval requires the PHP OCI8 extension.'
+            );
+        }
+
+        $host =
+            trim(
+                (string)($connection['host'] ?? '')
+            );
+
+        $port =
+            (int)($connection['port'] ?? 0);
+
+        $database =
+            trim(
+                (string)($connection['database'] ?? '')
+            );
+
+        $username =
+            (string)($connection['username'] ?? '');
+
+        $password =
+            (string)($connection['password'] ?? '');
+
+        if ($host === '')
+        {
+            throw new InvalidArgumentException(
+                'Database host is required.'
+            );
+        }
+
+        if ($port < 1 || $port > 65535)
+        {
+            throw new InvalidArgumentException(
+                'Database port must be between 1 and 65535.'
+            );
+        }
+
+        if ($database === '')
+        {
+            throw new InvalidArgumentException(
+                'Database name is required.'
+            );
+        }
+
+        if ($username === '')
+        {
+            throw new InvalidArgumentException(
+                'Database user name is required.'
+            );
+        }
+
+        /*
+            Use the same Easy Pivot Oracle connection model as
+            database.php: host, port, and service name.
+        */
+
+        $connectString =
+            sprintf(
+                '//%s:%d/%s',
+                $host,
+                $port,
+                $database
+            );
+
+        $ociConnection =
+            @oci_connect(
+                $username,
+                $password,
+                $connectString,
+                'AL32UTF8'
+            );
+
+        if ($ociConnection === false)
+        {
+            $error = oci_error();
+
+            throw new RuntimeException(
+                'Oracle connection failed.' .
+                "\n\n" .
+                ($error['message'] ?? 'Unknown Oracle connection error.')
+            );
+        }
+
+        try
+        {
+            /*
+                Generate source code ONLY.
+
+                The third Easy Pivot argument is deliberately 1.
+                Do not change this to execute mode.
+            */
+
+            $sql =
+                "
+                BEGIN
+                    easy_pivot(
+                        :source_sql,
+                        :json_configuration,
+                        1
+                    );
+                END;
+                ";
+
+            $stmt =
+                @oci_parse(
+                    $ociConnection,
+                    $sql
+                );
+
+            if ($stmt === false)
+            {
+                $error = oci_error($ociConnection);
+
+                throw new RuntimeException(
+                    'Oracle statement preparation failed.' .
+                    "\n\n" .
+                    ($error['message'] ?? 'Unknown Oracle error.')
+                );
+            }
+
+            $sourceSql =
+                $request['source_query'];
+
+            $jsonConfiguration =
+                $request['generated_json'];
+
+            if (!oci_bind_by_name(
+                $stmt,
+                ':source_sql',
+                $sourceSql,
+                -1,
+                SQLT_CHR
+            ))
+            {
+                $error = oci_error($stmt);
+
+                throw new RuntimeException(
+                    'Oracle source SQL bind failed.' .
+                    "\n\n" .
+                    ($error['message'] ?? 'Unknown Oracle error.')
+                );
+            }
+
+            if (!oci_bind_by_name(
+                $stmt,
+                ':json_configuration',
+                $jsonConfiguration,
+                -1,
+                SQLT_CHR
+            ))
+            {
+                $error = oci_error($stmt);
+
+                throw new RuntimeException(
+                    'Oracle JSON configuration bind failed.' .
+                    "\n\n" .
+                    ($error['message'] ?? 'Unknown Oracle error.')
+                );
+            }
+
+            if (!@oci_execute($stmt))
+            {
+                $error = oci_error($stmt);
+
+                throw new RuntimeException(
+                    'Oracle Easy Pivot execution failed.' .
+                    "\n\n" .
+                    ($error['message'] ?? 'Unknown Oracle error.')
+                );
+            }
+
+            /*
+                DBMS_SQL.RETURN_RESULT creates an implicit result set.
+                OCI8 exposes it through oci_get_implicit_resultset().
+            */
+
+            $resultSet =
+                oci_get_implicit_resultset($stmt);
+
+            if ($resultSet === false)
+            {
+                throw new RuntimeException(
+                    'Oracle Easy Pivot returned no implicit result set.'
+                );
+            }
+
+            $result = false;
+
+            while (($row = oci_fetch_array(
+                $resultSet,
+                OCI_ASSOC + OCI_RETURN_LOBS
+            )) !== false)
+            {
+                /*
+                    Oracle normally returns GENERATED_SQL in uppercase.
+                    Accept either spelling so the PHP layer is not
+                    dependent on identifier-case behavior.
+                */
+
+                foreach ($row as $column => $value)
+                {
+                    if (strcasecmp(
+                        (string)$column,
+                        'Generated_SQL'
+                    ) === 0)
+                    {
+                        $result = $value;
+                        break 2;
+                    }
+                }
+            }
+
+            if ($result === false ||
+                $result === null)
+            {
+                throw new RuntimeException(
+                    'Easy Pivot did not return generated SQL from Oracle.'
+                );
+            }
+
+            /*
+                Source-code-only mode returns the generated SQL text.
+                Nothing returned by Oracle is executed here.
+            */
+
+            echo (string)$result;
+
+            oci_free_statement($resultSet);
+            oci_free_statement($stmt);
+        }
+        finally
+        {
+            oci_close($ociConnection);
+        }
+
+        exit;
+    }
+
+
+    /*
+        All non-Oracle databases continue to use the existing PDO
+        implementation.
+    */
+
     $pdo =
         connectDatabase($connection);
 
@@ -129,6 +387,7 @@ try
                 Use the cursor name PostgreSQL actually returned rather
                 than assuming that the input name was retained.
             */
+
             $callResult =
                 $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -194,54 +453,6 @@ try
             echo $result['Generated_SQL'];
 
             $pdo->commit();
-
-            break;
-
-
-        case 'oracle':
-
-            /*
-                Oracle returns the generated SQL through an
-                implicit result set using DBMS_SQL.RETURN_RESULT.
-            */
-
-            $stmt = $pdo->prepare("
-                BEGIN
-                    easy_pivot(
-                        :source_sql,
-                        :json_configuration,
-                        1
-                    );
-                END;
-            ");
-
-            $stmt->bindValue(
-                ':source_sql',
-                $request['source_query']
-            );
-
-            $stmt->bindValue(
-                ':json_configuration',
-                $request['generated_json']
-            );
-
-            $stmt->execute();
-
-            $result =
-                $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if (!$result ||
-                !array_key_exists(
-                    'Generated_SQL',
-                    $result
-                ))
-            {
-                throw new RuntimeException(
-                    'Easy Pivot did not return generated SQL.'
-                );
-            }
-
-            echo $result['Generated_SQL'];
 
             break;
 

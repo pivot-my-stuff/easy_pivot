@@ -971,8 +971,6 @@ const EasyPivot = {
                             typeof connection.username === "string"
                         );
 
-                    this.connections = [];
-
                     validConnections.forEach(
                         importedConnection =>
                         {
@@ -984,23 +982,42 @@ const EasyPivot = {
                                 return;
                             }
 
-                            const existing =
+                            const existingIndex =
+                                this.connections.findIndex(
+                                    connection =>
+                                        connection.id ===
+                                        importedConnection.id
+                                );
+
+                            const previous =
                                 previousConnections.find(
                                     connection =>
                                         connection.id ===
                                         importedConnection.id
                                 );
 
-                            this.connections.push(
+                            const mergedConnection =
                             {
                                 ...importedConnection,
                                 port:
                                     Number(importedConnection.port),
                                 password:
-                                    existing
-                                        ? existing.password || ""
+                                    previous
+                                        ? previous.password || ""
                                         : ""
-                            });
+                            };
+
+                            if (existingIndex >= 0)
+                            {
+                                this.connections[existingIndex] =
+                                    mergedConnection;
+                            }
+                            else
+                            {
+                                this.connections.push(
+                                    mergedConnection
+                                );
+                            }
                         }
                     );
                 }
@@ -1503,10 +1520,20 @@ const EasyPivot = {
             database:
                 document.getElementById("connection_database").value.trim(),
 
+            /*
+                The Manage Connection dialog represents the selected
+                connection. Do not use the global database radio button
+                here; it may differ from the connection being edited.
+            */
             databaseType:
-                document.querySelector(
-                    'input[name="database"]:checked'
-                ).value,
+                (
+                    this.connections.find(
+                        item =>
+                            item.id ===
+                            this.selectedConnectionId
+                    )?.databaseType ||
+                    this.workspace.database
+                ),
 
             authentication:
                 document.getElementById(

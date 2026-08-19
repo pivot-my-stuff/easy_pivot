@@ -1092,23 +1092,29 @@ IS
     BEGIN
     
         IF p_generate_source_code_only = 1 THEN
-    
+
             print_banner('EASY PIVOT: Auto-generated pivot query');
-    
+
             DBMS_OUTPUT.PUT_LINE(
                 '-- https://github.com/pivot-my-stuff/easy_pivot'
             );
-    
+
             DBMS_OUTPUT.PUT_LINE(CHR(10));
-    
+
             DBMS_OUTPUT.PUT_LINE(v_final_sql);
-    
+
+            OPEN pivot_cursor FOR
+                SELECT v_final_sql AS Generated_SQL
+                FROM dual;
+
+            DBMS_SQL.RETURN_RESULT(pivot_cursor);
+
         ELSE
 
             OPEN pivot_cursor FOR v_final_sql;
-            
+
             DBMS_SQL.RETURN_RESULT(pivot_cursor);
-        
+
         END IF;
     END;
 

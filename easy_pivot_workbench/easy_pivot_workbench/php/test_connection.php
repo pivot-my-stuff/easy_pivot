@@ -26,20 +26,20 @@ try
         );
     }
 
-    $pdo = connectDatabase(
-        $request['connection']
-    );
+    $connection = $request['connection'];
+
+    $pdo = connectDatabase($connection);
 
     $databaseType =
         strtolower(
             trim(
-                (string)($request['connection']['databaseType'] ?? 'mysql')
+                (string)($connection['databaseType'] ?? 'mysql')
             )
         );
 
-
     /*
-       Get database version
+        Get database version and, where supported, identify the
+        current database user/schema.
     */
 
     switch ($databaseType)
@@ -98,6 +98,198 @@ try
             break;
 
 
+        case 'oracle':
+
+            /*
+                Keep the connection test on PDO_OCI.  OCI8 is required
+                only by generate.php because PDO_OCI does not expose
+                Oracle implicit result sets returned by
+                DBMS_SQL.RETURN_RESULT.
+            */
+
+            $stmt = $pdo->query("
+                SELECT
+                    SYS_CONTEXT('USERENV', 'SESSION_USER') AS session_user,
+                    SYS_CONTEXT('USERENV', 'CURRENT_SCHEMA') AS current_schema,
+                    SYS_CONTEXT('USERENV', 'SERVICE_NAME') AS service_name,
+                    SYS_CONTEXT('USERENV', 'DB_NAME') AS db_name
+                FROM dual
+            ");
+
+            $session = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            $versionStmt = $pdo->query("
+                SELECT banner
+                FROM v\$version
+                WHERE banner LIKE 'Oracle Database%'
+                  AND ROWNUM = 1
+            ");
+
+            $versionResult =
+                $versionStmt->fetch(PDO::FETCH_ASSOC);
+
+            $version =
+                $versionResult['BANNER'] ??
+                $versionResult['banner'] ??
+                'unknown';
+
+            $sessionUser =
+                $session['SESSION_USER'] ??
+                $session['session_user'] ??
+                'unknown';
+
+            $currentSchema =
+                $session['CURRENT_SCHEMA'] ??
+                $session['current_schema'] ??
+                'unknown';
+
+            $serviceName =
+                $session['SERVICE_NAME'] ??
+                $session['service_name'] ??
+                'unknown';
+
+            $dbName =
+                $session['DB_NAME'] ??
+                $session['db_name'] ??
+                'unknown';
+
+            echo 'Connection successful.' .
+                 "\n\n" .
+                 'Oracle version: ' .
+                 $version .
+                 "\n\n" .
+                 'Session user: ' .
+                 $sessionUser .
+                 "\n" .
+                 'Current schema: ' .
+                 $currentSchema .
+                 "\n" .
+                 'Service: ' .
+                 $serviceName .
+                 "\n" .
+                 'Database: ' .
+                 $dbName .
+                 "\n" .
+                 'OCI8 extension: ' .
+                 (extension_loaded('oci8') ? 'available' : 'NOT available');
+
+            /*
+                USER_OBJECTS checks the schema in which the procedure
+                is actually owned.  This is the most useful test for
+                the normal Easy Pivot installation model.
+            */
+
+            $procedureStmt = $pdo->query("
+                SELECT
+                    object_name,
+                    object_type,
+                    status
+                FROM user_objects
+                WHERE object_name = 'EASY_PIVOT'
+                  AND object_type = 'PROCEDURE'
+            ");
+
+            $procedure =
+                $procedureStmt->fetch(PDO::FETCH_ASSOC);
+
+            echo "\n\n";
+
+            if ($procedure)
+            {
+                $objectName =
+                    $procedure['OBJECT_NAME'] ??
+                    $procedure['object_name'] ??
+                    'EASY_PIVOT';
+
+                $objectType =
+                    $procedure['OBJECT_TYPE'] ??
+                    $procedure['object_type'] ??
+                    'PROCEDURE';
+
+                $status =
+                    $procedure['STATUS'] ??
+                    $procedure['status'] ??
+                    'UNKNOWN';
+
+                echo 'Easy Pivot procedure found.' .
+                     "\n" .
+                     'Procedure: ' .
+                     $objectName .
+                     "\n" .
+                     'Type: ' .
+                     $objectType .
+                     "\n" .
+                     'Status: ' .
+                     $status;
+            }
+            else
+            {
+                /*
+                    If the procedure is not owned by the current schema,
+                    ALL_OBJECTS may still show an accessible procedure.
+                */
+
+                $accessibleStmt = $pdo->query("
+                    SELECT
+                        owner,
+                        object_name,
+                        object_type,
+                        status
+                    FROM all_objects
+                    WHERE object_name = 'EASY_PIVOT'
+                      AND object_type = 'PROCEDURE'
+                    ORDER BY
+                        CASE
+                            WHEN owner = SYS_CONTEXT(
+                                'USERENV',
+                                'CURRENT_SCHEMA'
+                            )
+                            THEN 0
+                            ELSE 1
+                        END,
+                        owner
+                ");
+
+                $accessible =
+                    $accessibleStmt->fetch(PDO::FETCH_ASSOC);
+
+                if ($accessible)
+                {
+                    $owner =
+                        $accessible['OWNER'] ??
+                        $accessible['owner'] ??
+                        'unknown';
+
+                    $objectName =
+                        $accessible['OBJECT_NAME'] ??
+                        $accessible['object_name'] ??
+                        'EASY_PIVOT';
+
+                    $status =
+                        $accessible['STATUS'] ??
+                        $accessible['status'] ??
+                        'UNKNOWN';
+
+                    echo 'Easy Pivot procedure found in another accessible schema.' .
+                         "\n" .
+                         'Owner: ' .
+                         $owner .
+                         "\n" .
+                         'Procedure: ' .
+                         $objectName .
+                         "\n" .
+                         'Status: ' .
+                         $status;
+                }
+                else
+                {
+                    echo 'Easy Pivot procedure NOT found.';
+                }
+            }
+
+            break;
+
+
         default:
 
             echo 'Connection successful.';
@@ -107,7 +299,8 @@ try
 
 
     /*
-       Check for Easy Pivot stored procedure
+        Check for Easy Pivot stored procedure for the databases that
+        already have metadata checks.
     */
 
     if ($databaseType === 'mysql')
@@ -116,7 +309,7 @@ try
             SELECT COUNT(*) AS procedure_count
             FROM information_schema.ROUTINES
             WHERE ROUTINE_SCHEMA = DATABASE()
-            AND ROUTINE_NAME = 'easy_pivot'
+              AND ROUTINE_NAME = 'easy_pivot'
         ");
 
         $procedure = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -159,7 +352,7 @@ try
             SELECT COUNT(*) AS procedure_count
             FROM pg_proc
             WHERE proname = 'easy_pivot'
-            AND prokind = 'p'
+              AND prokind = 'p'
         ");
 
         $procedure = $stmt->fetch(PDO::FETCH_ASSOC);
