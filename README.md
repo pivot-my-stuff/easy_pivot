@@ -51,6 +51,20 @@ Wrote a comic about it. Want to see it? Here it is:
 
 https://github.com/pivot-my-stuff/easy_pivot/blob/main/oracle/MR_PIVOT_VISITS_THE_ORACLE.jpg
 
+### August 20, 2026 — Workbench Cleanup & Final Database Testing
+
+Yesterday involved a substantial amount of **Easy Pivot Workbench software cleanup and bug fixing**.
+
+The Oracle Easy Pivot stored procedure wasn't working quite well enough with the Workbench, particularly around returning generated source code. Those issues were fixed.
+
+We also cleaned up and strengthened the database connection testing and diagnostics.
+
+At this point, **Easy Pivot Workbench is successfully returning generated pivot queries for all four supported databases: MySQL, SQL Server, PostgreSQL, and Oracle.**
+
+The Workbench is now essentially functional across all four platforms. There are only a couple of **small graphical-interface details and usability cleanup items** left to touch up. Of course, user interfaces are inherently tricky things, so we will keep testing it in the coming days.
+
+Tomorrow we'll continue testing the graphical interface and then take a quick look at **using Easy Pivot directly in a SQL Server scheduled job**.
+
 ### August 19, 2026 --- Testing Results
 
 ## Database Authentication Status
