@@ -66,6 +66,8 @@ PostgreSQL's broken stored procedure has been fixed. Sorry about that, Chief.
 
 Today we will do more Easy Pivot Workbench testing, but it should be usable now. We'll see what breaks and fix it speedily.
 
+(I spoke too soon. There is a problem with the group and pivot chips when it comes to populating fields to choose from. This will be fixed today.)
+
 **Easy Pivot Workbench — Configuration/Connection UX**
 
 Rework Save/Load Configuration so that workspace configuration and the connection required to use that configuration are handled together, eliminating the confusion caused by maintaining separate configuration and connection files. Unless this is fixed, it will cause much confusion when using Easy Pivot Workbench. So let it be written. So let it be done. :)
