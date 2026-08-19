@@ -412,6 +412,7 @@ const EasyPivot = {
 
     init() {
 
+
         this.refreshApplicationHost();
 
         this.registerEvents();
@@ -771,6 +772,7 @@ const EasyPivot = {
 
     saveConnectionsToFile()
     {
+
         const connections =
             this.connections.map(connection =>
             {
@@ -807,6 +809,7 @@ const EasyPivot = {
 
     loadConnectionsFromFile()
     {
+
         this.openJsonFile(
             data =>
             {
@@ -949,6 +952,7 @@ const EasyPivot = {
 
     saveConfigurationToFile()
     {
+
         const configuration =
         {
             version: 1,
@@ -974,9 +978,11 @@ const EasyPivot = {
 
     loadConfigurationFromFile()
     {
+
         this.openJsonFile(
             data =>
             {
+
                 const previousDatabase =
                     this.workspace.database;
 
@@ -1915,28 +1921,40 @@ const EasyPivot = {
             .getElementById("load_connections_button")
             .addEventListener(
                 "click",
-                () => this.loadConnectionsFromFile()
+                () =>
+                {
+                    this.loadConnectionsFromFile();
+                }
             );
 
         document
             .getElementById("save_connections_button")
             .addEventListener(
                 "click",
-                () => this.saveConnectionsToFile()
+                () =>
+                {
+                    this.saveConnectionsToFile();
+                }
             );
 
         document
             .getElementById("load_configuration_button")
             .addEventListener(
                 "click",
-                () => this.loadConfigurationFromFile()
+                () =>
+                {
+                    this.loadConfigurationFromFile();
+                }
             );
 
         document
             .getElementById("save_configuration_button")
             .addEventListener(
                 "click",
-                () => this.saveConfigurationToFile()
+                () =>
+                {
+                    this.saveConfigurationToFile();
+                }
             );
 
         document
@@ -2040,7 +2058,10 @@ const EasyPivot = {
             .getElementById("generate_sql_button")
             .addEventListener(
                 "click",
-                () => this.generatePivotQuery()
+                () =>
+                {
+                    this.generatePivotQuery();
+                }
             );
 
         document
@@ -2148,8 +2169,9 @@ const EasyPivot = {
 
         sourceQuery.addEventListener(
             "blur",
-            () =>
+            (event) =>
             {
+
                 const normalized =
                     this.normalizeSourceQuery(sourceQuery.value);
 
@@ -2230,6 +2252,12 @@ const EasyPivot = {
         document
             .getElementById("copy_button")
             .addEventListener("click", () => this.copyOutputToClipboard());
+
+        /*
+            Field selectors all use the single #available_fields
+            datalist defined in index.html. The list is populated by
+            refreshAvailableFields().
+        */
 
         const openDropdownOnFocus = (id) =>
         {
@@ -2317,68 +2345,60 @@ const EasyPivot = {
 
     refreshAvailableFields()
     {
-        const groupDatalist =
+        /*
+            There is deliberately ONE field datalist.
+
+            Groups, Pivot Fields, and Pivot Data Fields all use the
+            same derived list of fields discovered from the Source
+            Data Query. Keeping a second Pivot-specific datalist
+            created by JavaScript introduced unnecessary state and
+            made Load Configuration / refresh behavior fragile.
+
+            The user's existing Groups and Pivot Chips are workspace
+            state. availableFields is derived state. The datalist is
+            simply the visual representation of availableFields.
+        */
+
+        const datalist =
             document.getElementById("available_fields");
 
-        groupDatalist.innerHTML = "";
+        if (!datalist)
+        {
+            console.error(
+                "[EP] available_fields datalist not found."
+            );
+
+            return;
+        }
+
+        datalist.innerHTML = "";
 
         this.workspace.availableFields.forEach(field =>
         {
-            const option = document.createElement("option");
+            const option =
+                document.createElement("option");
 
             option.value = field;
 
-            groupDatalist.appendChild(option);
+            datalist.appendChild(option);
         });
 
-        let pivotDatalist =
-            document.getElementById("pivot_available_fields");
+        /*
+            All field selectors intentionally point to the same
+            datalist. Do not create or maintain another field list.
+        */
 
-        if (!pivotDatalist)
-        {
-            pivotDatalist =
-                document.createElement("datalist");
-
-            pivotDatalist.id =
-                "pivot_available_fields";
-
-            document.body.appendChild(pivotDatalist);
-        }
-
-        pivotDatalist.innerHTML = "";
-
-        const groupFields =
-            new Set(
-                this.workspace.groups.map(
-                    group => group.field
-                )
-            );
-
-        this.workspace.availableFields
-            .filter(field => !groupFields.has(field))
-            .forEach(field =>
-            {
-                const option =
-                    document.createElement("option");
-
-                option.value = field;
-
-                pivotDatalist.appendChild(option);
-            });
+        document
+            .getElementById("group_field")
+            ?.setAttribute("list", "available_fields");
 
         document
             .getElementById("pivot_field")
-            .setAttribute(
-                "list",
-                "pivot_available_fields"
-            );
+            ?.setAttribute("list", "available_fields");
 
         document
             .getElementById("pivot_data_field")
-            .setAttribute(
-                "list",
-                "pivot_available_fields"
-            );
+            ?.setAttribute("list", "available_fields");
 
     },
 
@@ -2422,6 +2442,7 @@ const EasyPivot = {
 
     discoverFields(sql)
     {
+
         sql = this.normalizeSourceQuery(sql);
 
         this.lastProcessedSourceQuery = sql;
@@ -2473,7 +2494,9 @@ const EasyPivot = {
 
         this.workspace.availableFields.sort((a, b) => a.localeCompare(b));
 
+
         this.refreshWorkspace();
+
 
     },
 
@@ -2600,6 +2623,20 @@ const EasyPivot = {
             {
                 return match[1];
             }
+        }
+
+        //
+        // SQL Server bracketed identifiers
+        //
+
+        match =
+            expression.match(
+                /(?:\[[^\]]+\]\.)*\[([^\]]+)\]\s*$/
+            );
+
+        if (match)
+        {
+            return match[1];
         }
 
         //
@@ -3115,8 +3152,7 @@ const EasyPivot = {
 
     generateJSON() {
 
-        console.log("Generate JSON");
-
+        
     },
 
     generateMySqlJson() {
@@ -3258,8 +3294,7 @@ const EasyPivot = {
 
     refreshGenerateButton() {
 
-        console.log("Refresh Generate Button");
-
+        
     },
 
     /**************************************************************************
@@ -4187,16 +4222,12 @@ const EasyPivot = {
 
 };
 
+
 /******************************************************************************
     Application Entry Point
 ******************************************************************************/
 
 window.addEventListener(
-
     "DOMContentLoaded",
-
-    () => EasyPivot.init(),
-
-    document.getElementById("source_query").value = ""
-
+    () => EasyPivot.init()
 );
