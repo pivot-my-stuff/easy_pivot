@@ -770,8 +770,17 @@ const EasyPivot = {
         input.click();
     },
 
-    saveConnectionsToFile()
+    saveConfigurationToFile()
     {
+
+        /*
+            A configuration file is now the complete Easy Pivot Workbench
+            workspace. It contains the database selection, source query,
+            groups, pivot chips, connections, and selected connection.
+
+            Passwords are intentionally excluded. They remain available
+            only for the current browser session.
+        */
 
         const connections =
             this.connections.map(connection =>
@@ -781,11 +790,6 @@ const EasyPivot = {
                     ...connection
                 };
 
-                /*
-                    Passwords are intentionally excluded from exported
-                    connection files. They remain available only for
-                    the current browser session.
-                */
                 delete savedConnection.password;
 
                 return savedConnection;
@@ -793,169 +797,7 @@ const EasyPivot = {
 
         const configuration =
         {
-            version: 1,
-            selectedConnectionId:
-                this.selectedConnectionId,
-            connections: connections
-        };
-
-        this.downloadJsonFile(
-            "easy_pivot_connections_" +
-            this.getFileTimestamp() +
-            ".json",
-            configuration
-        );
-    },
-
-    loadConnectionsFromFile()
-    {
-
-        this.openJsonFile(
-            data =>
-            {
-                let importedConnections;
-
-                let selectedConnectionId = "";
-
-                /*
-                    Accept both the current file format and a plain
-                    connection array for simple backward compatibility.
-                */
-                if (Array.isArray(data))
-                {
-                    importedConnections = data;
-                }
-                else if (
-                    data &&
-                    Array.isArray(data.connections)
-                )
-                {
-                    importedConnections =
-                        data.connections;
-
-                    if (
-                        typeof data.selectedConnectionId ===
-                        "string"
-                    )
-                    {
-                        selectedConnectionId =
-                            data.selectedConnectionId;
-                    }
-                }
-
-                if (!importedConnections)
-                {
-                    alert(
-                        "The selected file is not a valid Easy Pivot " +
-                        "connections file."
-                    );
-
-                    return;
-                }
-
-                const validConnections =
-                    importedConnections.filter(connection =>
-                        connection &&
-                        typeof connection.id === "string" &&
-                        typeof connection.name === "string" &&
-                        typeof connection.databaseType === "string" &&
-                        typeof connection.host === "string" &&
-                        Number.isInteger(Number(connection.port)) &&
-                        typeof connection.database === "string" &&
-                        typeof connection.username === "string"
-                    );
-
-                if (validConnections.length === 0)
-                {
-                    alert(
-                        "The selected connections file contains no " +
-                        "valid connections."
-                    );
-
-                    return;
-                }
-
-                validConnections.forEach(
-                    importedConnection =>
-                    {
-                        /*
-                            Local MySQL was a built-in connection in earlier
-                            beta versions. Do not import that legacy record.
-                        */
-                        if (importedConnection.id === "local_mysql")
-                        {
-                            return;
-                        }
-
-                        const existing =
-                            this.connections.find(
-                                connection =>
-                                    connection.id ===
-                                    importedConnection.id
-                            );
-
-                        const imported =
-                        {
-                            ...importedConnection,
-                            port:
-                                Number(importedConnection.port)
-                        };
-
-                        if (existing)
-                        {
-                            const password =
-                                existing.password || "";
-
-                            Object.assign(
-                                existing,
-                                imported,
-                                {
-                                    password: password
-                                }
-                            );
-                        }
-                        else
-                        {
-                            this.connections.push(
-                            {
-                                ...imported,
-                                password: ""
-                            });
-                        }
-                    }
-                );
-
-                if (
-                    selectedConnectionId &&
-                    this.connections.some(
-                        connection =>
-                            connection.id ===
-                            selectedConnectionId
-                    )
-                )
-                {
-                    this.selectedConnectionId =
-                        selectedConnectionId;
-                }
-
-                this.saveConnections();
-                this.refreshConnectionList();
-                this.loadSelectedConnection();
-                this.updateDeleteConnectionButton();
-
-                alert(
-                    "Connections loaded successfully."
-                );
-            }
-        );
-    },
-
-    saveConfigurationToFile()
-    {
-
-        const configuration =
-        {
-            version: 1,
+            version: 2,
             database:
                 this.workspace.database,
             sourceQuery:
@@ -965,7 +807,11 @@ const EasyPivot = {
             groups:
                 this.workspace.groups,
             pivotChips:
-                this.workspace.pivotChips
+                this.workspace.pivotChips,
+            selectedConnectionId:
+                this.selectedConnectionId,
+            connections:
+                connections
         };
 
         this.downloadJsonFile(
@@ -976,18 +822,13 @@ const EasyPivot = {
         );
     },
 
+
     loadConfigurationFromFile()
     {
 
         this.openJsonFile(
             data =>
             {
-
-                const previousDatabase =
-                    this.workspace.database;
-
-                const previousConnectionId =
-                    this.selectedConnectionId;
 
                 if (
                     !data ||
@@ -1028,10 +869,6 @@ const EasyPivot = {
                     return;
                 }
 
-                /*
-                    Load the database selection first so the generated
-                    JSON and aggregate lists use the correct database.
-                */
                 this.workspace.database =
                     data.database;
 
@@ -1113,39 +950,147 @@ const EasyPivot = {
                         }));
 
                 /*
+                    Import connections from the same configuration file.
+                    Existing session passwords are preserved.
+                */
+
+                if (Array.isArray(data.connections))
+                {
+                    const previousConnections =
+                        this.connections;
+
+                    const validConnections =
+                        data.connections.filter(connection =>
+                            connection &&
+                            typeof connection.id === "string" &&
+                            typeof connection.name === "string" &&
+                            typeof connection.databaseType === "string" &&
+                            typeof connection.host === "string" &&
+                            Number.isInteger(Number(connection.port)) &&
+                            typeof connection.database === "string" &&
+                            typeof connection.username === "string"
+                        );
+
+                    this.connections = [];
+
+                    validConnections.forEach(
+                        importedConnection =>
+                        {
+                            if (
+                                importedConnection.id ===
+                                "local_mysql"
+                            )
+                            {
+                                return;
+                            }
+
+                            const existing =
+                                previousConnections.find(
+                                    connection =>
+                                        connection.id ===
+                                        importedConnection.id
+                                );
+
+                            this.connections.push(
+                            {
+                                ...importedConnection,
+                                port:
+                                    Number(importedConnection.port),
+                                password:
+                                    existing
+                                        ? existing.password || ""
+                                        : ""
+                            });
+                        }
+                    );
+                }
+
+                /*
+                    Prefer the connection explicitly selected when the
+                    configuration was saved. It must belong to the loaded
+                    database. Otherwise preserve the current selection when
+                    possible, or use the first connection for the database.
+                */
+
+                let selectedConnectionId = "";
+
+                if (
+                    typeof data.selectedConnectionId === "string"
+                )
+                {
+                    const savedSelectedConnection =
+                        this.connections.find(
+                            connection =>
+                                connection.id ===
+                                data.selectedConnectionId &&
+                                connection.databaseType ===
+                                data.database
+                        );
+
+                    if (savedSelectedConnection)
+                    {
+                        selectedConnectionId =
+                            savedSelectedConnection.id;
+                    }
+                }
+
+                if (selectedConnectionId === "")
+                {
+                    const currentSelectedConnection =
+                        this.connections.find(
+                            connection =>
+                                connection.id ===
+                                this.selectedConnectionId &&
+                                connection.databaseType ===
+                                data.database
+                        );
+
+                    if (currentSelectedConnection)
+                    {
+                        selectedConnectionId =
+                            currentSelectedConnection.id;
+                    }
+                }
+
+                if (selectedConnectionId === "")
+                {
+                    const firstDatabaseConnection =
+                        this.connections.find(
+                            connection =>
+                                connection.databaseType ===
+                                data.database
+                        );
+
+                    if (firstDatabaseConnection)
+                    {
+                        selectedConnectionId =
+                            firstDatabaseConnection.id;
+                    }
+                }
+
+                this.selectedConnectionId =
+                    selectedConnectionId;
+
+                this.saveConnections();
+
+                /*
                     Field discovery rebuilds only the derived
                     available-field list. It never wipes the loaded
                     Groups or Pivot Chips.
                 */
+
                 this.discoverFields(sourceQuery);
 
                 this.sourceQueryDirty = false;
 
-                /*
-                    Configuration files contain workspace information only.
-                    Database connection information is maintained separately.
-
-                    Loading a configuration must not automatically select
-                    or load a database connection. If the configuration uses
-                    the same database as the current workspace, preserve the
-                    connection already selected by the user. If it changes
-                    the database, require the user to select or create the
-                    appropriate connection.
-                */
-                if (data.database === previousDatabase)
-                {
-                    this.selectedConnectionId =
-                        previousConnectionId;
-                }
-                else
-                {
-                    this.selectedConnectionId = "";
-                }
-
                 this.refreshAuthenticationOptions();
                 this.refreshConnectionList();
 
-                if (data.database !== previousDatabase)
+                if (this.selectedConnectionId)
+                {
+                    this.loadSelectedConnection();
+                }
+                else
                 {
                     this.clearConnectionFields();
                 }
@@ -1159,6 +1104,7 @@ const EasyPivot = {
             }
         );
     },
+
 
     restoreDatabaseConnection()
     {
@@ -1914,26 +1860,6 @@ const EasyPivot = {
                     {
                         this.newConnection();
                     }
-                }
-            );
-
-        document
-            .getElementById("load_connections_button")
-            .addEventListener(
-                "click",
-                () =>
-                {
-                    this.loadConnectionsFromFile();
-                }
-            );
-
-        document
-            .getElementById("save_connections_button")
-            .addEventListener(
-                "click",
-                () =>
-                {
-                    this.saveConnectionsToFile();
                 }
             );
 

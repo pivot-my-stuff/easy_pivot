@@ -1341,18 +1341,7 @@ body.workspace-hidden #workspace_toggle_container {
 }
 
 
-.workspace_file_pair {
-
-    display:flex;
-
-    flex-direction:column;
-
-    gap:8px;
-
-}
-
-
-.workspace_file_pair button {
+#workspace_file_buttons button {
 
     width:190px;
 
@@ -1363,7 +1352,7 @@ body.workspace-hidden #workspace_toggle_container {
 }
 
 
-.workspace_file_pair button:hover {
+#workspace_file_buttons button:hover {
 
     background:#244F8F;
 
