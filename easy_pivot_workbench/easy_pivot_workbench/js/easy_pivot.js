@@ -2470,10 +2470,32 @@ const EasyPivot = {
             return;
         }
 
-        const selectList =
+        let selectList =
             sql.substring(
                 parts.selectStart + 6,
                 parts.fromStart
+            );
+
+        /*
+            SELECT-list modifiers belong to the SELECT statement, not to
+            the first output field.
+
+            Examples:
+                SELECT DISTINCT [item_id] ...
+                SELECT TOP 10 [item_id] ...
+                SELECT TOP (10) PERCENT [item_id] ...
+                SELECT DISTINCT TOP 10 WITH TIES [item_id] ...
+        */
+        selectList =
+            selectList.replace(
+                /^\s*DISTINCT\s+/i,
+                ""
+            );
+
+        selectList =
+            selectList.replace(
+                /^\s*TOP\s+(?:\([^)]*\)|\S+)(?:\s+PERCENT)?(?:\s+WITH\s+TIES)?\s+/i,
+                ""
             );
 
         const expressions =
@@ -2500,167 +2522,972 @@ const EasyPivot = {
 
     },
 
+    scanSqlState(sql, startIndex = 0)
+    {
+        /*
+            SQL lexical state used by the lightweight Workbench parser.
+
+            This is intentionally not a full SQL parser.  It only recognizes
+            constructs that can contain commas, SELECT/FROM keywords, or
+            identifier delimiters so those characters are not mistaken for
+            structural SQL syntax.
+        */
+
+        let quote = null;
+        let bracket = false;
+        let lineComment = false;
+        let blockComment = false;
+
+        for (let i = startIndex; i < sql.length; i++)
+        {
+            const ch = sql[i];
+            const next = sql[i + 1];
+
+            if (lineComment)
+            {
+                if (ch === "\n" || ch === "\r")
+                {
+                    lineComment = false;
+                }
+
+                continue;
+            }
+
+            if (blockComment)
+            {
+                if (ch === "*" && next === "/")
+                {
+                    blockComment = false;
+                    i++;
+                }
+
+                continue;
+            }
+
+            if (quote)
+            {
+                if (ch === quote)
+                {
+                    if (next === quote)
+                    {
+                        i++;
+                    }
+                    else
+                    {
+                        quote = null;
+                    }
+                }
+
+                continue;
+            }
+
+            if (bracket)
+            {
+                if (ch === "]")
+                {
+                    if (next === "]")
+                    {
+                        i++;
+                    }
+                    else
+                    {
+                        bracket = false;
+                    }
+                }
+
+                continue;
+            }
+
+            if (ch === "-" && next === "-")
+            {
+                lineComment = true;
+                i++;
+                continue;
+            }
+
+            if (ch === "/" && next === "*")
+            {
+                blockComment = true;
+                i++;
+                continue;
+            }
+
+            if (ch === "'" || ch === '"' || ch === "`")
+            {
+                quote = ch;
+                continue;
+            }
+
+            if (ch === "[")
+            {
+                bracket = true;
+                continue;
+            }
+        }
+
+        return {
+            quote: quote,
+            bracket: bracket,
+            lineComment: lineComment,
+            blockComment: blockComment
+        };
+    },
+
+    extractTrailingIdentifier(expression)
+    {
+        let text =
+            String(expression).trim();
+
+        /*
+            Remove a trailing semicolon.  The source-query normalizer normally
+            does this, but this helper is also used on generated expressions.
+        */
+        text =
+            text.replace(/;+$/, "").trim();
+
+        if (text === "")
+        {
+            return "";
+        }
+
+        /*
+            Delimited identifiers.
+
+            Scan backward so identifiers may contain spaces, punctuation, and
+            escaped delimiters:
+                [a]]b]
+                "a""b"
+                `a``b`
+        */
+        const last = text[text.length - 1];
+
+        if (last === "]")
+        {
+            for (let i = text.length - 2; i >= 0; i--)
+            {
+                if (text[i] !== "[")
+                {
+                    continue;
+                }
+
+                if (i > 0 && text[i - 1] === "]")
+                {
+                    i--;
+                    continue;
+                }
+
+                return text
+                    .slice(i + 1, text.length - 1)
+                    .replace(/]]/g, "]");
+            }
+        }
+
+        if (last === '"' || last === "`")
+        {
+            const delimiter = last;
+
+            for (let i = text.length - 2; i >= 0; i--)
+            {
+                if (text[i] !== delimiter)
+                {
+                    continue;
+                }
+
+                if (i > 0 && text[i - 1] === delimiter)
+                {
+                    i--;
+                    continue;
+                }
+
+                const escaped =
+                    delimiter === '"'
+                        ? /""/g
+                        : /``/g;
+
+                return text
+                    .slice(i + 1, text.length - 1)
+                    .replace(escaped, delimiter);
+            }
+        }
+
+        const match =
+            text.match(
+                /([A-Za-z_][A-Za-z0-9_$]*)\s*$/
+            );
+
+        return match
+            ? match[1]
+            : "";
+    },
+
+    hasExplicitAs(expression)
+    {
+        let depth = 0;
+        let quote = null;
+        let bracket = false;
+        let lineComment = false;
+        let blockComment = false;
+        let lastAs = -1;
+
+        for (let i = 0; i < expression.length; i++)
+        {
+            const ch = expression[i];
+            const next = expression[i + 1];
+
+            if (lineComment)
+            {
+                if (ch === "\n" || ch === "\r")
+                {
+                    lineComment = false;
+                }
+
+                continue;
+            }
+
+            if (blockComment)
+            {
+                if (ch === "*" && next === "/")
+                {
+                    blockComment = false;
+                    i++;
+                }
+
+                continue;
+            }
+
+            if (quote)
+            {
+                if (
+                    quote === "'" ||
+                    quote === '"' ||
+                    quote === "`"
+                )
+                {
+                    if (
+                        ch === "\\" &&
+                        (
+                            quote === "'" ||
+                            quote === '"'
+                        ) &&
+                        next !== undefined
+                    )
+                    {
+                        i++;
+                        continue;
+                    }
+
+                    if (ch === quote)
+                    {
+                        if (next === quote)
+                        {
+                            i++;
+                        }
+                        else
+                        {
+                            quote = null;
+                        }
+                    }
+                }
+                else if (
+                    expression.slice(
+                        i,
+                        i + quote.length
+                    ) === quote
+                )
+                {
+                    i += quote.length - 1;
+                    quote = null;
+                }
+
+                continue;
+            }
+
+            if (bracket)
+            {
+                if (ch === "]")
+                {
+                    if (next === "]")
+                    {
+                        i++;
+                    }
+                    else
+                    {
+                        bracket = false;
+                    }
+                }
+
+                continue;
+            }
+
+            if (ch === "-" && next === "-")
+            {
+                lineComment = true;
+                i++;
+                continue;
+            }
+
+            if (ch === "/" && next === "*")
+            {
+                blockComment = true;
+                i++;
+                continue;
+            }
+
+            if (ch === "'" || ch === '"' || ch === "`")
+            {
+                quote = ch;
+                continue;
+            }
+
+            if (ch === "$")
+            {
+                const dollarMatch =
+                    expression
+                        .slice(i)
+                        .match(
+                            /^\$(?:[A-Za-z_][A-Za-z0-9_]*)?\$/
+                        );
+
+                if (dollarMatch)
+                {
+                    quote = dollarMatch[0];
+                    i += quote.length - 1;
+                    continue;
+                }
+            }
+
+            if (
+                (ch === "q" || ch === "Q") &&
+                next === "'"
+            )
+            {
+                const delimiter = expression[i + 2];
+
+                if (delimiter !== undefined)
+                {
+                    const closing =
+                        {
+                            "[": "]",
+                            "(": ")",
+                            "{": "}",
+                            "<": ">"
+                        }[delimiter] || delimiter;
+
+                    quote = closing + "'";
+                    i += 2;
+                    continue;
+                }
+            }
+
+            if (ch === "[")
+            {
+                bracket = true;
+                continue;
+            }
+
+            if (ch === "(")
+            {
+                depth++;
+                continue;
+            }
+
+            if (ch === ")")
+            {
+                depth--;
+                continue;
+            }
+
+            if (
+                depth === 0 &&
+                (
+                    ch === "A" ||
+                    ch === "a"
+                ) &&
+                /^AS\b/i.test(
+                    expression.slice(i)
+                )
+            )
+            {
+                lastAs = i;
+            }
+        }
+
+        return lastAs !== -1;
+    },
+
     splitSelectExpressions(selectList)
     {
         const expressions = [];
 
         let expression = "";
-
         let level = 0;
+        let quote = null;
+        let bracket = false;
+        let lineComment = false;
+        let blockComment = false;
 
-        for (const ch of selectList)
+        for (let i = 0; i < selectList.length; i++)
         {
-            switch (ch)
+            const ch = selectList[i];
+            const next = selectList[i + 1];
+
+            if (lineComment)
             {
-                case "(":
-                    level++;
-                    expression += ch;
-                    break;
+                expression += ch;
 
-                case ")":
-                    level--;
-                    expression += ch;
-                    break;
+                if (ch === "\n" || ch === "\r")
+                {
+                    lineComment = false;
+                }
 
-                case ",":
+                continue;
+            }
 
-                    if (level === 0)
+            if (blockComment)
+            {
+                expression += ch;
+
+                if (ch === "*" && next === "/")
+                {
+                    expression += next;
+                    blockComment = false;
+                    i++;
+                }
+
+                continue;
+            }
+
+            if (quote)
+            {
+                if (
+                    quote === "'" ||
+                    quote === '"' ||
+                    quote === "`"
+                )
+                {
+                    if (
+                        ch === "\\" &&
+                        (
+                            quote === "'" ||
+                            quote === '"'
+                        ) &&
+                        next !== undefined
+                    )
                     {
-                        expressions.push(expression.trim());
-                        expression = "";
+                        expression += ch + next;
+                        i++;
+                        continue;
+                    }
+
+                    expression += ch;
+
+                    if (ch === quote)
+                    {
+                        if (next === quote)
+                        {
+                            expression += next;
+                            i++;
+                        }
+                        else
+                        {
+                            quote = null;
+                        }
+                    }
+                }
+                else
+                {
+                    if (
+                        selectList.slice(
+                            i,
+                            i + quote.length
+                        ) === quote
+                    )
+                    {
+                        expression += quote;
+                        i += quote.length - 1;
+                        quote = null;
                     }
                     else
                     {
                         expression += ch;
                     }
+                }
 
-                    break;
-
-                default:
-                    expression += ch;
+                continue;
             }
+
+            if (bracket)
+            {
+                expression += ch;
+
+                if (ch === "]")
+                {
+                    if (next === "]")
+                    {
+                        expression += next;
+                        i++;
+                    }
+                    else
+                    {
+                        bracket = false;
+                    }
+                }
+
+                continue;
+            }
+
+            if (ch === "-" && next === "-")
+            {
+                expression += ch + next;
+                lineComment = true;
+                i++;
+                continue;
+            }
+
+            if (ch === "/" && next === "*")
+            {
+                expression += ch + next;
+                blockComment = true;
+                i++;
+                continue;
+            }
+
+            if (ch === "'" || ch === '"' || ch === "`")
+            {
+                quote = ch;
+                expression += ch;
+                continue;
+            }
+
+            /*
+                PostgreSQL dollar-quoted strings:
+                    $$...$$
+                    $tag$...$tag$
+            */
+            if (ch === "$")
+            {
+                const dollarMatch =
+                    selectList
+                        .slice(i)
+                        .match(
+                            /^\$(?:[A-Za-z_][A-Za-z0-9_]*)?\$/
+                        );
+
+                if (dollarMatch)
+                {
+                    quote = dollarMatch[0];
+                    expression += quote;
+                    i += quote.length - 1;
+                    continue;
+                }
+            }
+
+            /*
+                Oracle alternative quoting:
+                    q'[ ... ]'
+                    q'( ... )'
+                    q'{ ... }'
+                    q'< ... >'
+                    q'X ... X'
+            */
+            if (
+                (ch === "q" || ch === "Q") &&
+                next === "'"
+            )
+            {
+                const delimiter =
+                    selectList[i + 2];
+
+                if (delimiter !== undefined)
+                {
+                    const closing =
+                        {
+                            "[": "]",
+                            "(": ")",
+                            "{": "}",
+                            "<": ">"
+                        }[delimiter] || delimiter;
+
+                    quote =
+                        closing + "'";
+
+                    expression +=
+                        selectList.slice(i, i + 3);
+
+                    i += 2;
+                    continue;
+                }
+            }
+
+            if (ch === "[")
+            {
+                bracket = true;
+                expression += ch;
+                continue;
+            }
+
+            if (ch === "(")
+            {
+                level++;
+                expression += ch;
+                continue;
+            }
+
+            if (ch === ")")
+            {
+                level--;
+                expression += ch;
+                continue;
+            }
+
+            if (ch === "," && level === 0)
+            {
+                expressions.push(
+                    expression.trim()
+                );
+
+                expression = "";
+                continue;
+            }
+
+            expression += ch;
         }
 
         if (expression.trim() !== "")
         {
-            expressions.push(expression.trim());
+            expressions.push(
+                expression.trim()
+            );
         }
 
         return expressions;
     },
 
+    stripSqlComments(sql)
+    {
+        let result = "";
+
+        let quote = null;
+        let bracket = false;
+        let lineComment = false;
+        let blockComment = false;
+
+        for (let i = 0; i < sql.length; i++)
+        {
+            const ch = sql[i];
+            const next = sql[i + 1];
+
+            if (lineComment)
+            {
+                if (ch === "\n" || ch === "\r")
+                {
+                    lineComment = false;
+                    result += ch;
+                }
+
+                continue;
+            }
+
+            if (blockComment)
+            {
+                if (ch === "*" && next === "/")
+                {
+                    blockComment = false;
+                    result += " ";
+                    i++;
+                }
+
+                continue;
+            }
+
+            if (quote)
+            {
+                if (
+                    quote === "'" ||
+                    quote === '"' ||
+                    quote === "`"
+                )
+                {
+                    if (
+                        ch === "\\" &&
+                        (
+                            quote === "'" ||
+                            quote === '"'
+                        ) &&
+                        next !== undefined
+                    )
+                    {
+                        result += ch + next;
+                        i++;
+                        continue;
+                    }
+
+                    result += ch;
+
+                    if (ch === quote)
+                    {
+                        if (next === quote)
+                        {
+                            result += next;
+                            i++;
+                        }
+                        else
+                        {
+                            quote = null;
+                        }
+                    }
+                }
+                else if (
+                    sql.slice(
+                        i,
+                        i + quote.length
+                    ) === quote
+                )
+                {
+                    result += quote;
+                    i += quote.length - 1;
+                    quote = null;
+                }
+                else
+                {
+                    result += ch;
+                }
+
+                continue;
+            }
+
+            if (bracket)
+            {
+                result += ch;
+
+                if (ch === "]")
+                {
+                    if (next === "]")
+                    {
+                        result += next;
+                        i++;
+                    }
+                    else
+                    {
+                        bracket = false;
+                    }
+                }
+
+                continue;
+            }
+
+            if (ch === "-" && next === "-")
+            {
+                result += " ";
+                lineComment = true;
+                i++;
+                continue;
+            }
+
+            if (ch === "/" && next === "*")
+            {
+                result += " ";
+                blockComment = true;
+                i++;
+                continue;
+            }
+
+            if (ch === "'" || ch === '"' || ch === "`")
+            {
+                quote = ch;
+                result += ch;
+                continue;
+            }
+
+            if (ch === "$")
+            {
+                const dollarMatch =
+                    sql
+                        .slice(i)
+                        .match(
+                            /^\$(?:[A-Za-z_][A-Za-z0-9_]*)?\$/
+                        );
+
+                if (dollarMatch)
+                {
+                    quote = dollarMatch[0];
+                    result += quote;
+                    i += quote.length - 1;
+                    continue;
+                }
+            }
+
+            if (
+                (ch === "q" || ch === "Q") &&
+                next === "'"
+            )
+            {
+                const delimiter = sql[i + 2];
+
+                if (delimiter !== undefined)
+                {
+                    const closing =
+                        {
+                            "[": "]",
+                            "(": ")",
+                            "{": "}",
+                            "<": ">"
+                        }[delimiter] || delimiter;
+
+                    quote = closing + "'";
+                    result += sql.slice(i, i + 3);
+                    i += 2;
+                    continue;
+                }
+            }
+
+            if (ch === "[")
+            {
+                bracket = true;
+                result += ch;
+                continue;
+            }
+
+            result += ch;
+        }
+
+        return result;
+    },
+
     discoverFieldName(expression)
     {
-        let match;
+        let text =
+            this
+                .stripSqlComments(
+                    String(expression)
+                )
+                .trim();
 
-        //
-        // Explicit AS alias
-        //
-
-        //
-        // SQL Server
-        //
-
-        match =
-            expression.match(/\s+AS\s+\[([^\]]+)\]$/i);
-
-        if (match)
+        if (text === "")
         {
-            return match[1];
+            return "";
         }
 
-        //
-        // Oracle / PostgreSQL
-        //
-
-        match =
-            expression.match(/\s+AS\s+"([^"]+)"$/i);
-
-        if (match)
+        /*
+            Explicit AS is authoritative.  The trailing identifier may be
+            unquoted, SQL Server bracketed, Oracle/PostgreSQL double-quoted,
+            or MySQL backtick-quoted.
+        */
+        if (this.hasExplicitAs(text))
         {
-            return match[1];
+            return this.extractTrailingIdentifier(text);
         }
 
-        //
-        // MySQL
-        //
-
-        match =
-            expression.match(/\s+AS\s+`([^`]+)`$/i);
-
-        if (match)
+        /*
+            A simple column reference may be qualified:
+                field
+                t.field
+                [t].[field]
+                "t"."field"
+                `t`.`field`
+        */
+        if (
+            /^[A-Za-z_][A-Za-z0-9_$]*(?:\s*\.\s*[A-Za-z_][A-Za-z0-9_$]*)*\s*$/.test(text) ||
+            /^(?:\[[^\]]*(?:\]\][^\]]*)*\]\s*\.\s*)*\[[^\]]*(?:\]\][^\]]*)*\]\s*$/.test(text) ||
+            /^(?:"[^"]*(?:""[^"]*)*"\s*\.\s*)*"[^"]*(?:""[^"]*)*"\s*$/.test(text) ||
+            /^(?:`[^`]*(?:``[^`]*)*`\s*\.\s*)*`[^`]*(?:``[^`]*)*`\s*$/.test(text)
+        )
         {
-            return match[1];
+            return this.extractTrailingIdentifier(text);
         }
 
-        //
-        // Simple identifier
-        //
+        /*
+            Implicit aliases are also valid for simple quoted identifiers:
+                "category" category
+                [category] category
+                `category` category
 
-        match =
-            expression.match(/\s+AS\s+(\w+)$/i);
+            Only treat the final token as an alias when the text before it
+            contains whitespace.  Qualified identifiers such as t.category
+            do not satisfy this condition.
+        */
+        const implicitAlias =
+            this.extractTrailingIdentifier(text);
 
-        if (match)
+        if (implicitAlias !== "")
         {
-            return match[1];
-        }
+            const aliasStart =
+                text.length - implicitAlias.length;
 
-        if (match)
-        {
-            return match[1];
-        }
+            const separator =
+                aliasStart > 0
+                    ? text[aliasStart - 1]
+                    : "";
 
-        //
-        // Implicit alias
-        //
+            const prefix =
+                text
+                    .slice(
+                        0,
+                        aliasStart
+                    )
+                    .trimEnd();
 
-        if (expression.includes("("))
-        {
-            match =
-                expression.match(/.+\s+(\w+)$/);
-
-            if (match)
+            if (
+                /\s/.test(separator) &&
+                prefix !== "" &&
+                !/\bAS\s*$/i.test(prefix) &&
+                !/^(END|THEN|ELSE|WHEN|CASE)$/i.test(
+                    implicitAlias
+                )
+            )
             {
-                return match[1];
+                return implicitAlias;
             }
         }
 
-        //
-        // SQL Server bracketed identifiers
-        //
-
-        match =
-            expression.match(
-                /(?:\[[^\]]+\]\.)*\[([^\]]+)\]\s*$/
-            );
-
-        if (match)
+        /*
+            Preserve the existing implicit-alias behavior for expressions.
+            Only accept a trailing identifier when the expression actually
+            contains an expression construct such as a function or CASE.
+        */
+        if (
+            text.includes("(") ||
+            /\bCASE\b/i.test(text)
+        )
         {
-            return match[1];
-        }
+            const alias =
+                this.extractTrailingIdentifier(text);
 
-        //
-        // Backtick identifiers
-        //
+            if (
+                alias !== "" &&
+                !/^(END|THEN|ELSE|WHEN|CASE)$/i.test(alias)
+            )
+            {
+                /*
+                    Do not treat a lone function argument as an alias.
+                    For SUM(quantity), expose quantity as the source field.
+                */
+                if (
+                    text.startsWith(alias) ||
+                    /\s/.test(
+                        text.slice(0, -alias.length)
+                    )
+                )
+                {
+                    return alias;
+                }
+            }
 
-        match =
-            expression.match(/`([^`]+)`\s*$/);
+            /*
+                A simple one-column function such as SUM(quantity) has no
+                alias.  Recover the final identifier inside the parentheses.
+            */
+            const inner =
+                text.match(
+                    /\(\s*(?:\[[^\]]*(?:\]\][^\]]*)*\]|"[^"]*(?:""[^"]*)*"|`[^`]*(?:``[^`]*)*`|[A-Za-z_][A-Za-z0-9_$]*)\s*\)\s*$/s
+                );
 
-        if (match)
-        {
-            return match[1];
-        }
-
-        //
-        // Plain column
-        //
-
-        match =
-            expression.match(/([A-Za-z_][A-Za-z0-9_]*)\s*$/);
-
-        if (match)
-        {
-            return match[1];
+            if (inner)
+            {
+                return this.extractTrailingIdentifier(
+                    inner[0].replace(/^\(/, "").replace(/\)$/, "")
+                );
+            }
         }
 
         return "";
@@ -2670,45 +3497,37 @@ const EasyPivot = {
         Group Dialog
     ******************************************************************************/
 
-    showGroupDialog() {
-
+    showGroupDialog()
+    {
         document.getElementById("group_field").value = "";
-
         document.getElementById("group_sort_asc").checked = true;
-
         document.getElementById("group_dialog").style.display = "block";
-
         document.getElementById("group_field").focus();
-
     },
 
-    hideGroupDialog() {
-
+    hideGroupDialog()
+    {
         document.getElementById("group_dialog").style.display = "none";
-
     },
 
     /******************************************************************************
         Groups
     ******************************************************************************/
 
-    addGroup() {
-
+    addGroup()
+    {
         this.showGroupDialog();
-
     },
 
-    saveGroup() {
-
+    saveGroup()
+    {
         const field =
             document.getElementById("group_field").value.trim();
 
-        if (field === "") {
-
+        if (field === "")
+        {
             alert("Please enter a group field.");
-
             return;
-
         }
 
         const sort =
@@ -2716,12 +3535,10 @@ const EasyPivot = {
                 ? "DESC"
                 : "ASC";
 
-        const group = {
-
+        const group =
+        {
             field: field,
-
             sort: sort
-
         };
 
         if (this.editingGroupIndex === -1)
@@ -2731,14 +3548,11 @@ const EasyPivot = {
         else
         {
             this.workspace.groups[this.editingGroupIndex] = group;
-
             this.editingGroupIndex = -1;
         }
 
         this.hideGroupDialog();
-
         this.refreshWorkspace();
-
     },
 
     editGroup(index)
@@ -3303,108 +4117,178 @@ const EasyPivot = {
 
     splitTopLevelSelectItems(selectBody)
     {
-        const items = [];
-
-        let start = 0;
-        let depth = 0;
-        let quote = null;
-
-        for (let i = 0; i < selectBody.length; i++)
-        {
-            const ch = selectBody[i];
-
-            if (quote)
-            {
-                if (ch === quote)
-                {
-                    if (quote === "`" && selectBody[i + 1] === "`")
-                    {
-                        i++;
-                    }
-                    else if (quote !== "`" && selectBody[i + 1] === quote)
-                    {
-                        i++;
-                    }
-                    else
-                    {
-                        quote = null;
-                    }
-                }
-
-                continue;
-            }
-
-            if (ch === "'" || ch === '"' || ch === "`")
-            {
-                quote = ch;
-                continue;
-            }
-
-            if (ch === "(")
-            {
-                depth++;
-                continue;
-            }
-
-            if (ch === ")")
-            {
-                depth--;
-                continue;
-            }
-
-            if (ch === "," && depth === 0)
-            {
-                items.push(selectBody.slice(start, i).trim());
-                start = i + 1;
-            }
-        }
-
-        const finalItem =
-            selectBody.slice(start).trim();
-
-        if (finalItem !== "")
-        {
-            items.push(finalItem);
-        }
-
-        return items;
+        /*
+            Generated SQL uses the same SELECT-list grammar as the source
+            query.  Reuse the hardened lexical splitter so post-pivot NULL
+            removal cannot be tripped by quoted identifiers, brackets,
+            comments, or commas inside expressions.
+        */
+        return this.splitSelectExpressions(selectBody);
     },
 
     findOuterSelectParts(sql)
     {
         let depth = 0;
         let quote = null;
+        let bracket = false;
+        let lineComment = false;
+        let blockComment = false;
         let selectStart = -1;
         let fromStart = -1;
 
         for (let i = 0; i < sql.length; i++)
         {
             const ch = sql[i];
+            const next = sql[i + 1];
+
+            if (lineComment)
+            {
+                if (ch === "\n" || ch === "\r")
+                {
+                    lineComment = false;
+                }
+
+                continue;
+            }
+
+            if (blockComment)
+            {
+                if (ch === "*" && next === "/")
+                {
+                    blockComment = false;
+                    i++;
+                }
+
+                continue;
+            }
 
             if (quote)
             {
-                if (ch === quote)
+                if (
+                    quote === "'" ||
+                    quote === '"' ||
+                    quote === "`"
+                )
                 {
-                    if (quote === "`" && sql[i + 1] === "`")
+                    if (
+                        ch === "\\" &&
+                        (
+                            quote === "'" ||
+                            quote === '"'
+                        ) &&
+                        next !== undefined
+                    )
                     {
                         i++;
+                        continue;
                     }
-                    else if (quote !== "`" && sql[i + 1] === quote)
+
+                    if (ch === quote)
+                    {
+                        if (next === quote)
+                        {
+                            i++;
+                        }
+                        else
+                        {
+                            quote = null;
+                        }
+                    }
+                }
+                else if (
+                    sql.slice(
+                        i,
+                        i + quote.length
+                    ) === quote
+                )
+                {
+                    i += quote.length - 1;
+                    quote = null;
+                }
+
+                continue;
+            }
+
+            if (bracket)
+            {
+                if (ch === "]")
+                {
+                    if (next === "]")
                     {
                         i++;
                     }
                     else
                     {
-                        quote = null;
+                        bracket = false;
                     }
                 }
 
                 continue;
             }
 
+            if (ch === "-" && next === "-")
+            {
+                lineComment = true;
+                i++;
+                continue;
+            }
+
+            if (ch === "/" && next === "*")
+            {
+                blockComment = true;
+                i++;
+                continue;
+            }
+
             if (ch === "'" || ch === '"' || ch === "`")
             {
                 quote = ch;
+                continue;
+            }
+
+            if (ch === "$")
+            {
+                const dollarMatch =
+                    sql
+                        .slice(i)
+                        .match(
+                            /^\$(?:[A-Za-z_][A-Za-z0-9_]*)?\$/
+                        );
+
+                if (dollarMatch)
+                {
+                    quote = dollarMatch[0];
+                    i += quote.length - 1;
+                    continue;
+                }
+            }
+
+            if (
+                (ch === "q" || ch === "Q") &&
+                next === "'"
+            )
+            {
+                const delimiter = sql[i + 2];
+
+                if (delimiter !== undefined)
+                {
+                    const closing =
+                        {
+                            "[": "]",
+                            "(": ")",
+                            "{": "}",
+                            "<": ">"
+                        }[delimiter] || delimiter;
+
+                    quote = closing + "'";
+                    i += 2;
+                    continue;
+                }
+            }
+
+            if (ch === "[")
+            {
+                bracket = true;
                 continue;
             }
 
@@ -3417,6 +4301,12 @@ const EasyPivot = {
             if (ch === ")")
             {
                 depth--;
+
+                if (depth < 0)
+                {
+                    return null;
+                }
+
                 continue;
             }
 
@@ -3428,23 +4318,30 @@ const EasyPivot = {
             const remainder =
                 sql.slice(i);
 
-            if (selectStart === -1 &&
-                /^SELECT\b/i.test(remainder))
+            if (
+                selectStart === -1 &&
+                /^SELECT\b/i.test(remainder)
+            )
             {
                 selectStart = i;
                 i += 5;
                 continue;
             }
 
-            if (selectStart !== -1 &&
-                /^FROM\b/i.test(remainder))
+            if (
+                selectStart !== -1 &&
+                /^FROM\b/i.test(remainder)
+            )
             {
                 fromStart = i;
                 break;
             }
         }
 
-        if (selectStart === -1 || fromStart === -1)
+        if (
+            selectStart === -1 ||
+            fromStart === -1
+        )
         {
             return null;
         }
@@ -3457,14 +4354,14 @@ const EasyPivot = {
 
     extractSqlAlias(expression)
     {
-        const match =
-            expression.match(
-                /\s+AS\s+[`"\[]?([^`"\]]+)[`"\]]?\s*$/i
-            );
+        if (!this.hasExplicitAs(expression))
+        {
+            return "";
+        }
 
-        return match
-            ? match[1].trim()
-            : "";
+        return this.extractTrailingIdentifier(
+            expression
+        );
     },
 
     pivotMatchesAlias(pivot, alias)
