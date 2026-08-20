@@ -51,6 +51,20 @@ Wrote a comic about it. Want to see it? Here it is:
 
 https://github.com/pivot-my-stuff/easy_pivot/blob/main/oracle/MR_PIVOT_VISITS_THE_ORACLE.jpg
 
+### If Our Software Is Not Working For You...
+
+Then we have succeeded in our evil plans!
+
+You may lodge your complaint in one of two places:
+
+Option #1: https://github.com/pivot-my-stuff/easy_pivot/discussions
+
+Or here:
+
+Option #2: https://github.com/pivot-my-stuff/easy_pivot/blob/main/comics/PIVOTY_HELPS_ANOTHER_CUSTOMER.jpg
+
+It's your choice. But we recommend you stay away from #2. It doesn't sound appetizing.
+
 ### August 20, 2026 — Workbench Cleanup & Final Database Testing
 
 We successfully determined yesterday that we can build a SQL pivot query that can fit into 640Kb of RAM. That ought to be enough for anybody.
