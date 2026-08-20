@@ -43,6 +43,15 @@ Easy Pivot stored procedures perform read-only operations against existing datab
 
 The temporary tables involve determining whether a field is numeric or a character string, as this is necessary to handle NULL pivot column information. NULL pivot columns that are numeric must be forced to a zero, and NULL pivot columns that are character strings must be made an empty string. Except for Oracle. Oracle's philosophy is "empty string = NULL". So we here at the Easy Pivot project can't do much about that. Oracle users will just have to stare at the NULLs from an Easy Pivot and like it. :)
 
+## Welcome to Easy Pivot
+
+Interested in using Easy Pivot rather than just exploring the project?
+
+- **[Easy Pivot Workbench](easy_pivot_workbench/)** — Go directly to the Easy Pivot Workbench, including the application, database implementations, documentation, and supporting files.
+- **[Easy Pivot Workbench Installation Guide](easy_pivot_workbench/Easy_Pivot_Workbench_Installation_Guide.md)** — Before getting started, take a quick look at the installation requirements and setup process for the supported databases.
+
+The Workbench is the easiest way to get started with Easy Pivot. The installation guide will help you determine what is required for your particular database environment before you begin.
+
 # Easy Pivot — What It Is and Where We Are
 
 **Easy Pivot is an open-source SQL pivot compiler.** Its purpose is to take a relatively simple JSON description of how a user wants data grouped and pivoted and generate the complete SQL required to produce that pivot. The idea is to eliminate the tedious, database-specific SQL normally required to construct complex dynamic pivots.
