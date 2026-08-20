@@ -53,7 +53,9 @@ https://github.com/pivot-my-stuff/easy_pivot/blob/main/oracle/MR_PIVOT_VISITS_TH
 
 ### August 20, 2026 — Workbench Cleanup & Final Database Testing
 
-Yesterday involved a substantial amount of **Easy Pivot Workbench software cleanup and bug fixing**.
+We successfully determined yesterday that we can build a SQL pivot query that can fit into 640Kb of RAM. That ought to be enough for anybody.
+
+Also, yesterday involved a substantial amount of **Easy Pivot Workbench software cleanup and bug fixing**.
 
 The Oracle Easy Pivot stored procedure wasn't working quite well enough with the Workbench, particularly around returning generated source code. Those issues were fixed.
 
