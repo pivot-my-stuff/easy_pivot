@@ -155,8 +155,7 @@ try
                 BEGIN
                     easy_pivot(
                         :source_sql,
-                        :json_configuration,
-                        1
+                        :json_configuration
                     );
                 END;
                 ";
@@ -312,9 +311,7 @@ try
             $stmt = $pdo->prepare("
                 CALL easy_pivot(
                     ?,
-                    ?,
-                    TRUE,
-                    @warnings
+                    ?
                 )
             ");
 
@@ -341,17 +338,6 @@ try
 
             $stmt->closeCursor();
 
-            $warnings =
-                $pdo->query(
-                    "SELECT @warnings AS warnings"
-                )->fetch(PDO::FETCH_ASSOC);
-
-            if (!empty($warnings['warnings']))
-            {
-                echo "\n\n";
-                echo $warnings['warnings'];
-            }
-
             break;
 
 
@@ -367,8 +353,6 @@ try
             $stmt = $pdo->prepare("
                 CALL easy_pivot(
                     ?,
-                    ?,
-                    TRUE,
                     ?
                 )
             ");
@@ -378,62 +362,19 @@ try
 
             $stmt->execute([
                 $request['source_query'],
-                $request['generated_json'],
-                $cursorName
+                $request['generated_json']
             ]);
 
             /*
-                CALL returns the INOUT refcursor value as a result row.
-                Use the cursor name PostgreSQL actually returned rather
-                than assuming that the input name was retained.
+                The PostgreSQL Workbench procedure has only two parameters.
+                The refcursor is an internal implementation detail with a
+                fixed name known by both the procedure and this endpoint.
             */
-
-            $callResult =
-                $stmt->fetch(PDO::FETCH_ASSOC);
-
-            $stmt->closeCursor();
-
-            if (!$callResult ||
-                !array_key_exists(
-                    'p_result_cursor',
-                    $callResult
-                ))
-            {
-                $pdo->rollBack();
-
-                throw new RuntimeException(
-                    'Easy Pivot did not return the PostgreSQL result cursor name.'
-                );
-            }
-
-            $returnedCursorName =
-                (string)$callResult['p_result_cursor'];
-
-            if ($returnedCursorName === '')
-            {
-                $pdo->rollBack();
-
-                throw new RuntimeException(
-                    'Easy Pivot returned an empty PostgreSQL result cursor name.'
-                );
-            }
-
-            if (!preg_match(
-                '/^[A-Za-z_][A-Za-z0-9_$]*$/',
-                $returnedCursorName
-            ))
-            {
-                $pdo->rollBack();
-
-                throw new RuntimeException(
-                    'Easy Pivot returned an invalid PostgreSQL result cursor name.'
-                );
-            }
 
             $result =
                 $pdo->query(
                     'FETCH ALL FROM "' .
-                    $returnedCursorName .
+                    $cursorName .
                     '"'
                 )->fetch(PDO::FETCH_ASSOC);
 

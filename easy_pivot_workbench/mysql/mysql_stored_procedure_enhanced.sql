@@ -5,9 +5,7 @@ DROP PROCEDURE IF EXISTS easy_pivot$$
 CREATE PROCEDURE easy_pivot
 (
     IN  p_user_sql LONGTEXT,
-    IN  p_json_configuration JSON,
-    IN  p_generate_source_code_only BOOLEAN,
-    OUT p_warning_messages LONGTEXT
+    IN  p_json_configuration JSON
 )
 
 BEGIN
@@ -656,7 +654,7 @@ BEGIN
             SET v_debug =
             CONCAT(
                 v_debug,
-                '\n\n',
+                '\\n\\n',
                 'Discovery SQL:',
                 '\n',
                 @sql,
@@ -1053,7 +1051,7 @@ BEGIN
 
                         SET v_debug = CONCAT(
                             v_debug,
-                            '\n\n',
+                            '\\n\\n',
                             'dynamic=', COALESCE(v_dynamic_select, '<NULL>'),
                             '\npivot_type=', COALESCE(v_pivot_type, '<NULL>'),
                             '\npivot_data=', COALESCE(v_pivot_data, '<NULL>'),
@@ -1529,13 +1527,13 @@ ELSE
             '\n'
         );
 
-    WHILE INSTR(v_final_sql,'\n\n') > 0
+    WHILE INSTR(v_final_sql,'\\n\\n') > 0
     DO
 
         SET v_final_sql =
             REPLACE(
                 v_final_sql,
-                '\n\n',
+                '\\n\\n',
                 '\n'
             );
 
@@ -1547,41 +1545,25 @@ ELSE
     -- Output or Execute
     -- ----------------------------------------------------------------------------
 
-    IF p_generate_source_code_only THEN
+    IF v_debug_mode THEN
 
-        IF v_debug_mode THEN
-
-            SELECT
-                CONCAT(
-                    '============= EASY PIVOT DEVELOPER TRACE --> MYSQL ============',
-                    '\n\n',
-                    v_debug,
-                    '\n\n',
-                    '======================== GENERATED SQL ========================',
-                    '\n\n',
-                    v_final_sql
-                ) AS Generated_SQL;
-
-        ELSE
-
-            SELECT
-                v_final_sql AS Generated_SQL;
-
-        END IF;
+        SELECT
+            CONCAT(
+                '============= EASY PIVOT DEVELOPER TRACE --> MYSQL ============',
+                '\n\n',
+                v_debug,
+                '\n\n',
+                '======================== GENERATED SQL ========================',
+                '\n\n',
+                v_final_sql
+            ) AS Generated_SQL;
 
     ELSE
 
-        SET @sql = v_final_sql;
-
-        PREPARE stmt FROM @sql;
-
-        EXECUTE stmt;
-
-        DEALLOCATE PREPARE stmt;
+        SELECT
+            v_final_sql AS Generated_SQL;
 
     END IF;
-
-    SET p_warning_messages = v_warning_messages;
 
 END$$
 

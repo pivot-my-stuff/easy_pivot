@@ -4,10 +4,6 @@
 -- Parameters:
 --   p_user_sql                   Source query supplied by the caller.
 --   p_json_configuration         Easy Pivot JSON configuration.
---   p_generate_source_code_only  TRUE  = print generated SQL with RAISE NOTICE.
---                                FALSE = open the generated result as a refcursor.
---   p_result_cursor              Cursor name returned by CALL; FETCH from it in
---                                the same transaction.
 --
 -- Generated aggregate headings:
 --   <Pivot_Type>_<Pivot_Value>_<Pivot_Data>
@@ -16,13 +12,12 @@
 --   <Pivot_Value>_<Pivot_Field>
 --
 DROP PROCEDURE IF EXISTS easy_pivot(TEXT, JSONB, BOOLEAN, REFCURSOR);
+DROP PROCEDURE IF EXISTS easy_pivot(TEXT, JSONB);
 
 CREATE OR REPLACE PROCEDURE easy_pivot
 (
     IN    p_user_sql                  TEXT,
-    IN    p_json_configuration        JSONB,
-    IN    p_generate_source_code_only BOOLEAN DEFAULT FALSE,
-    INOUT p_result_cursor             REFCURSOR DEFAULT 'easy_pivot_cursor'
+    IN    p_json_configuration        JSONB
 )
 LANGUAGE plpgsql
 AS
@@ -98,6 +93,7 @@ v_pivot_alias             INTEGER;
 v_sql_pivot_type          TEXT;
 
 c                         REFCURSOR;
+v_result_cursor           REFCURSOR := 'easy_pivot_workbench_cursor';
 
 v_output                  TEXT;
 v_strict_pivot_validation BOOLEAN := FALSE;
@@ -957,41 +953,16 @@ BEGIN
     -- Execute Final SQL
     ----------------------------------------------------------------------------
 
-    IF p_generate_source_code_only THEN
+    ----------------------------------------------------------------------------
+    -- Return generated SQL through the Workbench refcursor.
+    --
+    -- PostgreSQL procedures cannot directly return an arbitrary result set.
+    -- The cursor is therefore an internal implementation detail rather than
+    -- a procedure parameter. The Workbench knows the fixed cursor name.
+    ----------------------------------------------------------------------------
 
-        ------------------------------------------------------------------------
-        -- Return the generated SQL through the procedure's refcursor.
-        --
-        -- The Workbench calls this procedure with
-        -- p_generate_source_code_only = TRUE and then FETCHes the cursor.
-        -- RAISE NOTICE does not create a cursor, so using NOTICE here caused
-        -- the caller to receive "cursor ... does not exist".
-        ------------------------------------------------------------------------
-
-        IF p_result_cursor IS NULL THEN
-            p_result_cursor := 'easy_pivot_cursor';
-        END IF;
-
-        OPEN p_result_cursor FOR
-            SELECT v_final_sql AS "Generated_SQL";
-
-    ELSE
-
-        ------------------------------------------------------------------------
-        -- Return the generated result set through the procedure's refcursor.
-        --
-        -- PostgreSQL procedures cannot directly return an arbitrary dynamic
-        -- result set. Opening a refcursor preserves the stored-procedure
-        -- interface while allowing the caller to FETCH the generated result.
-        ------------------------------------------------------------------------
-
-        IF p_result_cursor IS NULL THEN
-            p_result_cursor := 'easy_pivot_cursor';
-        END IF;
-
-        OPEN p_result_cursor FOR EXECUTE v_final_sql;
-
-    END IF;
+    OPEN v_result_cursor FOR
+        SELECT v_final_sql AS "Generated_SQL";
 
 END;
 $$;

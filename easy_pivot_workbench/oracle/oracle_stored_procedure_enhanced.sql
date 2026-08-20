@@ -4,9 +4,6 @@
 -- Parameters:
 --   p_user_sql                   Source query supplied by the caller.
 --   p_json_configuration         Easy Pivot JSON configuration.
---   p_generate_source_code_only  1 = return generated SQL through DBMS_OUTPUT;
---                                0 = execute the generated SQL and return its
---                                    result set as an implicit cursor.
 --
 -- Generated aggregate headings:
 --   <Pivot_Type>_<Pivot_Value>_<Pivot_Data>
@@ -20,8 +17,7 @@ SET FEEDBACK OFF
 CREATE OR REPLACE PROCEDURE easy_pivot
 (
     p_user_sql                  IN CLOB,
-    p_json_configuration        IN CLOB,
-    p_generate_source_code_only IN NUMBER DEFAULT 0
+    p_json_configuration        IN CLOB
 )
 IS
 
@@ -1091,31 +1087,21 @@ IS
     IS
     BEGIN
     
-        IF p_generate_source_code_only = 1 THEN
+        print_banner('EASY PIVOT: Auto-generated pivot query');
 
-            print_banner('EASY PIVOT: Auto-generated pivot query');
+        DBMS_OUTPUT.PUT_LINE(
+            '-- https://github.com/pivot-my-stuff/easy_pivot'
+        );
 
-            DBMS_OUTPUT.PUT_LINE(
-                '-- https://github.com/pivot-my-stuff/easy_pivot'
-            );
+        DBMS_OUTPUT.PUT_LINE(CHR(10));
 
-            DBMS_OUTPUT.PUT_LINE(CHR(10));
+        DBMS_OUTPUT.PUT_LINE(v_final_sql);
 
-            DBMS_OUTPUT.PUT_LINE(v_final_sql);
+        OPEN pivot_cursor FOR
+            SELECT v_final_sql AS Generated_SQL
+            FROM dual;
 
-            OPEN pivot_cursor FOR
-                SELECT v_final_sql AS Generated_SQL
-                FROM dual;
-
-            DBMS_SQL.RETURN_RESULT(pivot_cursor);
-
-        ELSE
-
-            OPEN pivot_cursor FOR v_final_sql;
-
-            DBMS_SQL.RETURN_RESULT(pivot_cursor);
-
-        END IF;
+        DBMS_SQL.RETURN_RESULT(pivot_cursor);
     END;
 
 BEGIN

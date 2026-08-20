@@ -7,8 +7,8 @@ BEGIN
 
 /* Easy Pivot configuration section */
 
--- Change to 1 to print generated pivot code
-DECLARE @generate_source_code_only AS BIT = 1
+-- Easy Pivot Workbench always returns generated source code.
+-- The Workbench executes the returned SQL separately when required.
 
 -- Change to 1 to issue warnings and stop building pivot entries that
 -- generate NULL column names
@@ -281,12 +281,6 @@ END
 
 DECLARE @dynamic_sql AS NVARCHAR(MAX) = @dynamic_select + @dynamic_from + @dynamic_order_by + CHAR(13) + CHAR(10)
 
-IF @generate_source_code_only <> 0
-  BEGIN
-    PRINT @dynamic_sql
-    SELECT @dynamic_sql AS FULL_CODE
-  END
-ELSE
-    EXEC (@dynamic_sql)
+SELECT @dynamic_sql AS FULL_CODE
 END
 GO
