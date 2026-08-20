@@ -298,30 +298,6 @@
     </section>
 
     <!-- ===================================================== -->
-    <!-- GENERATED JSON                                         -->
-    <!-- ===================================================== -->
-
-    <section class="ep-section">
-
-        <div class="ep-section-title ep-json-title">
-
-            Generated JSON
-
-        </div>
-
-        <textarea
-            id="generated_json"
-            readonly>
-
-{
-
-}
-
-        </textarea>
-
-    </section>
-
-    <!-- ===================================================== -->
     <!-- GENERATE BUTTON                                        -->
     <!-- ===================================================== -->
 
@@ -345,7 +321,7 @@
 
 <section id="sql_panel">
 
-    <section class="ep-section">
+    <section class="ep-section" id="source_query_section">
 
         <div class="ep-section-title">
 
@@ -357,6 +333,26 @@
             id="source_query"
             spellcheck="false"
             placeholder="Paste or type your source SQL query here...">
+
+        </textarea>
+
+    </section>
+
+    <section class="ep-section" id="generated_json_section">
+
+        <div class="ep-section-title ep-json-title">
+
+            Generated JSON
+
+        </div>
+
+        <textarea
+            id="generated_json"
+            readonly>
+
+{
+
+}
 
         </textarea>
 

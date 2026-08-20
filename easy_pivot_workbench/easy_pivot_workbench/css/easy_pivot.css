@@ -257,6 +257,43 @@ body.workspace-hidden #workspace_toggle_container {
 
 }
 
+#sql_panel {
+
+    display:grid;
+
+    grid-template-rows:
+        minmax(0, 3fr)
+        minmax(0, 1fr);
+
+    gap:20px;
+
+    height:calc(100vh - 110px);
+
+}
+
+#sql_panel > .ep-section {
+
+    min-height:0;
+
+    margin-bottom:0;
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+#source_query_section #source_query,
+#generated_json_section #generated_json {
+
+    flex:1 1 auto;
+
+    min-height:0;
+
+    height:auto;
+
+}
+
 /******************************************************************************
     Sections
 ******************************************************************************/
@@ -1017,6 +1054,32 @@ body.workspace-hidden #workspace_toggle_container {
         grid-template-columns:
 
             1fr;
+
+    }
+
+    #sql_panel {
+
+        height:auto;
+
+        display:block;
+
+    }
+
+    #sql_panel > .ep-section {
+
+        margin-bottom:20px;
+
+    }
+
+    #source_query_section #source_query {
+
+        height:760px;
+
+    }
+
+    #generated_json_section #generated_json {
+
+        height:180px;
 
     }
 
