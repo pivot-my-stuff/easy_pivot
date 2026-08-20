@@ -81,6 +81,8 @@ The Workbench is now essentially functional across all four platforms. There are
 
 Tomorrow we'll continue testing the graphical interface and then take a quick look at **using Easy Pivot directly in a SQL Server scheduled job**.
 
+Unless we get a lot of complaints after opening up the Discussion section of this project. In that case, we will take the day off.
+
 ### August 19, 2026 --- Testing Results
 
 ## Database Authentication Status
