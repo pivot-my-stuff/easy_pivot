@@ -111,6 +111,7 @@ Authentication testing has also gone surprisingly well:
 - SQL Server — username/password **and Windows Authentication**
 - PostgreSQL — username/password **and Windows Authentication**
 - Oracle — username/password
+(We have reached out to Oracle about Windows Authentication, and someone from Oracle has responded. I have not asked for permission to say who, so I can't be specific about this. But we here at the Easy Pivot project are grateful for Oracle's response. It may yet be possible for Windows Authentication for Oracle.)
 - MySQL — username/password
 
 Oracle Windows/External Authentication remains outside the current PHP/Oracle implementation.
