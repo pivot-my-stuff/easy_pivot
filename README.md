@@ -43,12 +43,6 @@ Easy Pivot stored procedures perform read-only operations against existing datab
 
 The temporary tables involve determining whether a field is numeric or a character string, as this is necessary to handle NULL pivot column information. NULL pivot columns that are numeric must be forced to a zero, and NULL pivot columns that are character strings must be made an empty string. Except for Oracle. Oracle's philosophy is "empty string = NULL". So we here at the Easy Pivot project can't do much about that. Oracle users will just have to stare at the NULLs from an Easy Pivot and like it. :)
 
-## First, The Important Information
-
-https://www.youtube.com/watch?v=aJOS7dKuwcQ
-
-Now, the boring stuff follows.
-
 ## Welcome To Easy Pivot
 
 Interested in using Easy Pivot rather than just exploring the project?
@@ -118,7 +112,7 @@ Authentication testing has also gone surprisingly well:
 - PostgreSQL — username/password **and Windows Authentication**
 - Oracle — username/password
 (We have reached out to Oracle about Windows Authentication, and someone from Oracle has responded. I have not asked for permission to say who, so I can't be specific about this. But we here at the Easy Pivot project are grateful for Oracle's response. It may yet be possible for Windows Authentication for Oracle.)
-- MySQL — username/password (As it turns out, WE CAN explore Windows Authentication for MySQL Enterprise. Apparently, for development purposes, we are allowed to download and test MySQL Enterprise. And, believe it or not, Oracle oversees MySQL development. Irony can be pretty ironic sometimes. LOL)
+- MySQL — username/password (As it turns out, WE CAN explore Windows Authentication for MySQL Enterprise. Apparently, for development purposes, we are allowed to download and test MySQL Enterprise.)
 
 Oracle Windows/External Authentication remains outside the current PHP/Oracle implementation.
 
