@@ -417,6 +417,8 @@ const EasyPivot = {
 
         this.registerEvents();
 
+        document.getElementById("source_query").value = "";
+
         const hideWorkspace =
             document.getElementById("hide_workspace");
 
@@ -2216,6 +2218,8 @@ const EasyPivot = {
         {
             const input = document.getElementById(id);
 
+            input.setAttribute("autocomplete", "off");
+
             input.addEventListener(
                 "focus",
                 () =>
@@ -3340,10 +3344,7 @@ const EasyPivot = {
                 `t`.`field`
         */
         if (
-            /^[A-Za-z_][A-Za-z0-9_$]*(?:\s*\.\s*[A-Za-z_][A-Za-z0-9_$]*)*\s*$/.test(text) ||
-            /^(?:\[[^\]]*(?:\]\][^\]]*)*\]\s*\.\s*)*\[[^\]]*(?:\]\][^\]]*)*\]\s*$/.test(text) ||
-            /^(?:"[^"]*(?:""[^"]*)*"\s*\.\s*)*"[^"]*(?:""[^"]*)*"\s*$/.test(text) ||
-            /^(?:`[^`]*(?:``[^`]*)*`\s*\.\s*)*`[^`]*(?:``[^`]*)*`\s*$/.test(text)
+            /^(?:(?:[A-Za-z_][A-Za-z0-9_$]*|\[[^\]]*(?:\]\][^\]]*)*\]|"[^"]*(?:""[^"]*)*"|`[^`]*(?:``[^`]*)*`)\s*\.\s*)*(?:[A-Za-z_][A-Za-z0-9_$]*|\[[^\]]*(?:\]\][^\]]*)*\]|"[^"]*(?:""[^"]*)*"|`[^`]*(?:``[^`]*)*`)\s*$/.test(text)
         )
         {
             return this.extractTrailingIdentifier(text);
