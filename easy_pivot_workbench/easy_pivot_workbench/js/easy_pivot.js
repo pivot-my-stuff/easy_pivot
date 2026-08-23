@@ -4918,10 +4918,53 @@ const EasyPivot = {
             this.refreshGroups();
             this.refreshPivotChips();
 
+            const validationMessages = [];
+
+            Object.entries(this.validationErrors.groups)
+                .forEach(([index, message]) =>
+                {
+                    validationMessages.push(
+                        "Group " +
+                        (Number(index) + 1) +
+                        ": " +
+                        message
+                    );
+                });
+
+            Object.entries(this.validationErrors.pivots)
+                .forEach(([index, message]) =>
+                {
+                    validationMessages.push(
+                        "Pivot Chip " +
+                        (Number(index) + 1) +
+                        ": " +
+                        message
+                    );
+                });
+
+            const firstInvalidRow =
+                document.querySelector(
+                    ".group-row.validation-error, .pivot-row.validation-error"
+                );
+
+            if (firstInvalidRow)
+            {
+                firstInvalidRow.scrollIntoView(
+                    {
+                        behavior: "smooth",
+                        block: "center"
+                    }
+                );
+            }
+
             alert(
                 "Cannot generate the pivot query.\n\n" +
-                "One or more Groups or Pivot Chips need attention. " +
-                "The invalid row(s) have been highlighted."
+                "Please correct the following configuration error(s):\n\n" +
+                validationMessages
+                    .map(message => "• " + message)
+                    .join("\n") +
+                "\n\nThe invalid rows are highlighted in red. " +
+                "Hover over a highlighted row for additional details."
             );
 
             return false;
