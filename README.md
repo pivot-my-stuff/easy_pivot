@@ -128,6 +128,12 @@ That last one is potentially a pretty significant capability: the Workbench can 
 
 And yes, we have already got a pretty good head start on that concept from previous metadata/job-scheduling work.
 
+## Easy Pivot Can Pivot Its Own Pivots Now
+
+To test the robustness of Easy Pivot, we had it create a pivot based on ordinary SQL SELECT code. We then
+fed the generated pivot back into Easy Pivot as a new data source. It successfully pivoted its own pivot
+code. A useful feature? Maybe. Maybe not. But Easy Pivot can definitely recycle.
+
 For questions or comments, send email to:
 
 tds67 (at) protonmail.com
