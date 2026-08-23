@@ -33,9 +33,9 @@ So forget about the donations. I'll take care of it myself. :)
 Would you like donations instead?" -- Pivoty, valued member of the Easy Pivot support
 team.
 
-https://github.com/pivot-my-stuff/easy_pivot/blob/main/comics/PIVOTY_EASY_PIVOT_TECH_SUPPORT_HOTLINE.jpg
+https://github.com/pivot-my-stuff/easy_pivot/blob/main/img/comics/PIVOTY_EASY_PIVOT_TECH_SUPPORT_HOTLINE.jpg
 
-https://github.com/pivot-my-stuff/easy_pivot/blob/main/comics/PIVOTY_HELPS_ANOTHER_CUSTOMER.jpg
+https://github.com/pivot-my-stuff/easy_pivot/blob/main/img/comics/PIVOTY_HELPS_ANOTHER_CUSTOMER.jpg
 
 ### A Note To Database Administrators
 
