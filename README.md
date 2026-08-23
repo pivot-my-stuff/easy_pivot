@@ -43,6 +43,12 @@ Easy Pivot stored procedures perform read-only operations against existing datab
 
 The temporary tables involve determining whether a field is numeric or a character string, as this is necessary to handle NULL pivot column information. NULL pivot columns that are numeric must be forced to a zero, and NULL pivot columns that are character strings must be made an empty string. Except for Oracle. Oracle's philosophy is "empty string = NULL". So we here at the Easy Pivot project can't do much about that. Oracle users will just have to stare at the NULLs from an Easy Pivot and like it. :)
 
+## Top Secret Clearance Required
+
+https://www.youtube.com/watch?v=aJOS7dKuwcQ
+
+https://www.youtube.com/watch?v=q6XImQrfc3I
+
 ## Welcome To Easy Pivot
 
 Interested in using Easy Pivot rather than just exploring the project?
