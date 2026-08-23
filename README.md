@@ -113,8 +113,6 @@ Authentication testing has also gone surprisingly well:
 - Oracle — username/password (Windows authentication is possible if PHP supports it in the future.)
 - MySQL — username/password (Windows authentication is possible if PHP supports it in the future.)
 
-Oracle Windows/External Authentication remains outside the current PHP/Oracle implementation.
-
 ## Where We Are Going Next
 
 We're now moving from **"Does it work?"** toward **"Can somebody actually use this comfortably?"**
