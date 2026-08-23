@@ -41,7 +41,7 @@ https://github.com/pivot-my-stuff/easy_pivot/blob/main/img/comics/PIVOTY_HELPS_A
 
 Easy Pivot stored procedures perform read-only operations against existing database tables. But, when it is necessary to use a temporary table for pivot code generation, they clean up after themselves and remove them. This happens per user session, avoiding collisions when multiple users are generating pivot query requests at the same time.
 
-The temporary tables involve determining whether a field is numeric or a character string, as this is necessary to handle NULL pivot column information. NULL pivot columns that are numeric must be forced to a zero, and NULL pivot columns that are character strings must be made an empty string. Except for Oracle. Oracle's philosophy is "empty string = NULL". So we here at the Easy Pivot project can't do much about that. Oracle users will just have to stare at the NULLs from an Easy Pivot and like it. :)
+The temporary tables involve determining whether a field is numeric or a character string, as this is necessary to handle NULL pivot column information. NULL pivot columns that are numeric must be forced to a zero, and NULL pivot columns that are character strings must be made an empty string.
 
 ## Welcome To Easy Pivot
 
