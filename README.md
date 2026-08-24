@@ -45,7 +45,7 @@ The temporary tables involve determining whether a field is numeric or a charact
 
 ### Yeah, It's This 1980s Reference Again. So Sue Me.
 
-https://www.youtube.com/watch?v=XfR9iY5y94s&list=RDO2vHbXI2p4k&index=8
+https://www.youtube.com/watch?v=aJOS7dKuwcQ
 
 ## Welcome To Easy Pivot
 
