@@ -49,6 +49,8 @@ You don't really care about software being for the benefit of everybody. All you
 
 Easy Pivot is available to everyone. And it always will be. Check out my license and disagree with me if you have the courage to do so.
 
+https://github.com/pivot-my-stuff/easy_pivot/blob/main/LICENSE
+
 ## Welcome To Easy Pivot
 
 Interested in using Easy Pivot rather than just exploring the project?
