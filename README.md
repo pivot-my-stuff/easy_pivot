@@ -43,12 +43,6 @@ Easy Pivot stored procedures perform read-only operations against existing datab
 
 The temporary tables involve determining whether a field is numeric or a character string, as this is necessary to handle NULL pivot column information. NULL pivot columns that are numeric must be forced to a zero, and NULL pivot columns that are character strings must be made an empty string.
 
-## Skeet Surfin'
-
-This project is taking off now. And, after Sunday, there will be no one to stop us:
-
-https://www.youtube.com/watch?v=aJOS7dKuwcQ
-
 ## Welcome To Easy Pivot
 
 Interested in using Easy Pivot rather than just exploring the project?
