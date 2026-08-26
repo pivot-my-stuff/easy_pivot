@@ -53,6 +53,10 @@ A pivot revolution is starting. And after Sunday, there will be no one to stop u
 
 https://www.youtube.com/watch?v=aJOS7dKuwcQ
 
+It doesn't get any better than this, folks. Enjoy life while it lasts. :)
+
+https://www.youtube.com/watch?v=q6XImQrfc3I
+
 ## Welcome To Easy Pivot
 
 Interested in using Easy Pivot rather than just exploring the project?
