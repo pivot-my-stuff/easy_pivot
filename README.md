@@ -45,6 +45,8 @@ The temporary tables involve determining whether a field is numeric or a charact
 
 ## Skeet Surfin'
 
+This project is taking off now. And, after Sunday, there will be no one to stop us:
+
 https://www.youtube.com/watch?v=aJOS7dKuwcQ
 
 ## Welcome To Easy Pivot
