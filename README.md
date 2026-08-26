@@ -43,6 +43,16 @@ Easy Pivot stored procedures perform read-only operations against existing datab
 
 The temporary tables involve determining whether a field is numeric or a character string, as this is necessary to handle NULL pivot column information. NULL pivot columns that are numeric must be forced to a zero, and NULL pivot columns that are character strings must be made an empty string.
 
+## A Heartfelt Note From Me And Scotty
+
+It has been my privilege and honor to present to you a solution to a problem that nobody cares about.
+
+That being said, I do feel it was worth the effort. So many times I have gone online and searched for solutions to pivoting problems. Finally, I got tired of the lame solutions to this problem. Oh, just use Python to do it. Oh, just use X, Y or Z technology to do it. Or, the worst of all, just use a spreadsheet to pivot your data. Yuk.
+
+A pivot revolution is starting. And after Sunday, there will be no one to stop us. :)
+
+https://www.youtube.com/watch?v=aJOS7dKuwcQ
+
 ## Welcome To Easy Pivot
 
 Interested in using Easy Pivot rather than just exploring the project?
