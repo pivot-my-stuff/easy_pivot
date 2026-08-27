@@ -61,7 +61,7 @@ The Bird Is The Word:
 
 https://www.youtube.com/watch?v=sMSDo3BX5Ds
 
-Lovely Mary Ann:
+Lovely Mary Ann (The Girl With Shorts And A Tan) :)
 
 https://www.youtube.com/watch?v=gkBC2lBT2_M
 
