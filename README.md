@@ -111,7 +111,7 @@ Authentication testing has also gone surprisingly well:
 - SQL Server — username/password **and Windows Authentication**
 - PostgreSQL — username/password **and Windows Authentication**
 - Oracle — username/password (Windows authentication is possible if PHP supports it in the future.)
-- MySQL — username/password (Windows authentication is possible if PHP supports it in the future.)
+- MySQL — username/password (Windows authentication is possible when using the Enterprise version.)
 
 ## Where We Are Going Next
 
