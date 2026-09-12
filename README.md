@@ -1,4 +1,8 @@
 <p align="center">
+  <img src="img/easy_pivot_generation_x_infj.jpg">
+</p>
+
+<p align="center">
   <img src="img/easy_pivot_workbench_demo_1.jpg">
 </p>
 
