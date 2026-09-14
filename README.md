@@ -3,6 +3,10 @@
 </p>
 
 <p align="center">
+  <img src="img/the_bird.jpg">
+</p>
+
+<p align="center">
   <img src="img/easy_pivot_workbench_demo_1.jpg">
 </p>
 
