@@ -3,12 +3,6 @@
 </p>
 
 <p align="center">
- <a href="https://www.youtube.com/watch?v=sMSDo3BX5Ds" target="_blank">
-  <img src="img/the_bird.jpg">
-  </a>
-</p>
-
-<p align="center">
   <img src="img/easy_pivot_workbench_demo_1.jpg">
 </p>
 
