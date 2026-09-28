@@ -761,6 +761,8 @@ DECLARE
                                            ELSE v_pivot_type || '_'
                                        END
                                     || v_local_pivot_values(chip_number)
+                                    || '_'
+                                    || v_pivot_data
                                     || '"';
 
                             ELSIF v_pivot_data IS NULL THEN
@@ -809,6 +811,8 @@ DECLARE
                                            ELSE v_pivot_type || '_'
                                        END
                                     || v_local_pivot_values(chip_number)
+                                    || '_'
+                                    || v_pivot_data
                                     || '"';
 
                             END IF;
@@ -1104,14 +1108,6 @@ DECLARE
     BEGIN
     
         IF v_generate_source_code_only = 1 THEN
-    
-            print_banner('EASY PIVOT: Auto-generated pivot query');
-    
-            DBMS_OUTPUT.PUT_LINE(
-                '-- https://github.com/pivot-my-stuff/easy_pivot'
-            );
-    
-            DBMS_OUTPUT.PUT_LINE(CHR(10));
     
             DBMS_OUTPUT.PUT_LINE(v_final_sql);
     

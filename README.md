@@ -56,6 +56,8 @@ Interested in using Easy Pivot rather than just exploring the project?
 
 The Workbench is the easiest way to get started with Easy Pivot. The installation guide will help you determine what is required for your particular database environment before you begin.
 
+- **[Manual Easy Pivot](manual_easy_pivot/)** — Go to this folder to use the manual versions of Easy Pivot. There is no graphical tool for these versions; you will need to supply both a source query and configure the JSON pivot metadata. The manual versions have been modified to have more descriptive pivot column headings.
+
 # Easy Pivot — What It Is and Where We Are
 
 **Easy Pivot is an open-source SQL pivot compiler.** Its purpose is to take a relatively simple JSON description of how a user wants data grouped and pivoted and generate the complete SQL required to produce that pivot. The idea is to eliminate the tedious, database-specific SQL normally required to construct complex dynamic pivots.

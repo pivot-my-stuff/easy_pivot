@@ -28,7 +28,7 @@ DECLARE
 
                 "Pivot":
                 [
-                    {"Pivot_Field": "OBJECT_TYPE", "Pivot_Type": "AVG", "Pivot_Data": "NAME_LENGTH", "Follows_Group": "OWNER"}
+                    {"Pivot_Field": "OBJECT_TYPE", "Pivot_Type": "Avg", "Pivot_Data": "Name_Length", "Follows_Group": "OWNER"}
                    ,{"Pivot_Field": "STATUS", "Pivot_True": "Valid", "Pivot_False": "", "Follows_Group": "OBJECT_NAME"}
                 ]
             }
@@ -755,6 +755,8 @@ DECLARE
                                            ELSE v_pivot_type || '_'
                                        END
                                     || v_local_pivot_values(chip_number)
+                                    || '_'
+                                    || v_pivot_data
                                     || '"';
 
                             ELSIF v_pivot_data IS NULL THEN
@@ -803,6 +805,8 @@ DECLARE
                                            ELSE v_pivot_type || '_'
                                        END
                                     || v_local_pivot_values(chip_number)
+                                    || '_'
+                                    || v_pivot_data
                                     || '"';
 
                             END IF;
@@ -1098,14 +1102,6 @@ DECLARE
     BEGIN
     
         IF v_generate_source_code_only = 1 THEN
-    
-            print_banner('EASY PIVOT: Auto-generated pivot query');
-    
-            DBMS_OUTPUT.PUT_LINE(
-                '-- https://github.com/pivot-my-stuff/easy_pivot'
-            );
-    
-            DBMS_OUTPUT.PUT_LINE(CHR(10));
     
             DBMS_OUTPUT.PUT_LINE(v_final_sql);
     

@@ -73,12 +73,12 @@ DECLARE @source_table AS NVARCHAR(MAX)= '#furniture_sales'
 DECLARE @config AS NVARCHAR(MAX) = '
 [
     {
-        "Group": ["REGION", "CITY"],
+        "Group": ["Region", "City"],
         "Order": ["DESC", "ASC"],
         "Pivot": [
-             {"Pivot_Field": "PRODUCT", "Pivot_Type": "Sum", "Pivot_Data": "SALES"}
-            ,{"Pivot_Field": "PRODUCT", "Pivot_Type": "Avg", "Pivot_Data": "SALES", "Sort_Order": "DESC"}
-            ,{"Pivot_Field": "PRODUCT", "Pivot_Type": "Count", "Pivot_Data": "SALES"}
+             {"Pivot_Field": "Product", "Pivot_Type": "Sum", "Pivot_Data": "Sales"}
+            ,{"Pivot_Field": "Product", "Pivot_Type": "Avg", "Pivot_Data": "Sales", "Sort_Order": "DESC"}
+            ,{"Pivot_Field": "Product", "Pivot_Type": "Count", "Pivot_Data": "Sales"}
         ]
     }
 ]
@@ -296,11 +296,11 @@ BEGIN
                                                 BEGIN
                                                     IF @numeric_flag > 0
                                                         BEGIN
-                                                            SET @dynamic_select = @dynamic_select + ',ISNULL(p' + CAST(@pivot_counter AS NVARCHAR) + '.[' + @pivot_column_name + '], 0) AS [' + @pivot_type + '_' + @pivot_column_name + ']' + CHAR(13) + CHAR(10)
+                                                            SET @dynamic_select = @dynamic_select + ',ISNULL(p' + CAST(@pivot_counter AS NVARCHAR) + '.[' + @pivot_column_name + '], 0) AS [' + @pivot_type + '_' + @pivot_field + '_' + @pivot_column_name + ']' + CHAR(13) + CHAR(10)
                                                         END
                                                     ELSE
                                                         BEGIN
-                                                            SET @dynamic_select = @dynamic_select + ',ISNULL(p' + CAST(@pivot_counter AS NVARCHAR) + '.[' + @pivot_column_name + '],'''') AS [' + @pivot_type + '_' + @pivot_column_name + ']' + CHAR(13) + CHAR(10)
+                                                            SET @dynamic_select = @dynamic_select + ',ISNULL(p' + CAST(@pivot_counter AS NVARCHAR) + '.[' + @pivot_column_name + '],'''') AS [' + @pivot_type + '_' + @pivot_field + '_' + @pivot_column_name + ']' + CHAR(13) + CHAR(10)
                                                         END
                                                 END
                                             IF @comma_flag_FROM = 1

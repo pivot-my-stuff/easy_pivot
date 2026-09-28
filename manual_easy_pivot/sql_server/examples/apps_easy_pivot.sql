@@ -70,11 +70,11 @@ DECLARE @source_table AS NVARCHAR(MAX)= '#applications'
 DECLARE @config AS NVARCHAR(MAX) = '
 [
     {
-        "Group": ["APPLICATION_NAME"],
+        "Group": ["Application_Name"],
         "Order": ["ASC"],
         "Pivot": [
-             {"Pivot_Field": "ENVIRONMENT", "Pivot_Type": "Max", "Pivot_True": "Yes", "Pivot_False": "No"}
-            ,{"Pivot_Field": "ENVIRONMENT", "Pivot_Type": "Sum", "Pivot_Data": "CPU_CORES", "Follows_Group": "APPLICATION_NAME"}
+             {"Pivot_Field": "Environment", "Pivot_True": "Yes", "Pivot_False": "No"}
+            ,{"Pivot_Field": "Environment", "Pivot_Type": "Sum", "Pivot_Data": "CPU_Cores", "Follows_Group": "Application_Name"}
         ]
     }
 ]
@@ -292,11 +292,11 @@ BEGIN
                                                 BEGIN
                                                     IF @numeric_flag > 0
                                                         BEGIN
-                                                            SET @dynamic_select = @dynamic_select + ',ISNULL(p' + CAST(@pivot_counter AS NVARCHAR) + '.[' + @pivot_column_name + '], 0) AS [' + @pivot_type + '_' + @pivot_column_name + ']' + CHAR(13) + CHAR(10)
+                                                            SET @dynamic_select = @dynamic_select + ',ISNULL(p' + CAST(@pivot_counter AS NVARCHAR) + '.[' + @pivot_column_name + '], 0) AS [' + @pivot_type + '_' + @pivot_field + '_' + @pivot_column_name + ']' + CHAR(13) + CHAR(10)
                                                         END
                                                     ELSE
                                                         BEGIN
-                                                            SET @dynamic_select = @dynamic_select + ',ISNULL(p' + CAST(@pivot_counter AS NVARCHAR) + '.[' + @pivot_column_name + '],'''') AS [' + @pivot_type + '_' + @pivot_column_name + ']' + CHAR(13) + CHAR(10)
+                                                            SET @dynamic_select = @dynamic_select + ',ISNULL(p' + CAST(@pivot_counter AS NVARCHAR) + '.[' + @pivot_column_name + '],'''') AS [' + @pivot_type + '_' + @pivot_field + '_' + @pivot_column_name + ']' + CHAR(13) + CHAR(10)
                                                         END
                                                 END
                                             IF @comma_flag_FROM = 1

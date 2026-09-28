@@ -45,8 +45,7 @@ SELECT
     tableowner,
     tablespace,
     CASE
-        WHEN hasindexes THEN 'Y'
-        ELSE 'N'
+        WHEN hasindexes THEN 'Has_Indexes'
     END AS hasindexes,
     hasrules
 FROM
@@ -653,6 +652,8 @@ BEGIN
 										ELSE v_pivot_type || '_'
 									END
 									|| v_pivot_values[chip_number]
+									|| '_'
+									|| v_pivot_data
 								);
 
 						ELSIF v_pivot_data IS NULL THEN
@@ -702,6 +703,8 @@ BEGIN
 							            ELSE v_pivot_types[pivot_number] || '_'
 							        END
 							        || v_pivot_values[chip_number]
+							        || '_'
+							        || v_pivot_data
 							    );
 
 						END IF;

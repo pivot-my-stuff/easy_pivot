@@ -19,17 +19,17 @@ DECLARE @source_table AS NVARCHAR(MAX)= '#car_prices'
 DECLARE @config AS NVARCHAR(MAX) = '
 [
     {
-        "Group": ["COUNTRY"],
+        "Group": ["Country"],
         "Order": ["ASC"],
         "Pivot": [
-             {"Pivot_Field": "COMPANY", "Pivot_Type": "Sum", "Pivot_Data": "PRICE"}
-            ,{"Pivot_Field": "COMPANY", "Pivot_Type": "Avg", "Pivot_Data": "PRICE"}
-            ,{"Pivot_Field": "COMPANY", "Pivot_Type": "Count", "Pivot_Data": "PRICE"}
-            ,{"Pivot_Field": "COMPANY", "Pivot_Type": "Min", "Pivot_Data": "PRICE"}
-            ,{"Pivot_Field": "COMPANY", "Pivot_Type": "Max", "Pivot_Data": "PRICE"}
-            ,{"Pivot_Field": "COMPANY", "Pivot_Type": "Stdev", "Pivot_Data": "PRICE"}
-            ,{"Pivot_Field": "COMPANY", "Pivot_Type": "Var", "Pivot_Data": "PRICE"}
-            ,{"Pivot_Field": "COMPANY", "Pivot_Type": "VarP", "Pivot_Data": "PRICE"}
+             {"Pivot_Field": "Company", "Pivot_Type": "Sum", "Pivot_Data": "PRICE"}
+            ,{"Pivot_Field": "Company", "Pivot_Type": "Avg", "Pivot_Data": "PRICE"}
+            ,{"Pivot_Field": "Company", "Pivot_Type": "Count", "Pivot_Data": "PRICE"}
+            ,{"Pivot_Field": "Company", "Pivot_Type": "Min", "Pivot_Data": "PRICE"}
+            ,{"Pivot_Field": "Company", "Pivot_Type": "Max", "Pivot_Data": "PRICE"}
+            ,{"Pivot_Field": "Company", "Pivot_Type": "Stdev", "Pivot_Data": "PRICE"}
+            ,{"Pivot_Field": "Company", "Pivot_Type": "Var", "Pivot_Data": "PRICE"}
+            ,{"Pivot_Field": "Company", "Pivot_Type": "VarP", "Pivot_Data": "PRICE"}
         ]
     }
 ]
@@ -247,11 +247,11 @@ BEGIN
                                                 BEGIN
                                                     IF @numeric_flag > 0
                                                         BEGIN
-                                                            SET @dynamic_select = @dynamic_select + ',ISNULL(p' + CAST(@pivot_counter AS NVARCHAR) + '.[' + @pivot_column_name + '], 0) AS [' + @pivot_type + '_' + @pivot_column_name + ']' + CHAR(13) + CHAR(10)
+                                                            SET @dynamic_select = @dynamic_select + ',ISNULL(p' + CAST(@pivot_counter AS NVARCHAR) + '.[' + @pivot_column_name + '], 0) AS [' + @pivot_type + '_' + @pivot_field + '_' + @pivot_column_name + ']' + CHAR(13) + CHAR(10)
                                                         END
                                                     ELSE
                                                         BEGIN
-                                                            SET @dynamic_select = @dynamic_select + ',ISNULL(p' + CAST(@pivot_counter AS NVARCHAR) + '.[' + @pivot_column_name + '],'''') AS [' + @pivot_type + '_' + @pivot_column_name + ']' + CHAR(13) + CHAR(10)
+                                                            SET @dynamic_select = @dynamic_select + ',ISNULL(p' + CAST(@pivot_counter AS NVARCHAR) + '.[' + @pivot_column_name + '],'''') AS [' + @pivot_type + '_' + @pivot_field + '_' + @pivot_column_name + ']' + CHAR(13) + CHAR(10)
                                                         END
                                                 END
                                             IF @comma_flag_FROM = 1
