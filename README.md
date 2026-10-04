@@ -22,38 +22,6 @@
   <img src="img/easy_pivot_workbench_demo_5.jpg">
 </p>
 
-## The Next Generation Of Easy Pivot
-
-While investigating SQLite support, we discovered a much simpler architecture for Easy Pivot. Instead of having the Workbench connect to a database merely to determine field types, the user can tell Easy Pivot whether aggregate data is **numeric** or **string**. The Workbench does not need to inspect returned rows or connect to the database at all.
-
-This opens the door to a new, lightweight version of Easy Pivot: a **single-page HTML application powered entirely by JavaScript**. No PHP installation, database drivers, credentials, or database connection would be required. The application would generate SQL locally and use small database-specific adapters to produce the appropriate SQL dialect.
-
-The goal is simple: **one graphical pivot engine, one HTML file, six or more supported databases, and a very small barrier to entry.**
-
-```text
-                    EASY PIVOT DELUXE
-                           |
-                  Single HTML File
-                           |
-                       JavaScript
-                           |
-                  Generic Pivot Engine
-                           |
-             +-------------+-------------+
-             |             |             |
-          SQL Server     Oracle      PostgreSQL
-             |             |             |
-           MySQL        SQLite         MariaDB
-             |             |             |
-             +-------------+-------------+
-                           |
-                    Generated SQL
-```
-
-This architecture should reduce code, simplify deployment, and make adding new database platforms substantially easier. The existing Easy Pivot implementations and Workbench will remain untouched while this new approach is developed and proven.
-
-*It begins tomorrow.*
-
 ### If you would like to donate to the Easy Pivot Workbench project, you can donate here:
 
 https://github.com/pivot-my-stuff
